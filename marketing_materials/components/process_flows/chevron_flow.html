@@ -1,0 +1,128 @@
+<!--
+  Component: Chevron Flow
+  Source: v1_chevron_flow (user's top-rated design)
+  Feedback: "Chevrons are great how it goes from one place into the next. Titles go from one thing to the next. Really good."
+  When to use: Horizontal sequential processes with 3-5 steps. Best for showing progression
+  where each stage leads naturally into the next (e.g. onboarding, implementation phases).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Chevron Flow</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background: #f8f8f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+    }
+
+    .chevron-flow {
+      display: flex;
+      align-items: stretch;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .chevron {
+      flex: 1;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 20px 16px 28px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      position: relative;
+      /* Arrow point on right, notch on left */
+      clip-path: polygon(
+        14px 0%,
+        calc(100% - 14px) 0%,
+        100% 50%,
+        calc(100% - 14px) 100%,
+        14px 100%,
+        28px 50%
+      );
+    }
+
+    /* First chevron: no left notch */
+    .chevron:first-child {
+      padding-left: 20px;
+      clip-path: polygon(
+        0% 0%,
+        calc(100% - 14px) 0%,
+        100% 50%,
+        calc(100% - 14px) 100%,
+        0% 100%
+      );
+    }
+
+    /* Last chevron: no right arrow point */
+    .chevron:last-child {
+      clip-path: polygon(
+        14px 0%,
+        100% 0%,
+        100% 100%,
+        14px 100%,
+        28px 50%
+      );
+    }
+
+    .chevron:nth-child(1) { background: var(--brand-green); }
+    .chevron:nth-child(2) { background: var(--teal); }
+    .chevron:nth-child(3) { background: var(--navy); }
+    .chevron:nth-child(4) { background: var(--coral); }
+
+    .chevron-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .chevron-label {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="chevron-flow">
+    <div class="chevron">
+      <span class="chevron-icon">&#x1F50D;</span>
+      <span class="chevron-label">Discover</span>
+    </div>
+    <div class="chevron">
+      <span class="chevron-icon">&#x2699;</span>
+      <span class="chevron-label">Configure</span>
+    </div>
+    <div class="chevron">
+      <span class="chevron-icon">&#x1F680;</span>
+      <span class="chevron-label">Deploy</span>
+    </div>
+    <div class="chevron">
+      <span class="chevron-icon">&#x2705;</span>
+      <span class="chevron-label">Optimise</span>
+    </div>
+  </div>
+</body>
+</html>

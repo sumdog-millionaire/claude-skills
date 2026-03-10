@@ -1,0 +1,101 @@
+<!--
+  Component: Rounded Card CTA
+  Source: v2_circular_hub, v6_flowing_ribbon
+  Feedback: Compact and elegant alternative to full-width bar
+  When to use: When space is limited or you want a more contained, card-style
+  CTA. Green gradient background with email pill and action button.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Rounded Card CTA</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Rounded Card CTA --- */
+    .cta-card {
+      background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-dark) 100%);
+      border-radius: 14px;
+      padding: 32px 36px;
+      max-width: 420px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .cta-card__heading {
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .cta-card__sub {
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 0.84rem;
+      margin: 0 0 20px;
+      line-height: 1.5;
+    }
+
+    .cta-card__email-pill {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      padding: 8px 20px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.85rem;
+      margin-bottom: 18px;
+    }
+
+    .cta-card__button {
+      display: inline-block;
+      background: var(--amber);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 28px;
+      font-family: 'Public Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+
+    .cta-card__button:hover {
+      box-shadow: 0 4px 16px rgba(200, 149, 46, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cta-card">
+    <p class="cta-card__heading">Let's start a conversation</p>
+    <p class="cta-card__sub">We'd love to understand your challenges and explore how we can help.</p>
+    <div class="cta-card__email-pill">hello@sumplexity.com</div>
+    <br>
+    <button class="cta-card__button">Book a Call</button>
+  </div>
+
+</body>
+</html>

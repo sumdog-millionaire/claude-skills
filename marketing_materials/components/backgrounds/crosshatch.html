@@ -1,0 +1,102 @@
+<!--
+  Component: Crosshatch Background
+  Source: v4_diagonal (user liked: "interesting use of the crosses on it, looks very different, subtle background bits")
+  Feedback: "Interesting use of the crosses on it, looks very different, subtle background bits."
+  When to use: Distinctive texture that differentiates sections. Works well for
+  accent panels or sidebar backgrounds. The diagonal lines add energy and movement.
+  Combine both directions for crosshatch, or use single direction for simpler stripe.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Crosshatch Background</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --teal: #0C7C6B;
+      --navy: #1A2B4D;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 32px;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .demo-panel {
+      width: 100%;
+      max-width: 520px;
+      padding: 48px 32px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    /* Single diagonal lines */
+    .crosshatch-single {
+      background-color: #fff;
+      background-image:
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 40px,
+          rgba(10,77,28,0.03) 40px,
+          rgba(10,77,28,0.03) 42px
+        );
+    }
+
+    /* Full crosshatch (both directions) */
+    .crosshatch-full {
+      background-color: #fff;
+      background-image:
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 40px,
+          rgba(10,77,28,0.03) 40px,
+          rgba(10,77,28,0.03) 42px
+        ),
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 40px,
+          rgba(10,77,28,0.03) 40px,
+          rgba(10,77,28,0.03) 42px
+        );
+    }
+
+    .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brand-dark);
+      letter-spacing: 0.04em;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #888;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-panel crosshatch-single">
+    <div class="label">Single Diagonal Lines</div>
+    <div class="hint">repeating-linear-gradient &middot; -45deg &middot; 40px gap &middot; 2px line</div>
+  </div>
+
+  <div class="demo-panel crosshatch-full">
+    <div class="label">Full Crosshatch</div>
+    <div class="hint">Both -45deg and 45deg layers &middot; creates diamond grid pattern</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!--
+  Component: Diagonal Divider
+  Source: v5_bold_diagonal
+  Feedback: "Interesting shapes, nice colours"
+  When to use: For bold, dynamic section transitions. Creates energy and movement.
+               Works well when pairing contrasting brand colours side by side.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --coral: #BF5A3A;
+      --coral-light: #FAEAE6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; }
+
+    .section-top {
+      background: var(--brand-green);
+      color: #fff;
+      padding: 48px 32px 72px;
+      text-align: center;
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
+    }
+    .section-overlap {
+      background: var(--coral);
+      color: #fff;
+      padding: 72px 32px 72px;
+      margin-top: -40px;
+      clip-path: polygon(0 10%, 100% 0, 100% 90%, 0 100%);
+    }
+    .section-bottom {
+      background: var(--coral-light);
+      color: var(--coral);
+      padding: 48px 32px;
+      margin-top: -40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="section-top">
+    <h2>First Section</h2>
+  </div>
+  <div class="section-overlap">
+    <h2 style="text-align:center;">Angled Transition</h2>
+  </div>
+  <div class="section-bottom">
+    <h2>Final Section</h2>
+  </div>
+</body>
+</html>

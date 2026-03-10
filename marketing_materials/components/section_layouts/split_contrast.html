@@ -1,0 +1,218 @@
+<!--
+  Component: Split Contrast
+  Source: v8_split_contrast
+  Feedback: "subtle background pattern, good colour use, looks stylish"
+  When to use: Dramatic two-zone layout. Dark top zone for stats/hero content
+  with glassmorphism cards, wavy SVG divider, bridge icons straddling the
+  boundary, and light bottom zone for detailed content cards.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Split Contrast</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #FAFAFA;
+    }
+
+    /* --- Dark Zone --- */
+    .split-dark {
+      background: var(--brand-dark);
+      padding: 48px 40px 64px;
+      position: relative;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* Glassmorphism stat card */
+    .stat-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 24px 20px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-card__number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--amber);
+      display: block;
+    }
+
+    .stat-card__label {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* --- Wavy SVG Divider --- */
+    .wave-divider {
+      position: relative;
+      margin-top: -1px;
+    }
+
+    .wave-divider svg {
+      display: block;
+      width: 100%;
+      height: 60px;
+    }
+
+    /* --- Bridge Icons --- */
+    .bridge-icons {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: -22px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .bridge-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: white;
+      font-weight: 700;
+    }
+
+    .bridge-icon--teal {
+      background: var(--teal);
+      box-shadow: 0 0 18px rgba(12, 124, 107, 0.45);
+    }
+
+    .bridge-icon--amber {
+      background: var(--amber);
+      box-shadow: 0 0 18px rgba(200, 149, 46, 0.45);
+    }
+
+    .bridge-icon--coral {
+      background: var(--coral);
+      box-shadow: 0 0 18px rgba(191, 90, 58, 0.45);
+    }
+
+    /* --- Light Zone --- */
+    .split-light {
+      padding: 48px 40px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .content-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .content-card {
+      background: white;
+      border-radius: 8px;
+      padding: 22px;
+      border: 1px solid #E8EBF0;
+    }
+
+    .content-card__title {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--brand-green);
+      margin: 0 0 8px;
+    }
+
+    .content-card__text {
+      font-size: 0.84rem;
+      color: var(--navy);
+      line-height: 1.55;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dark zone with glassmorphism stat cards -->
+  <div class="split-dark">
+    <div class="stat-row">
+      <div class="stat-card">
+        <span class="stat-card__number">94%</span>
+        <span class="stat-card__label">Client retention rate</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__number">3.2x</span>
+        <span class="stat-card__label">Faster time to compliance</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__number">&pound;1.8M</span>
+        <span class="stat-card__label">Average cost savings</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wavy SVG divider -->
+  <div class="wave-divider">
+    <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,0 L0,30 Q300,60 600,30 Q900,0 1200,30 L1200,0 Z" fill="#073914"/>
+    </svg>
+  </div>
+
+  <!-- Bridge icons straddling the boundary -->
+  <div class="bridge-icons">
+    <div class="bridge-icon bridge-icon--teal">&#x2713;</div>
+    <div class="bridge-icon bridge-icon--amber">&#x26A1;</div>
+    <div class="bridge-icon bridge-icon--coral">&#x2605;</div>
+  </div>
+
+  <!-- Light zone with content cards -->
+  <div class="split-light">
+    <div class="content-cards">
+      <div class="content-card">
+        <p class="content-card__title">Regulatory Mapping</p>
+        <p class="content-card__text">Automated alignment of your processes against evolving regulatory requirements.</p>
+      </div>
+      <div class="content-card">
+        <p class="content-card__title">Risk Assessment</p>
+        <p class="content-card__text">Continuous monitoring that surfaces issues before they become violations.</p>
+      </div>
+      <div class="content-card">
+        <p class="content-card__title">Audit Readiness</p>
+        <p class="content-card__text">Evidence collection and reporting that keeps you perpetually audit-ready.</p>
+      </div>
+      <div class="content-card">
+        <p class="content-card__title">Team Enablement</p>
+        <p class="content-card__text">Training and tooling that embeds compliance into daily workflows.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

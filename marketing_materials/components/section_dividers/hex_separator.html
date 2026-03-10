@@ -1,0 +1,82 @@
+<!--
+  Component: Hexagon Separator
+  Source: v3_hexagonal_grid
+  Feedback: "Good bullets, colour thing at the top is nice"
+  When to use: As a decorative separator between content sections. Adds visual
+               interest without taking much vertical space. The graduated opacity
+               creates a subtle fade effect.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #0C7C6B;
+      --teal-light: #E6F3F1;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; background: #fff; }
+
+    .section {
+      padding: 40px 32px;
+      text-align: center;
+      color: #333;
+    }
+    .hex-separator {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 0;
+    }
+    .hex-separator svg {
+      width: 22px;
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="section">
+    <h2>Section Above</h2>
+    <p>Content goes here.</p>
+  </div>
+
+  <div class="hex-separator">
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.1"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.25"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.45"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.7"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="1.0"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.7"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.45"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.25"/>
+    </svg>
+    <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="11,0 22,6 22,18 11,24 0,18 0,6" fill="#0C7C6B" opacity="0.1"/>
+    </svg>
+  </div>
+
+  <div class="section">
+    <h2>Section Below</h2>
+    <p>Content goes here.</p>
+  </div>
+</body>
+</html>

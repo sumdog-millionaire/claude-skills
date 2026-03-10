@@ -1,0 +1,117 @@
+<!--
+  Component: Progress Bars
+  Source: v3_infographic_dataviz
+  Feedback: "Data loading bars, CLC non-compliance and prior year are inventive"
+  When to use: For comparative data, before/after metrics, or showing progress
+               toward a target. The gradient fill adds visual weight. Use the
+               comparison variant to show year-on-year or category differences.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --teal: #0C7C6B;
+      --coral: #BF5A3A;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; background: #f8f8f8; padding: 48px 32px; }
+
+    .progress-group {
+      max-width: 560px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .progress-item label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .bar-track {
+      width: 100%;
+      height: 18px;
+      background: #e4e4e4;
+      border-radius: 9px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 9px;
+      transition: width 0.4s ease;
+    }
+
+    /* Comparison variant */
+    .comparison-group {
+      max-width: 560px;
+      margin: 32px auto 0;
+      border-top: 1px solid #ddd;
+      padding-top: 24px;
+    }
+    .comparison-group h3 {
+      font-size: 0.85rem;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+    .comparison-pair {
+      margin-bottom: 16px;
+    }
+    .comparison-pair label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 3px;
+      display: block;
+    }
+    .bar-track.slim { height: 12px; }
+  </style>
+</head>
+<body>
+  <!-- Standard progress bars -->
+  <div class="progress-group">
+    <div class="progress-item">
+      <label><span>Compliance Rate</span><span>87%</span></label>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:87%; background: linear-gradient(90deg, var(--brand-green), var(--teal));"></div>
+      </div>
+    </div>
+    <div class="progress-item">
+      <label><span>Risk Mitigation</span><span>62%</span></label>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:62%; background: linear-gradient(90deg, var(--amber), var(--coral));"></div>
+      </div>
+    </div>
+    <div class="progress-item">
+      <label><span>Audit Completion</span><span>94%</span></label>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:94%; background: linear-gradient(90deg, var(--teal), var(--brand-green));"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Before/after comparison variant -->
+  <div class="comparison-group">
+    <h3>Year-on-Year Comparison</h3>
+    <div class="comparison-pair">
+      <label>Non-compliance &mdash; Prior Year: 34%</label>
+      <div class="bar-track slim">
+        <div class="bar-fill" style="width:34%; background: var(--coral); opacity:0.5;"></div>
+      </div>
+      <label style="margin-top:4px;">Non-compliance &mdash; Current Year: 12%</label>
+      <div class="bar-track slim">
+        <div class="bar-fill" style="width:12%; background: var(--brand-green);"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!--
+  Component: Editorial Two Column
+  Source: v5_magazine
+  Feedback: "best magazine/editorial styled one, nice use of space, good whitespace"
+  When to use: Text-heavy sections that benefit from a magazine feel. Main
+  content column with drop cap, narrower sidebar with pull quote and stat cards.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Editorial Two Column</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Editorial Two Column Layout --- */
+    .editorial {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 40px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* Main column */
+    .editorial__main {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: var(--navy);
+    }
+
+    .editorial__main p:first-of-type::first-letter {
+      float: left;
+      font-size: 3.4rem;
+      font-weight: 700;
+      line-height: 0.85;
+      color: var(--brand-green);
+      margin-right: 8px;
+      margin-top: 4px;
+    }
+
+    .editorial__main p {
+      margin: 0 0 16px;
+    }
+
+    /* Sidebar */
+    .editorial__sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Sidebar pull quote */
+    .sidebar-quote {
+      border-left: 3px solid var(--teal);
+      background: var(--teal-light);
+      border-radius: 0 6px 6px 0;
+      padding: 16px 18px;
+      font-style: italic;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--brand-dark);
+    }
+
+    /* Sidebar stat card */
+    .sidebar-stat {
+      background: white;
+      border: 1px solid #E8EBF0;
+      border-radius: 8px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .sidebar-stat__number {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--amber);
+      display: block;
+    }
+
+    .sidebar-stat__label {
+      font-size: 0.8rem;
+      color: var(--navy);
+      margin-top: 4px;
+      display: block;
+    }
+
+    .sidebar-stat__bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--amber-light);
+      margin-top: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar-stat__bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-radius: 2px;
+      background: var(--amber);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="editorial">
+    <div class="editorial__main">
+      <p>Compliance has long been treated as a necessary burden — a back-office function that consumes resources without generating value. But the landscape is shifting. Organisations that embed regulatory awareness into their core operations are finding it becomes a competitive advantage, not merely a cost of doing business.</p>
+
+      <p>The challenge is execution. Most firms recognise the need for change but struggle with the practical steps. Legacy systems, siloed teams, and inconsistent processes create friction that slows even the most well-intentioned transformation programmes.</p>
+
+      <p>What separates successful organisations is not the scale of their investment, but the clarity of their approach. A focused, well-structured programme consistently outperforms a sprawling initiative with ten times the budget.</p>
+    </div>
+
+    <div class="editorial__sidebar">
+      <div class="sidebar-quote">
+        "The firms that win are the ones that make compliance invisible — woven into every process, not layered on top."
+      </div>
+
+      <div class="sidebar-stat">
+        <span class="sidebar-stat__number">67%</span>
+        <span class="sidebar-stat__label">of transformation programmes exceed timeline</span>
+        <div class="sidebar-stat__bar">
+          <div class="sidebar-stat__bar-fill" style="width: 67%;"></div>
+        </div>
+      </div>
+
+      <div class="sidebar-stat">
+        <span class="sidebar-stat__number">4.1x</span>
+        <span class="sidebar-stat__label">ROI from structured compliance programmes</span>
+        <div class="sidebar-stat__bar">
+          <div class="sidebar-stat__bar-fill" style="width: 82%; background: var(--teal);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

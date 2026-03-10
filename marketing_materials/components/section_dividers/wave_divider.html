@@ -1,0 +1,53 @@
+<!--
+  Component: Wave Divider
+  Source: v8_split_contrast
+  Feedback: "Subtle background pattern, good colour use, looks stylish"
+  When to use: Between a dark and light section for a smooth, organic transition.
+               Softer than angular dividers — suits professional or lifestyle content.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1A2B4D;
+      --navy-light: #E8EBF0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; }
+
+    .section-dark {
+      background: var(--navy);
+      color: #fff;
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .wave-divider {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-top: -1px;
+    }
+    .section-light {
+      background: var(--navy-light);
+      color: var(--navy);
+      padding: 48px 32px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="section-dark">
+    <h2>Dark Section</h2>
+  </div>
+  <svg class="wave-divider" viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,0 L0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,0 Z" fill="#1A2B4D"/>
+  </svg>
+  <div class="section-light">
+    <h2>Light Section</h2>
+  </div>
+</body>
+</html>

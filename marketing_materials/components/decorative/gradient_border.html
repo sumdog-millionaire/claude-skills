@@ -1,0 +1,144 @@
+<!--
+  Component: Gradient Border
+  Source: v10_glass
+  Feedback: "best of dark mode, nice icons, very good whitespace"
+  When to use: Cards or containers that need a premium border effect. Uses
+  mask/mask-composite on ::after to create a border that transitions through
+  brand colours. Works on both dark and light backgrounds.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Gradient Border</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Gradient Border Component --- */
+    .gradient-border-card {
+      position: relative;
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 380px;
+    }
+
+    .gradient-border-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        var(--teal) 0%,
+        var(--amber) 50%,
+        var(--coral) 100%
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .gradient-border-card__title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin: 0 0 8px;
+    }
+
+    .gradient-border-card__text {
+      font-size: 0.85rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    /* Light variant */
+    .gradient-border-card--light {
+      background: white;
+    }
+
+    .gradient-border-card--light .gradient-border-card__title {
+      color: var(--brand-dark);
+    }
+
+    .gradient-border-card--light .gradient-border-card__text {
+      color: var(--navy);
+    }
+
+    /* Dark variant */
+    .gradient-border-card--dark {
+      background: var(--brand-dark);
+    }
+
+    .gradient-border-card--dark .gradient-border-card__title {
+      color: white;
+    }
+
+    .gradient-border-card--dark .gradient-border-card__text {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* --- Demo layout --- */
+    .demo-row {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .demo-dark-bg {
+      background: var(--brand-dark);
+      border-radius: 16px;
+      padding: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo-row">
+    <!-- Light background variant -->
+    <div class="gradient-border-card gradient-border-card--light">
+      <p class="gradient-border-card__title">Compliance Health Score</p>
+      <p class="gradient-border-card__text">A single metric that captures your organisation's overall compliance posture, updated in real time as conditions change.</p>
+    </div>
+
+    <!-- Dark background variant -->
+    <div class="demo-dark-bg">
+      <div class="gradient-border-card gradient-border-card--dark">
+        <p class="gradient-border-card__title">Compliance Health Score</p>
+        <p class="gradient-border-card__text">The same gradient border works on dark backgrounds, giving a premium glass-like appearance to cards.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

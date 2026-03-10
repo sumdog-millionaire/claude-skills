@@ -1,0 +1,118 @@
+<!--
+  Component: Ambient Glows
+  Source: v8_split_contrast
+  Feedback: "stylish"
+  When to use: Behind content on dark backgrounds to create depth and visual
+  interest without clutter. Large radial gradient glow effects in amber and
+  teal at low opacity.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Ambient Glows</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* --- Ambient Glows Component --- */
+    .glow-container {
+      background: var(--brand-dark);
+      position: relative;
+      overflow: hidden;
+      padding: 64px 40px;
+      min-height: 360px;
+    }
+
+    /* Glow elements — positioned absolutely behind content */
+    .glow {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(80px);
+    }
+
+    .glow--amber {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(200, 149, 46, 0.18) 0%, transparent 70%);
+      top: -80px;
+      right: -60px;
+    }
+
+    .glow--teal {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(12, 124, 107, 0.15) 0%, transparent 70%);
+      bottom: -60px;
+      left: -40px;
+    }
+
+    .glow--coral {
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(191, 90, 58, 0.1) 0%, transparent 70%);
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Demo content on top of glows */
+    .glow-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .glow-content__title {
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+
+    .glow-content__text {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-container">
+    <!-- Ambient glow layers -->
+    <div class="glow glow--amber"></div>
+    <div class="glow glow--teal"></div>
+    <div class="glow glow--coral"></div>
+
+    <!-- Content sits above the glows -->
+    <div class="glow-content">
+      <h2 class="glow-content__title">Proven Results</h2>
+      <p class="glow-content__text">Our clients consistently achieve measurable improvements in compliance efficiency, risk reduction, and operational resilience — within the first 90 days.</p>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!--
+  Component: Chevron Divider
+  Source: v1_chevron_flow (user's top-rated design)
+  Feedback: "Chevrons are great how it goes from one place into the next"
+  When to use: Between two differently-coloured sections to create a pointed,
+               directional transition that guides the eye downward.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --teal: #0C7C6B;
+      --teal-light: #E6F3F1;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; }
+
+    .section-top {
+      background: var(--brand-green);
+      color: #fff;
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .chev-down {
+      height: 20px;
+      background: var(--brand-green);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+    .section-bottom {
+      background: var(--teal-light);
+      color: var(--brand-dark);
+      padding: 48px 32px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="section-top">
+    <h2>Section Above</h2>
+  </div>
+  <div class="chev-down"></div>
+  <div class="section-bottom">
+    <h2>Section Below</h2>
+  </div>
+</body>
+</html>

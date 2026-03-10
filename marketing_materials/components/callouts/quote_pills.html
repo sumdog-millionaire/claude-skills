@@ -1,0 +1,155 @@
+<!--
+  Component: Quote Pills
+  Source: v10_timeline_journey
+  Feedback: "good callouts"
+  When to use: Floating callout cards near content for quotes, stats, or key
+  figures. Positioned with a CSS triangle pointer to visually connect to
+  adjacent content.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Quote Pills</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Quote Pill Component --- */
+    .quote-pill {
+      position: relative;
+      display: inline-block;
+      border-radius: 8px;
+      padding: 16px 22px;
+      max-width: 260px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    /* Triangle pointer — points left by default */
+    .quote-pill::after {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+    }
+
+    /* Colour variants */
+    .quote-pill--teal {
+      background: var(--teal-light);
+      color: var(--brand-dark);
+      border-left: 3px solid var(--teal);
+    }
+    .quote-pill--teal::after {
+      border-right: 10px solid var(--teal-light);
+    }
+
+    .quote-pill--coral {
+      background: var(--coral-light);
+      color: var(--brand-dark);
+      border-left: 3px solid var(--coral);
+    }
+    .quote-pill--coral::after {
+      border-right: 10px solid var(--coral-light);
+    }
+
+    .quote-pill--amber {
+      background: var(--amber-light);
+      color: var(--brand-dark);
+      border-left: 3px solid var(--amber);
+    }
+    .quote-pill--amber::after {
+      border-right: 10px solid var(--amber-light);
+    }
+
+    .quote-pill__stat {
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .quote-pill__label {
+      font-size: 0.82rem;
+      opacity: 0.8;
+    }
+
+    /* --- Demo layout --- */
+    .demo-row {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      flex-wrap: wrap;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .demo-content {
+      flex: 1;
+      min-width: 260px;
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      border: 1px solid #E8EBF0;
+      font-size: 0.9rem;
+      color: var(--navy);
+      line-height: 1.6;
+    }
+
+    .demo-callouts {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo-row">
+    <div class="demo-content">
+      <p>Organisations face mounting pressure to modernise their compliance frameworks. Legacy systems create blind spots that increase operational risk and regulatory exposure.</p>
+    </div>
+
+    <div class="demo-callouts">
+      <div class="quote-pill quote-pill--teal">
+        <span class="quote-pill__stat">73%</span>
+        <span class="quote-pill__label">of firms report compliance gaps</span>
+      </div>
+
+      <div class="quote-pill quote-pill--coral">
+        <span class="quote-pill__stat">&pound;2.4M</span>
+        <span class="quote-pill__label">average cost of a regulatory breach</span>
+      </div>
+
+      <div class="quote-pill quote-pill--amber">
+        "The status quo is no longer sustainable."
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

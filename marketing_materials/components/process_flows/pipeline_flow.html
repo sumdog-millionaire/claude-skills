@@ -1,0 +1,147 @@
+<!--
+  Component: Pipeline Flow
+  Source: v7_infographic_dashboard (user liked: "good before/now bars to show the points")
+  Feedback: "Good before/now bars to show the points."
+  When to use: Compact horizontal process with discrete stages. Best for dashboard-style
+  layouts showing a transformation pipeline or data flow (e.g. input > process > output).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Pipeline Flow</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background: #f8f8f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+    }
+
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      max-width: 720px;
+      width: 100%;
+    }
+
+    .pipeline-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pipeline-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .pipeline-stage:nth-child(1) .pipeline-icon { background: var(--brand-green); }
+    .pipeline-stage:nth-child(3) .pipeline-icon { background: var(--teal); }
+    .pipeline-stage:nth-child(5) .pipeline-icon { background: var(--navy); }
+    .pipeline-stage:nth-child(7) .pipeline-icon { background: var(--coral); }
+
+    .pipeline-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand-dark);
+      text-align: center;
+    }
+
+    .pipeline-stat {
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* Arrow connectors */
+    .pipeline-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      flex-shrink: 0;
+      margin-bottom: 28px; /* align with icon centre */
+    }
+
+    .pipeline-arrow svg {
+      width: 48px;
+      height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="pipeline">
+    <div class="pipeline-stage">
+      <div class="pipeline-icon">&#x1F4E5;</div>
+      <span class="pipeline-label">Ingest</span>
+      <span class="pipeline-stat">12 sources</span>
+    </div>
+
+    <div class="pipeline-arrow">
+      <svg viewBox="0 0 48 16" fill="none">
+        <line x1="0" y1="8" x2="38" y2="8" stroke="#0A4D1C" stroke-width="2" stroke-dasharray="4 3"/>
+        <polygon points="36,3 44,8 36,13" fill="#0A4D1C"/>
+      </svg>
+    </div>
+
+    <div class="pipeline-stage">
+      <div class="pipeline-icon">&#x2699;</div>
+      <span class="pipeline-label">Process</span>
+      <span class="pipeline-stat">AI enrichment</span>
+    </div>
+
+    <div class="pipeline-arrow">
+      <svg viewBox="0 0 48 16" fill="none">
+        <line x1="0" y1="8" x2="38" y2="8" stroke="#0C7C6B" stroke-width="2" stroke-dasharray="4 3"/>
+        <polygon points="36,3 44,8 36,13" fill="#0C7C6B"/>
+      </svg>
+    </div>
+
+    <div class="pipeline-stage">
+      <div class="pipeline-icon">&#x1F50D;</div>
+      <span class="pipeline-label">Analyse</span>
+      <span class="pipeline-stat">Real-time</span>
+    </div>
+
+    <div class="pipeline-arrow">
+      <svg viewBox="0 0 48 16" fill="none">
+        <line x1="0" y1="8" x2="38" y2="8" stroke="#1A2B4D" stroke-width="2" stroke-dasharray="4 3"/>
+        <polygon points="36,3 44,8 36,13" fill="#1A2B4D"/>
+      </svg>
+    </div>
+
+    <div class="pipeline-stage">
+      <div class="pipeline-icon">&#x1F4CA;</div>
+      <span class="pipeline-label">Deliver</span>
+      <span class="pipeline-stat">3 formats</span>
+    </div>
+  </div>
+</body>
+</html>

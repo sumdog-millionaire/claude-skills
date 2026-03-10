@@ -1,0 +1,87 @@
+<!--
+  Component: Dot Grid Background
+  Source: v7_infographic_dashboard, v8_split_contrast (user liked: "subtle background pattern")
+  Feedback: "Subtle background pattern."
+  When to use: Default subtle texture for any section. Works on both light and dark
+  backgrounds. Adds visual depth without competing with content.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Dot Grid Background</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 32px;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .demo-panel {
+      width: 100%;
+      max-width: 520px;
+      padding: 48px 32px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    /* Light background with dark dots */
+    .dot-grid-light {
+      background-color: #fff;
+      background-image: radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    /* Dark background with light dots */
+    .dot-grid-dark {
+      background-color: var(--brand-dark);
+      background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .dot-grid-light .label { color: var(--brand-dark); }
+    .dot-grid-dark .label { color: rgba(255,255,255,0.85); }
+
+    .hint {
+      font-size: 11px;
+      margin-top: 8px;
+    }
+
+    .dot-grid-light .hint { color: #888; }
+    .dot-grid-dark .hint { color: rgba(255,255,255,0.45); }
+  </style>
+</head>
+<body>
+  <div class="demo-panel dot-grid-light">
+    <div class="label">Dot Grid on Light Background</div>
+    <div class="hint">radial-gradient &middot; rgba(0,0,0,0.06) &middot; 16px spacing</div>
+  </div>
+
+  <div class="demo-panel dot-grid-dark">
+    <div class="label">Dot Grid on Dark Background</div>
+    <div class="hint">radial-gradient &middot; rgba(255,255,255,0.07) &middot; 16px spacing</div>
+  </div>
+</body>
+</html>

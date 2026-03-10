@@ -1,0 +1,150 @@
+<!--
+  Component: Content Grid 2x2
+  Source: v2_circular_hub
+  Feedback: "great use of shapes, good clear sections"
+  When to use: Presenting four related items (pillars, services, features) in
+  a balanced grid. Each card has a coloured circle icon marker, section title,
+  rounded corners, tinted background, and coloured left border.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Content Grid 2x2</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- 2x2 Grid Component --- */
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .grid-card {
+      border-radius: 10px;
+      padding: 24px;
+      border-left: 4px solid;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .grid-card--teal {
+      background: var(--teal-light);
+      border-left-color: var(--teal);
+    }
+
+    .grid-card--coral {
+      background: var(--coral-light);
+      border-left-color: var(--coral);
+    }
+
+    .grid-card--amber {
+      background: var(--amber-light);
+      border-left-color: var(--amber);
+    }
+
+    .grid-card--navy {
+      background: var(--navy-light);
+      border-left-color: var(--navy);
+    }
+
+    /* Circle icon marker */
+    .grid-card__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .grid-card--teal .grid-card__icon { background: var(--teal); }
+    .grid-card--coral .grid-card__icon { background: var(--coral); }
+    .grid-card--amber .grid-card__icon { background: var(--amber); }
+    .grid-card--navy .grid-card__icon { background: var(--navy); }
+
+    .grid-card__content {
+      flex: 1;
+    }
+
+    .grid-card__title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--brand-dark);
+      margin: 0 0 6px;
+    }
+
+    .grid-card__text {
+      font-size: 0.84rem;
+      color: var(--navy);
+      line-height: 1.55;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid-2x2">
+    <div class="grid-card grid-card--teal">
+      <div class="grid-card__icon">1</div>
+      <div class="grid-card__content">
+        <p class="grid-card__title">Assess</p>
+        <p class="grid-card__text">Map current processes against regulatory requirements to identify gaps and priorities.</p>
+      </div>
+    </div>
+
+    <div class="grid-card grid-card--coral">
+      <div class="grid-card__icon">2</div>
+      <div class="grid-card__content">
+        <p class="grid-card__title">Design</p>
+        <p class="grid-card__text">Build a tailored compliance framework that integrates with existing workflows.</p>
+      </div>
+    </div>
+
+    <div class="grid-card grid-card--amber">
+      <div class="grid-card__icon">3</div>
+      <div class="grid-card__content">
+        <p class="grid-card__title">Implement</p>
+        <p class="grid-card__text">Deploy tools and training in phased rollouts with measurable checkpoints.</p>
+      </div>
+    </div>
+
+    <div class="grid-card grid-card--navy">
+      <div class="grid-card__icon">4</div>
+      <div class="grid-card__content">
+        <p class="grid-card__title">Monitor</p>
+        <p class="grid-card__text">Continuous oversight with automated reporting and early-warning triggers.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

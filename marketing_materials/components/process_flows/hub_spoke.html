@@ -1,0 +1,142 @@
+<!--
+  Component: Hub & Spoke
+  Source: v2_circular_hub (user liked: "great use of shapes, good whitespace, good clear sections, nice styling")
+  Feedback: "Great use of shapes, good whitespace, good clear sections, nice styling."
+  When to use: Central concept with surrounding related elements. Best for showing how
+  multiple aspects connect to a core idea (e.g. platform capabilities, team structure).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Hub &amp; Spoke</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background: #f8f8f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+    }
+
+    .hub-spoke {
+      position: relative;
+      width: 420px;
+      height: 420px;
+    }
+
+    /* Concentric ring background */
+    .hub-spoke::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, transparent 58px, rgba(10,77,28,0.04) 59px, rgba(10,77,28,0.04) 60px, transparent 61px),
+        radial-gradient(circle, transparent 98px, rgba(10,77,28,0.03) 99px, rgba(10,77,28,0.03) 100px, transparent 101px),
+        radial-gradient(circle, transparent 148px, rgba(10,77,28,0.02) 149px, rgba(10,77,28,0.02) 150px, transparent 151px);
+    }
+
+    .hub {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      text-align: center;
+      z-index: 2;
+      line-height: 1.3;
+    }
+
+    .spoke {
+      position: absolute;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      color: #fff;
+      z-index: 2;
+      line-height: 1.3;
+    }
+
+    .spoke-stat {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .spoke:nth-child(3) { top: 16px;  left: 50%; transform: translateX(-50%); background: var(--teal); }
+    .spoke:nth-child(4) { bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--coral); }
+    .spoke:nth-child(5) { top: 50%; left: 16px; transform: translateY(-50%); background: var(--navy); }
+    .spoke:nth-child(6) { top: 50%; right: 16px; transform: translateY(-50%); background: var(--amber); }
+
+    .connectors {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="hub-spoke">
+    <div class="hub">Core<br>Platform</div>
+
+    <!-- SVG dashed connectors -->
+    <svg class="connectors" viewBox="0 0 420 420" fill="none">
+      <line x1="210" y1="155" x2="210" y2="104" stroke="#0A4D1C" stroke-width="2" stroke-dasharray="6 4" />
+      <line x1="210" y1="265" x2="210" y2="316" stroke="#0A4D1C" stroke-width="2" stroke-dasharray="6 4" />
+      <line x1="155" y1="210" x2="104" y2="210" stroke="#0A4D1C" stroke-width="2" stroke-dasharray="6 4" />
+      <line x1="265" y1="210" x2="316" y2="210" stroke="#0A4D1C" stroke-width="2" stroke-dasharray="6 4" />
+    </svg>
+
+    <div class="spoke">
+      <span class="spoke-stat">94%</span>
+      <span>Accuracy</span>
+    </div>
+    <div class="spoke">
+      <span class="spoke-stat">3.2s</span>
+      <span>Response</span>
+    </div>
+    <div class="spoke">
+      <span class="spoke-stat">12k</span>
+      <span>Users</span>
+    </div>
+    <div class="spoke">
+      <span class="spoke-stat">99.9%</span>
+      <span>Uptime</span>
+    </div>
+  </div>
+</body>
+</html>

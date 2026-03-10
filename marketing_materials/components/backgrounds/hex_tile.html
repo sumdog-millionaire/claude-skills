@@ -1,0 +1,86 @@
+<!--
+  Component: Hexagonal Tile Background
+  Source: v6_hexagonal (best overall feedback)
+  Feedback: "Good subtle background (very good)."
+  When to use: Premium/technical feel. Use behind hero sections or full-page backgrounds.
+  The hex pattern suggests precision and interconnection. Keep opacity very low (0.02-0.03).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Hex Tile Background</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --teal: #0C7C6B;
+      --teal-light: #E6F3F1;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 32px;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hex-panel {
+      width: 100%;
+      max-width: 600px;
+      min-height: 320px;
+      padding: 64px 40px;
+      border-radius: 12px;
+      background-color: #fff;
+      /* Inline SVG hex pattern at very low opacity */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66ZM28 100L0 84L0 50L28 34L56 50L56 84L28 100Z' fill='none' stroke='%230A4D1C' stroke-width='1' opacity='0.03'/%3E%3C/svg%3E");
+      background-size: 56px 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .hex-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 12px;
+    }
+
+    .hex-subtitle {
+      font-size: 13px;
+      color: #666;
+      max-width: 360px;
+      line-height: 1.6;
+    }
+
+    .hex-badge {
+      margin-top: 24px;
+      display: inline-block;
+      padding: 6px 16px;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hex-panel">
+    <div class="hex-title">Hex Tile Background</div>
+    <div class="hex-subtitle">
+      Repeating hexagonal SVG pattern at 0.03 opacity. Creates a subtle,
+      technical texture that suggests precision without distracting from content.
+    </div>
+    <div class="hex-badge">opacity: 0.03</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!--
+  Component: Chevron Stats
+  Source: v1_chevron_flow (top-rated design)
+  Feedback: "Chevrons are great how it goes from one place into the next"
+  When to use: For sequential or comparative stats that flow left-to-right.
+               The interlocking arrow shape implies progression or a pipeline.
+               Best with 3-4 items.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --teal: #0C7C6B;
+      --coral: #BF5A3A;
+      --amber: #C8952E;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; background: #f5f5f5; padding: 48px 24px; }
+
+    .chevron-row {
+      display: flex;
+      gap: 0;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .chevron-card {
+      flex: 1;
+      padding: 24px 24px 24px 36px;
+      color: #fff;
+      text-align: center;
+      position: relative;
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%, 20px 50%);
+    }
+    .chevron-card:first-child {
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%);
+      padding-left: 24px;
+    }
+    .chevron-card:nth-child(1) { background: var(--brand-green); }
+    .chevron-card:nth-child(2) { background: var(--teal); }
+    .chevron-card:nth-child(3) { background: var(--coral); }
+    .chevron-card:nth-child(4) { background: var(--amber); }
+
+    .chevron-card .stat-number {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .chevron-card .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="chevron-row">
+    <div class="chevron-card">
+      <div class="stat-number">142</div>
+      <div class="stat-label">Assessed</div>
+    </div>
+    <div class="chevron-card">
+      <div class="stat-number">87%</div>
+      <div class="stat-label">Compliant</div>
+    </div>
+    <div class="chevron-card">
+      <div class="stat-number">23</div>
+      <div class="stat-label">Remediated</div>
+    </div>
+    <div class="chevron-card">
+      <div class="stat-number">4</div>
+      <div class="stat-label">Outstanding</div>
+    </div>
+  </div>
+</body>
+</html>

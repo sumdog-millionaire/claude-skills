@@ -1,0 +1,97 @@
+<!--
+  Component: Circular Stat Badges
+  Source: v2_circular_hub
+  Feedback: "Great use of shapes, good whitespace, good clear sections"
+  When to use: For clean, well-spaced KPI displays. The circular shape and
+               layered glow create a premium feel. Works best on light backgrounds
+               with 3-5 badges in a row.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --teal: #0C7C6B;
+      --coral: #BF5A3A;
+      --amber: #C8952E;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; background: #f8f8f8; padding: 48px 24px; }
+
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      text-align: center;
+    }
+    .badge:nth-child(1) {
+      border: 3px solid var(--brand-green);
+      box-shadow: 0 0 0 6px rgba(10, 77, 28, 0.1), 0 0 0 12px rgba(10, 77, 28, 0.05);
+      color: var(--brand-green);
+    }
+    .badge:nth-child(2) {
+      border: 3px solid var(--teal);
+      box-shadow: 0 0 0 6px rgba(12, 124, 107, 0.1), 0 0 0 12px rgba(12, 124, 107, 0.05);
+      color: var(--teal);
+    }
+    .badge:nth-child(3) {
+      border: 3px solid var(--coral);
+      box-shadow: 0 0 0 6px rgba(191, 90, 58, 0.1), 0 0 0 12px rgba(191, 90, 58, 0.05);
+      color: var(--coral);
+    }
+    .badge:nth-child(4) {
+      border: 3px solid var(--amber);
+      box-shadow: 0 0 0 6px rgba(200, 149, 46, 0.1), 0 0 0 12px rgba(200, 149, 46, 0.05);
+      color: var(--amber);
+    }
+    .badge .stat-number {
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .badge .stat-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="badge-row">
+    <div class="badge">
+      <div class="stat-number">142</div>
+      <div class="stat-label">Clients</div>
+    </div>
+    <div class="badge">
+      <div class="stat-number">97%</div>
+      <div class="stat-label">Retention</div>
+    </div>
+    <div class="badge">
+      <div class="stat-number">3.2M</div>
+      <div class="stat-label">Revenue</div>
+    </div>
+    <div class="badge">
+      <div class="stat-number">24</div>
+      <div class="stat-label">Awards</div>
+    </div>
+  </div>
+</body>
+</html>

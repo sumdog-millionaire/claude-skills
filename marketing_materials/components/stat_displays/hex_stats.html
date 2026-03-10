@@ -1,0 +1,98 @@
+<!--
+  Component: Hexagonal Stats
+  Source: v6_hexagonal (best overall feedback)
+  Feedback: "Strong use of different shapes, good subtle background (very good),
+             good quote callouts, good section splitting, good logo use, good icons"
+  When to use: For standout KPIs or metrics. The hexagonal shape draws attention
+               and works well on both light and dark backgrounds. The glow ring
+               adds depth. Best with 3-4 stats.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --teal: #0C7C6B;
+      --coral: #BF5A3A;
+      --amber: #C8952E;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; background: #f5f5f5; padding: 48px 24px; }
+
+    .hex-stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .hex-stat {
+      width: 140px;
+      height: 155px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-align: center;
+      position: relative;
+    }
+    .hex-stat::before {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      background: inherit;
+      opacity: 0.12;
+      z-index: -1;
+    }
+    .hex-stat:nth-child(1) { background: var(--brand-green); }
+    .hex-stat:nth-child(1)::before { background: var(--brand-green); }
+    .hex-stat:nth-child(2) { background: var(--teal); }
+    .hex-stat:nth-child(2)::before { background: var(--teal); }
+    .hex-stat:nth-child(3) { background: var(--coral); }
+    .hex-stat:nth-child(3)::before { background: var(--coral); }
+    .hex-stat:nth-child(4) { background: var(--amber); }
+    .hex-stat:nth-child(4)::before { background: var(--amber); }
+
+    .hex-stat .stat-number {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .hex-stat .stat-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="hex-stats-row">
+    <div class="hex-stat">
+      <div class="stat-number">98%</div>
+      <div class="stat-label">Uptime</div>
+    </div>
+    <div class="hex-stat">
+      <div class="stat-number">2.4k</div>
+      <div class="stat-label">Users</div>
+    </div>
+    <div class="hex-stat">
+      <div class="stat-number">15</div>
+      <div class="stat-label">Markets</div>
+    </div>
+    <div class="hex-stat">
+      <div class="stat-number">4.8</div>
+      <div class="stat-label">Rating</div>
+    </div>
+  </div>
+</body>
+</html>

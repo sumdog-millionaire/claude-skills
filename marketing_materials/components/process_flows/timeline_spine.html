@@ -1,0 +1,199 @@
+<!--
+  Component: Timeline Spine
+  Source: v10_timeline_journey (user liked: "nice idea on timeline, good callouts, sections are clear")
+  Feedback: "Nice idea on timeline, good callouts, sections are clear."
+  When to use: Chronological journeys or phased rollouts. Best for showing progression
+  over time with details at each stage (e.g. implementation roadmap, customer journey).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Timeline Spine</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background: #f8f8f8;
+      display: flex;
+      justify-content: center;
+      margin: 0;
+      padding: 48px 24px;
+    }
+
+    .timeline {
+      position: relative;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    /* Central gradient spine */
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      transform: translateX(-50%);
+      background: linear-gradient(
+        to bottom,
+        var(--brand-green),
+        var(--teal),
+        var(--navy),
+        var(--coral)
+      );
+      border-radius: 2px;
+    }
+
+    .timeline-item {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 48px;
+    }
+
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Node dot on the spine */
+    .timeline-node {
+      position: absolute;
+      left: 50%;
+      top: 8px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      border: 3px solid #fff;
+      z-index: 2;
+    }
+
+    .timeline-item:nth-child(1) .timeline-node { background: var(--brand-green); }
+    .timeline-item:nth-child(2) .timeline-node { background: var(--teal); }
+    .timeline-item:nth-child(3) .timeline-node { background: var(--navy); }
+    .timeline-item:nth-child(4) .timeline-node { background: var(--coral); }
+
+    /* Content cards alternate left/right */
+    .timeline-card {
+      width: calc(50% - 32px);
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      position: relative;
+    }
+
+    /* Left-aligned cards */
+    .timeline-item:nth-child(odd) .timeline-card {
+      margin-right: auto;
+    }
+
+    /* Right-aligned cards */
+    .timeline-item:nth-child(even) .timeline-card {
+      margin-left: auto;
+    }
+
+    /* Dashed connector from card to node */
+    .timeline-item:nth-child(odd) .timeline-card::after {
+      content: '';
+      position: absolute;
+      right: -16px;
+      top: 14px;
+      width: 16px;
+      height: 0;
+      border-top: 2px dashed rgba(10,77,28,0.25);
+    }
+
+    .timeline-item:nth-child(even) .timeline-card::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 14px;
+      width: 16px;
+      height: 0;
+      border-top: 2px dashed rgba(10,77,28,0.25);
+    }
+
+    .card-phase {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .timeline-item:nth-child(1) .card-phase { color: var(--brand-green); }
+    .timeline-item:nth-child(2) .card-phase { color: var(--teal); }
+    .timeline-item:nth-child(3) .card-phase { color: var(--navy); }
+    .timeline-item:nth-child(4) .card-phase { color: var(--coral); }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 4px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-node"></div>
+      <div class="timeline-card">
+        <div class="card-phase">Week 1-2</div>
+        <div class="card-title">Discovery</div>
+        <div class="card-desc">Audit existing workflows and identify automation opportunities.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-node"></div>
+      <div class="timeline-card">
+        <div class="card-phase">Week 3-4</div>
+        <div class="card-title">Integration</div>
+        <div class="card-desc">Connect data sources and configure the platform to your environment.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-node"></div>
+      <div class="timeline-card">
+        <div class="card-phase">Week 5-6</div>
+        <div class="card-title">Pilot Launch</div>
+        <div class="card-desc">Deploy with a focused team and measure initial performance gains.</div>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-node"></div>
+      <div class="timeline-card">
+        <div class="card-phase">Week 7+</div>
+        <div class="card-title">Scale &amp; Optimise</div>
+        <div class="card-desc">Roll out organisation-wide with continuous improvement cycles.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

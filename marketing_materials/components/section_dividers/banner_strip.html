@@ -1,0 +1,57 @@
+<!--
+  Component: Banner Strip
+  Source: v5_bold_diagonal
+  Feedback: "Good use of different patterns in the background, good splitting of sections"
+  When to use: As a bold, attention-grabbing section divider with text. Works well
+               for key messages, section titles, or calls to action between content blocks.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --coral: #BF5A3A;
+      --amber: #C8952E;
+      --amber-light: #FAF3E6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Public Sans', sans-serif; }
+
+    .section {
+      padding: 48px 32px;
+      text-align: center;
+      color: #333;
+      background: #fff;
+    }
+    .banner-strip {
+      background: var(--coral);
+      color: #fff;
+      padding: 28px 32px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      clip-path: polygon(0 15%, 100% 0, 100% 85%, 0 100%);
+    }
+  </style>
+</head>
+<body>
+  <div class="section">
+    <h2>Content Above</h2>
+    <p>Introductory content here.</p>
+  </div>
+
+  <div class="banner-strip">
+    Key Message or Section Title
+  </div>
+
+  <div class="section" style="background: var(--amber-light);">
+    <h2>Content Below</h2>
+    <p>Following content here.</p>
+  </div>
+</body>
+</html>

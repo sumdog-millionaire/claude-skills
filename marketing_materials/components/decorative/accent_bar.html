@@ -1,0 +1,106 @@
+<!--
+  Component: Accent Bar
+  Source: v10_executive_premium
+  Feedback: "slick"
+  When to use: Subtle continuous branding strip running down the left edge of
+  the page. 4px wide vertical gradient transitioning through brand colours
+  (green, teal, amber). Works on any page layout.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Accent Bar</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #FAFAFA;
+    }
+
+    /* --- Accent Bar Component --- */
+    .page-with-accent {
+      position: relative;
+      min-height: 100vh;
+      padding: 40px 40px 40px 56px;
+    }
+
+    .page-with-accent::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      width: 4px;
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(
+        to bottom,
+        var(--brand-green) 0%,
+        var(--teal) 40%,
+        var(--amber) 75%,
+        var(--coral) 100%
+      );
+    }
+
+    /* --- Demo content --- */
+    .demo-block {
+      background: white;
+      border: 1px solid #E8EBF0;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+      max-width: 600px;
+    }
+
+    .demo-block__title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--brand-dark);
+      margin: 0 0 8px;
+    }
+
+    .demo-block__text {
+      font-size: 0.85rem;
+      color: var(--navy);
+      line-height: 1.55;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-with-accent">
+    <div class="demo-block">
+      <p class="demo-block__title">Section One</p>
+      <p class="demo-block__text">The accent bar runs the full height of the page, providing a subtle but continuous branding element that ties everything together visually.</p>
+    </div>
+
+    <div class="demo-block">
+      <p class="demo-block__title">Section Two</p>
+      <p class="demo-block__text">As the reader scrolls, the gradient transitions from green through teal to amber, reflecting the brand palette without demanding attention.</p>
+    </div>
+
+    <div class="demo-block">
+      <p class="demo-block__title">Section Three</p>
+      <p class="demo-block__text">This component works on any page layout and can be applied to the overall page container or individual sections.</p>
+    </div>
+  </div>
+
+</body>
+</html>

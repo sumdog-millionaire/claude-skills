@@ -1,0 +1,101 @@
+<!--
+  Component: Pull Quote
+  Source: v4_magazine_editorial
+  Feedback: "good interesting design"
+  When to use: Within text-heavy sections to emphasise a key statement.
+  Thick left border accent with italic text and subtle gradient background.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Pull Quote</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Pull Quote Component --- */
+    .pull-quote {
+      border-left: 4px solid var(--teal);
+      background: linear-gradient(135deg, var(--teal-light) 0%, rgba(230, 243, 241, 0.3) 100%);
+      border-radius: 0 8px 8px 0;
+      padding: 24px 28px;
+      margin: 24px 0;
+      max-width: 560px;
+    }
+
+    .pull-quote__text {
+      font-style: italic;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--brand-dark);
+      margin: 0 0 10px 0;
+    }
+
+    .pull-quote__attribution {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Variant: coral accent */
+    .pull-quote--coral {
+      border-left-color: var(--coral);
+      background: linear-gradient(135deg, var(--coral-light) 0%, rgba(250, 234, 230, 0.3) 100%);
+    }
+
+    .pull-quote--coral .pull-quote__attribution {
+      color: var(--coral);
+    }
+
+    /* --- Demo context --- */
+    .demo-body {
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: var(--navy);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo-body">
+    <p>Regulatory frameworks are evolving faster than most organisations can adapt. The gap between compliance expectations and operational capability continues to widen.</p>
+
+    <div class="pull-quote">
+      <p class="pull-quote__text">"Organisations that treat compliance as a strategic advantage — rather than a cost centre — consistently outperform their peers."</p>
+      <span class="pull-quote__attribution">Industry Report, 2025</span>
+    </div>
+
+    <p>This shift demands a fundamentally different approach to risk management, one that embeds oversight into daily operations rather than bolting it on as an afterthought.</p>
+
+    <div class="pull-quote pull-quote--coral">
+      <p class="pull-quote__text">"The question is no longer whether to modernise, but how quickly you can move."</p>
+      <span class="pull-quote__attribution">Chief Risk Officer, FTSE 250</span>
+    </div>
+  </div>
+
+</body>
+</html>

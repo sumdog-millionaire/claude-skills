@@ -1,0 +1,100 @@
+<!--
+  Component: Full Width CTA Bar
+  Source: Universal across all designs
+  Feedback: Consistent element that works well as a prominent destination CTA
+  When to use: End of a one-pager or major section. Full-width Brand Green bar
+  with white text, amber accent on key phrase, and white action button.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Full Width CTA Bar</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Full Width CTA Bar --- */
+    .cta-bar {
+      background: var(--brand-green);
+      border-radius: 8px;
+      padding: 36px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .cta-bar__text {
+      color: white;
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .cta-bar__accent {
+      color: var(--amber);
+      font-weight: 700;
+    }
+
+    .cta-bar__sub {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 400;
+      opacity: 0.8;
+      margin-top: 6px;
+    }
+
+    .cta-bar__button {
+      background: white;
+      color: var(--brand-green);
+      border: none;
+      border-radius: 6px;
+      padding: 12px 28px;
+      font-family: 'Public Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: box-shadow 0.2s;
+    }
+
+    .cta-bar__button:hover {
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cta-bar">
+    <p class="cta-bar__text">
+      Ready to <span class="cta-bar__accent">transform your compliance</span> programme?
+      <span class="cta-bar__sub">hello@sumplexity.com &bull; Schedule a 30-minute discovery call</span>
+    </p>
+    <button class="cta-bar__button">Get Started</button>
+  </div>
+
+</body>
+</html>

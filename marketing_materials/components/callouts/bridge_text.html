@@ -1,0 +1,107 @@
+<!--
+  Component: Bridge Text
+  Source: v2_circular_hub, v8_venn
+  Feedback: "nice whitespace, colouring is very nice"
+  When to use: Between sections to create narrative flow. Centred italic text
+  with decorative gradient lines on both sides bridges content thematically.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Bridge Text</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Bridge Text Component --- */
+    .bridge-text {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 48px 0;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .bridge-text__line {
+      flex: 1;
+      height: 2px;
+      border-radius: 1px;
+    }
+
+    .bridge-text__line--left {
+      background: linear-gradient(to right, transparent, var(--teal));
+    }
+
+    .bridge-text__line--right {
+      background: linear-gradient(to left, transparent, var(--teal));
+    }
+
+    .bridge-text__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      flex-shrink: 0;
+    }
+
+    .bridge-text__content {
+      font-style: italic;
+      font-weight: 500;
+      font-size: 1.05rem;
+      color: var(--brand-green);
+      text-align: center;
+      flex-shrink: 0;
+      max-width: 360px;
+      line-height: 1.5;
+    }
+
+    /* --- Demo context --- */
+    .demo-section {
+      background: var(--teal-light);
+      border-radius: 8px;
+      padding: 32px;
+      text-align: center;
+      color: var(--brand-dark);
+      font-size: 0.95rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo-section">Section A content ends here</div>
+
+  <div class="bridge-text">
+    <div class="bridge-text__line bridge-text__line--left"></div>
+    <div class="bridge-text__dot"></div>
+    <p class="bridge-text__content">But what does this mean for your organisation?</p>
+    <div class="bridge-text__dot"></div>
+    <div class="bridge-text__line bridge-text__line--right"></div>
+  </div>
+
+  <div class="demo-section">Section B content starts here</div>
+
+</body>
+</html>

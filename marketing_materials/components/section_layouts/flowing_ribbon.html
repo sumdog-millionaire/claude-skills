@@ -1,0 +1,184 @@
+<!--
+  Component: Flowing Ribbon
+  Source: v6_flowing_ribbon
+  Feedback: "really interesting layout, really like the road suggesting a journey"
+  When to use: Journey/process narratives. Structured content cards on the left
+  with coloured left-edge bars, and a multi-layer SVG S-curve ribbon flowing
+  down the right side with stat nodes branching off at intervals.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Flowing Ribbon</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Flowing Ribbon Layout --- */
+    .ribbon-layout {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 32px;
+      max-width: 840px;
+      margin: 0 auto;
+      min-height: 520px;
+    }
+
+    /* Left: stacked content cards */
+    .ribbon-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .ribbon-card {
+      background: white;
+      border-radius: 8px;
+      padding: 22px 22px 22px 26px;
+      border: 1px solid #E8EBF0;
+      border-left: 4px solid;
+    }
+
+    .ribbon-card--teal { border-left-color: var(--teal); }
+    .ribbon-card--amber { border-left-color: var(--amber); }
+    .ribbon-card--coral { border-left-color: var(--coral); }
+
+    .ribbon-card__title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--brand-dark);
+      margin: 0 0 6px;
+    }
+
+    .ribbon-card__text {
+      font-size: 0.84rem;
+      color: var(--navy);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    /* Right: SVG ribbon with stat nodes */
+    .ribbon-zone {
+      position: relative;
+    }
+
+    .ribbon-zone svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Stat nodes positioned along the ribbon */
+    .stat-node {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 0.95rem;
+      z-index: 2;
+    }
+
+    .stat-node--teal {
+      background: linear-gradient(135deg, var(--teal), #0a9a84);
+      box-shadow: 0 0 20px rgba(12, 124, 107, 0.4);
+    }
+
+    .stat-node--amber {
+      background: linear-gradient(135deg, var(--amber), #daa520);
+      box-shadow: 0 0 20px rgba(200, 149, 46, 0.4);
+    }
+
+    .stat-node--coral {
+      background: linear-gradient(135deg, var(--coral), #d4694d);
+      box-shadow: 0 0 20px rgba(191, 90, 58, 0.4);
+    }
+
+    .stat-node__label {
+      font-size: 0.55rem;
+      font-weight: 400;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ribbon-layout">
+    <!-- Left: content cards -->
+    <div class="ribbon-cards">
+      <div class="ribbon-card ribbon-card--teal">
+        <p class="ribbon-card__title">Discovery &amp; Assessment</p>
+        <p class="ribbon-card__text">We begin with a thorough review of your current compliance landscape, mapping every process against regulatory requirements to identify gaps.</p>
+      </div>
+
+      <div class="ribbon-card ribbon-card--amber">
+        <p class="ribbon-card__title">Framework Design</p>
+        <p class="ribbon-card__text">A tailored compliance framework is built around your organisation's specific risk profile, integrating seamlessly with existing systems.</p>
+      </div>
+
+      <div class="ribbon-card ribbon-card--coral">
+        <p class="ribbon-card__title">Embedded Delivery</p>
+        <p class="ribbon-card__text">Our team works alongside yours to deploy, train, and optimise — ensuring the framework becomes part of how your organisation operates.</p>
+      </div>
+    </div>
+
+    <!-- Right: SVG ribbon with stat nodes -->
+    <div class="ribbon-zone">
+      <svg viewBox="0 0 260 520" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Multi-layer S-curve ribbon -->
+        <path d="M200,20 C200,100 60,120 60,200 C60,280 200,300 200,380 C200,460 60,480 60,500"
+              stroke="rgba(12,124,107,0.12)" stroke-width="40" fill="none" stroke-linecap="round"/>
+        <path d="M200,20 C200,100 60,120 60,200 C60,280 200,300 200,380 C200,460 60,480 60,500"
+              stroke="rgba(12,124,107,0.2)" stroke-width="18" fill="none" stroke-linecap="round"/>
+        <path d="M200,20 C200,100 60,120 60,200 C60,280 200,300 200,380 C200,460 60,480 60,500"
+              stroke="var(--teal)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+
+      <!-- Stat nodes along the ribbon -->
+      <div class="stat-node stat-node--teal" style="top: 50px; right: 16px;">
+        94%
+        <span class="stat-node__label">coverage</span>
+      </div>
+
+      <div class="stat-node stat-node--amber" style="top: 210px; left: 16px;">
+        3.2x
+        <span class="stat-node__label">faster</span>
+      </div>
+
+      <div class="stat-node stat-node--coral" style="top: 380px; right: 16px;">
+        &pound;1.8M
+        <span class="stat-node__label">saved</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

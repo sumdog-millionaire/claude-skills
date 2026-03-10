@@ -1,0 +1,133 @@
+<!--
+  Component: Connector Pills
+  Source: v6_hexagonal (best overall), original CLC
+  Feedback: "good use of shapes, good whitespace, great use of titles onto the next"
+  When to use: Between content blocks to maintain narrative flow. Rounded pill
+  with italic bridge text, decorative mini shapes at low opacity, and coloured
+  lines extending above and below via pseudo-elements.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <title>Connector Pills</title>
+  <style>
+    :root {
+      --brand-green: #0A4D1C;
+      --brand-dark: #073914;
+      --coral: #BF5A3A;
+      --teal: #0C7C6B;
+      --amber: #C8952E;
+      --navy: #1A2B4D;
+      --coral-light: #FAEAE6;
+      --teal-light: #E6F3F1;
+      --amber-light: #FAF3E6;
+      --navy-light: #E8EBF0;
+    }
+
+    body {
+      font-family: 'Public Sans', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #FAFAFA;
+    }
+
+    /* --- Connector Pill Component --- */
+    .connector-pill {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 0;
+      position: relative;
+    }
+
+    /* Vertical lines above and below */
+    .connector-pill::before,
+    .connector-pill::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 2px;
+      height: 28px;
+      transform: translateX(-50%);
+    }
+
+    .connector-pill::before {
+      top: 0;
+      background: linear-gradient(to bottom, transparent, var(--teal));
+    }
+
+    .connector-pill::after {
+      bottom: 0;
+      background: linear-gradient(to top, transparent, var(--teal));
+    }
+
+    .connector-pill__body {
+      position: relative;
+      background: var(--teal-light);
+      border: 1px solid rgba(12, 124, 107, 0.2);
+      border-radius: 999px;
+      padding: 10px 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .connector-pill__text {
+      font-style: italic;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--brand-green);
+      white-space: nowrap;
+    }
+
+    /* Decorative mini shapes at low opacity */
+    .connector-pill__shape {
+      width: 10px;
+      height: 10px;
+      opacity: 0.25;
+      flex-shrink: 0;
+    }
+
+    .connector-pill__shape--hexagon {
+      background: var(--teal);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .connector-pill__shape--circle {
+      background: var(--amber);
+      border-radius: 50%;
+    }
+
+    /* --- Demo context --- */
+    .demo-section {
+      background: white;
+      border-radius: 8px;
+      padding: 32px;
+      text-align: center;
+      color: var(--brand-dark);
+      font-size: 0.95rem;
+      max-width: 700px;
+      margin: 0 auto;
+      border: 1px solid #E8EBF0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo-section">The Challenge — content block ends</div>
+
+  <div class="connector-pill">
+    <div class="connector-pill__body">
+      <div class="connector-pill__shape connector-pill__shape--hexagon"></div>
+      <span class="connector-pill__text">Here's how we solve it</span>
+      <div class="connector-pill__shape connector-pill__shape--circle"></div>
+    </div>
+  </div>
+
+  <div class="demo-section">The Solution — content block starts</div>
+
+</body>
+</html>
