@@ -17,6 +17,7 @@ every session, in every project.
 | `image_gen/` | prompt patterns and model choice for image generation |
 | `skill-creator/` | Anthropic's skill for writing and testing skills (its own licence is in the folder) |
 | `ui-dev/` | a plugin, not a single skill: fifteen skills and a hook for designing and building interfaces. It has its own README. |
+| `mattpocock-skills/` | a plugin: Matt Pocock's engineering skills (grilling, implement, to-tickets, triage, tdd and the rest) with Benedict's changes |
 
 A folder with a `SKILL.md` at its top is one skill. A folder with `.claude-plugin/plugin.json` is a
 plugin, which Claude Code loads from here in the same way and lists as `<name>@skills-dir`.
@@ -35,17 +36,6 @@ Three folders need one more step each:
 - `ui-dev/`: `npm ci --omit=dev`, and a Stitch API key in `ui-dev/.env` (see its README).
 - `video-digest/` and `source-to-skill/`: a Python environment from each folder's `requirements.txt`.
 
-### The Matt Pocock fork
-
-The engineering skills (grilling, implement, to-tickets, triage, tdd and the rest) live in a separate
-repository, [`sumdog-millionaire/skills`](https://github.com/sumdog-millionaire/skills). It is a fork
-of [`mattpocock/skills`](https://github.com/mattpocock/skills), and a fork has to stay its own
-repository to keep taking his updates. Install it as a plugin, inside Claude Code:
-
-```
-/plugin marketplace add sumdog-millionaire/skills
-/plugin install mattpocock-skills@mattpocock
-```
 
 ## Change a skill
 
@@ -63,19 +53,19 @@ On another machine, `git pull` in `~/.claude/skills/` brings the change in.
 On a machine that cannot push to this repository (a work account, for example), fork it on GitHub,
 clone the fork to `~/.claude/skills/`, push there, and open a pull request back to this repository.
 
-### Change the Matt Pocock fork
+### Take Matt Pocock's updates
 
-Claude Code keeps a git clone of the fork at `~/.claude/plugins/marketplaces/mattpocock/`. Edit the
-skill there, commit and push, then run `/plugin update mattpocock-skills@mattpocock` so the installed
-copy picks the edit up. To take Matt's updates:
+`mattpocock-skills/` is Benedict's version of [`mattpocock/skills`](https://github.com/mattpocock/skills),
+kept here as a git subtree: an ordinary folder that git can still merge his repository into. Edit it
+like any other folder. To take his updates, from `~/.claude/skills/` with nothing uncommitted:
 
 ```powershell
-cd "$HOME/.claude/plugins/marketplaces/mattpocock"
-git remote add upstream https://github.com/mattpocock/skills.git   # once per machine
-git fetch upstream
-git merge upstream/main
+git subtree pull --prefix=mattpocock-skills https://github.com/mattpocock/skills.git main --squash
 git push
 ```
+
+Git merges his changes into the folder and keeps the edits made here. Where both changed the same
+lines it stops with a conflict to resolve, as any merge does.
 
 ## What is not here
 
