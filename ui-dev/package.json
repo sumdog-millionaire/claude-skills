@@ -1,0 +1,56 @@
+{
+  "name": "ui-dev",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Design and build interfaces from brief to verified build: one design skill that picks the visitor's mode, Emil Kowalski's motion skills, Google Stitch over MCP, and the Impeccable detector after every edit.",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "design",
+    "skills"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "pi": {
+    "skills": [
+      "./skills/ui-dev",
+      "./skills/upstream-review",
+      "./skills/animate",
+      "./skills/animate-expo",
+      "./skills/review-animations",
+      "./skills/improve-animations",
+      "./skills/pick-ui-library",
+      "./skills/prototype",
+      "./skills/apple-design",
+      "./skills/write-swift",
+      "./skills/extract-design-md",
+      "./skills/extract-static-html",
+      "./skills/react-components",
+      "./skills/upload-to-stitch",
+      "./skills/ux-playbook"
+    ],
+    "extensions": [
+      "./extensions/impeccable.ts"
+    ]
+  },
+  "scripts": {
+    "impeccable": "node scripts/impeccable.ts"
+  },
+  "dependencies": {
+    "impeccable": "4.1.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.85.1",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

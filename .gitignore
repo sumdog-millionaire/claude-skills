@@ -10,6 +10,15 @@ desktop.ini
 .vscode/
 .idea/
 
+# Secrets and installed dependencies
+.env
+.venv/
+node_modules/
+__pycache__/
+
+# Skills that Claude syncs from the account, not ours
+synced/
+
 # Temp files
 *.tmp
 *.bak

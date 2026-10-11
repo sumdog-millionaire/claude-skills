@@ -1,0 +1,39 @@
+{
+  "upstreams": [
+    {
+      "name": "taste-skill",
+      "repository": "https://github.com/Leonxlnx/taste-skill.git",
+      "sourcePath": "skills/taste-skill",
+      "alsoWatch": ["skills/soft-skill", "skills/minimalist-skill", "skills/brutalist-skill", "skills/redesign-skill"],
+      "ours": "skills/ui-dev",
+      "reviewedCommit": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
+      "reviewNotes": "ui-dev is a customised fork of the v2 skill: scope widened to every surface, brand rules beat aesthetic defaults, marketing caps demoted to prompts, quotes and facts preserved, pre-flight reported honestly. The three style skills feed references/styles.md and the redesign skill feeds references/redesign.md."
+    },
+    {
+      "name": "emilkowalski-skills",
+      "repository": "https://github.com/emilkowalski/skills.git",
+      "sourcePath": "skills",
+      "vendored": ["animate", "animate-expo", "review-animations", "improve-animations", "pick-ui-library", "prototype", "apple-design", "write-swift"],
+      "ours": "skills",
+      "reviewedCommit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+      "reviewNotes": "Vendored as copies with four local changes: descriptions edited so no two trigger on the same phrase; em dashes replaced; pick-ui-library made model-invocable so animate's hand-off to it works; the opportunities skill's four-question gate lifted into improve-animations/AUDIT.md. Not vendored: emil-design-eng, find-animation-opportunities, animation-vocabulary, ask-sonner."
+    },
+    {
+      "name": "impeccable",
+      "repository": "https://github.com/pbakaus/impeccable.git",
+      "sourcePath": "skill",
+      "ours": "skills/ui-dev/references",
+      "reviewedCommit": "cb56ed6c19a07329a9fa0cd4e657bee040156593",
+      "reviewNotes": "Text lifted, not files: the four modes and the craft floor into the body, the operate reference and the copy, empty-state, cognitive-load and triage passages into references/operate.md, the typography lines into references/read.md, the product and design file conventions into references/design-file.md. The detector binary is a pinned npm dependency (package.json), updated by npm, not by this review."
+    },
+    {
+      "name": "stitch-skills",
+      "repository": "https://github.com/google-labs-code/stitch-skills.git",
+      "sourcePath": "plugins",
+      "vendored": ["stitch-design/skills/extract-static-html", "stitch-design/skills/upload-to-stitch", "stitch-design/skills/extract-design-md", "stitch-build/skills/react-components"],
+      "ours": "skills (the four companions) and skills/ui-dev/references/stitch.md",
+      "reviewedCommit": "0337446dadde6f8c94210444e2aa9d546126480f",
+      "reviewNotes": "Four skills vendored as companions in skills/, with four local changes: names without the stitch:: prefix so ui-dev routes to them by folder name; em dashes replaced in their markdown; upload-to-stitch loads STITCH_API_KEY from the plugin's .env into the shell and never reads it into the conversation; and extract-design-md writes docs/DESIGN.md with the open DESIGN.md format's own headings, each with a plain line under it, in place of its six numbered headings, which disagreed with ui-dev and with its own example file, and it carries no trade word a person with no design training could not read (its pointers to the uninstalled design-md and manage-design-system skills are gone). Their own confirmation checkpoints and .stitch/ paths are overridden by ui-dev's SKILL.md. Not vendored: generate-design, manage-design-system, design-md, enhance-prompt (hex in every prompt), stitch-loop and site-md (no human gates), code-to-design, taste-design, react-native, react-vite-dashboard, remotion, shadcn-ui. Text lifted into references/stitch.md: the generation rule (a design system present means no colour, font or theme in a generation prompt), the edit-prompt shape, the variant options, the id-shape table, the signed-URL and width-suffix rules, and the placeholder-link trap."
+    }
+  ]
+}
