@@ -1,0 +1,5 @@
+interface:
+  display_name: "Implement"
+  short_description: "Carry a tracker issue to done"
+policy:
+  allow_implicit_invocation: false
