@@ -11,11 +11,7 @@ every session, in every project.
 | `anti-ai-slop-writing/` | the writing standard for anything a person reads as a finished piece |
 | `prepare-rewind/`, `carry-on-rewind/` | write a handover before the conversation is rewound, then resume from it |
 | `video-digest/` | turn a recorded meeting or video into a timestamped evidence map of what was said and shown |
-| `source-to-skill/` | learn from a video, then build a skill, change the project, or keep the notes |
-| `launch-checklist/` | check a website against twenty pre-launch essentials and build the ones approved |
 | `marketing_materials/` | the design system for branded decks, one-pagers and documents |
-| `image_gen/` | prompt patterns and model choice for image generation |
-| `skill-creator/` | Anthropic's skill for writing and testing skills (its own licence is in the folder) |
 | `ui-dev/` | a plugin, not a single skill: fifteen skills and a hook for designing and building interfaces. It has its own README. |
 | `mattpocock-skills/` | a plugin: Matt Pocock's engineering skills (grilling, implement, to-tickets, triage, tdd and the rest) with Benedict's changes |
 
@@ -31,10 +27,10 @@ git clone https://github.com/sumdog-millionaire/claude-skills.git "$HOME/.claude
 If `~/.claude/skills` already exists, move its contents out first, clone, then move back anything
 this repository does not hold. Restart Claude Code afterwards.
 
-Three folders need one more step each:
+Two folders need one more step each:
 
 - `ui-dev/`: `npm ci --omit=dev`, and a Stitch API key in `ui-dev/.env` (see its README).
-- `video-digest/` and `source-to-skill/`: a Python environment from each folder's `requirements.txt`.
+- `video-digest/`: a Python environment from its `requirements.txt`.
 
 
 ## Change a skill

@@ -22,3 +22,9 @@ synced/
 # Temp files
 *.tmp
 *.bak
+
+# Installed on this machine only, not part of the repository
+image_gen/
+launch-checklist/
+skill-creator/
+source-to-skill/

@@ -1,6 +1,0 @@
-# Pinned deliberately: av 18.x ships DLLs that Windows Application Control
-# policies block on some machines ("DLL load failed ... blocked by an Application
-# Control policy"). 17.0.1 loads everywhere. Do not unpin without re-testing the
-# import on the machine in question — see references/install.md.
-av==17.0.1
-faster-whisper==1.2.1
