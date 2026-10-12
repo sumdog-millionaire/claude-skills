@@ -1,11 +1,23 @@
 ---
 name: domain-modeling
-description: Build and sharpen a project's domain model. Use when discussing codebase terminology, writing or editing a GLOSSARY.md, recording or editing an ADR, or deciding whether a design rule is an ADR or a DDR (design decision record) for the project's design decision register.
+description: "Load this first in any project, before you read its code, research it, plan, build or review. It reads the glossary and the decision records. Use it also when a term or a decision is named, disputed or recorded."
 ---
 
 # Domain Modeling
 
-Actively build and sharpen the project's domain model as you design. This is the *active* discipline: challenging terms, inventing edge-case scenarios, and writing the glossary and decisions down the moment they crystallise. (Merely *reading* `GLOSSARY.md` for vocabulary is not this skill: that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
+The domain model is the project's **glossary** (`GLOSSARY.md`), which holds its words, and its decision records (ADRs and DDRs), which hold what was decided and why. Work in a project starts by reading them. Then, as you design, build and sharpen the model actively: challenge terms, invent edge-case scenarios, and write the glossary and decisions down the moment they crystallise.
+
+## Read first
+
+Before you read code, search, plan, or answer a question about the project:
+
+1. Find where the glossary, the ADR folder and the design decision register live. `docs/agents/domain.md` or the project's `CLAUDE.md` says; the defaults are in "File structure" below.
+2. Read the glossary whole. Each entry names one thing, and its `_Avoid_` line lists the words that mean something else here.
+3. Skim the ADR titles, or their index when the folder has one, and open each ADR and DDR that touches the area you are about to work in.
+
+You are done reading when you can name everything your work touches in the glossary's word, and you have read each decision that touches your area. A project with no glossary and no records has nothing to read: proceed, and create them lazily as below.
+
+From then on, the glossary's word is the only word for its thing, in code, tests, tickets and replies. Where your work contradicts a recorded decision, say so before you go further.
 
 ## File structure
 
