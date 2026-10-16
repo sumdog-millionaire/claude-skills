@@ -19,6 +19,17 @@ You are done reading when you can name everything your work touches in the gloss
 
 From then on, the glossary's word is the only word for its thing, in code, tests, tickets and replies. Where your work contradicts a recorded decision, say so before you go further.
 
+## Keep the records on main
+
+A project with `docs/agents/records.json` keeps the records it lists (glossary, ADRs, the register, the values file) on `main`, so that people on different branches never number or edit them apart. Hooks in the project's `.claude/settings.json` run [scripts/sync_records.py](./scripts/sync_records.py) and do it all silently: at session start and before each edit to a record they bring the records to `main`'s latest, and after the edit they push it to `main` through a sync checkout, `<project>-records`, beside the project. Edit records in the project as usual. Commit the refreshed copies with the branch's work; they merge back without conflict.
+
+When a hook fails, its message names the failure. Recover as follows, then make the edit again:
+
+- **The project's check failed:** nothing was pushed and your edit is still in the working copy. Fix the record so the check passes; the next edit to it pushes.
+- **A conflict or an unfinished rebase:** another person changed the same lines moments before. In the sync checkout, resolve the conflicted files keeping both sides, renumber your own record to the next free number (and every reference to it, in the working copy too), `git add` them, then `git rebase --continue` and `git push origin HEAD:main` there.
+- **A git or network failure** (fetch, push, credentials): say so to the user and stop; records are not edited until the sync works.
+- **Anything else:** show the user the message and ask. Never discard a record edit, and never edit records in the sync checkout by hand except to resolve a conflict.
+
 ## File structure
 
 Most repos have a single context:
