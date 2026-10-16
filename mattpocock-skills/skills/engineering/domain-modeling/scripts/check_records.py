@@ -100,9 +100,6 @@ def check_register(rows: list[dict[str, str]], project_taxonomy: dict, adr_numbe
         if row["status"] not in rule["status"]:
             errors.append(f"{this}: status is {row['status']!r}, not valid for a {kind}")
         for column in rule["required"]:
-            # Transitional until every row is tagged: delete this line then
-            if column in TAGS and not new:
-                continue
             if not row[column]:
                 errors.append(f"{this}: {column} is empty on a {kind}")
         for column, allowed in VOCABULARY.items():
@@ -163,8 +160,7 @@ def check_adrs(folder: Path, project_taxonomy: dict) -> list[str]:
             errors.append(f"{where}: date is {meta.get('date')!r}, not an ISO date")
         for column in TAGS:
             value = meta.get(column, "")
-            # Transitional until every ADR is tagged: delete this condition then
-            if not value and meta.get("date", "") >= NEW_ROWS_FROM:
+            if not value:
                 errors.append(f"{where}: {column} is missing")
             if value and value not in VOCABULARY[column]:
                 errors.append(f"{where}: {column} is {value!r}, not an allowed value")
