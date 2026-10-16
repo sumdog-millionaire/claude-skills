@@ -25,7 +25,16 @@ List every choice the build needs that the ticket, ADRs, DDRs, glossary and code
 
 Record each answer before the edit that implements it. Most become DDRs; one that passes the ADR test becomes an ADR with a pointer row in the register.
 
-## 3. Build
+## 3. Set the rewind point
+
+The user may rewind the session (`prepare-rewind`, then `carry-on-rewind`) to save tokens, so split the work at a common point.
+
+- Steps 1 and 2 are the exploration. Finish them, every agent and check included, before any build work.
+- Once the answers are in, name the **rewind point** to the user: the last message before the build starts, quoted by its first words. The user rewinds to it and sends `carry-on-rewind` in its place.
+- Everything above the point must stay true for the whole session. Never set it where the explored facts are expected to change between rewinds, because the rewound context would then contradict the repository.
+- Split the build into mechanical parts (A, B, C), one per rewind, each ending in a commit, so a handover carries only what that part built and decided.
+
+## 4. Build
 
 Call the Skill tool with "tdd" at the seams agreed in step 2.
 
