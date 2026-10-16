@@ -21,11 +21,11 @@ From then on, the glossary's word is the only word for its thing, in code, tests
 
 ## Keep the records on main
 
-A project with `docs/agents/records.json` on `main` keeps the records it lists (glossary, ADRs, the register, the values file) on `main`, so that people on different branches never number or edit them apart. This plugin's hooks run [scripts/sync_records.py](./scripts/sync_records.py) in every project, act only where that file is on `main`, and do it all silently: at session start and before each edit to a record they bring the records to `main`'s latest, and after the edit they push it to `main` through a sync checkout, `<project>-records`, beside the project. Edit records in the project as usual. Commit the refreshed copies with the branch's work; they merge back without conflict.
+A project with `docs/agents/records.json` on `main` keeps the records it lists (glossary, ADRs, the register, the values file) on `main`, so that people on different branches never number or edit them apart. This plugin's hooks run [scripts/sync_records.py](./scripts/sync_records.py) in every project, act only where that file is on `main`, and do it all silently: at session start and before each edit to a record they bring the records to `main`'s latest, and after the edit they run [scripts/check_records.py](./scripts/check_records.py) and push it to `main` through a sync checkout, `<project>-records`, beside the project. `records.json` names `paths` (every record file or folder), `register` and `adrs`. Edit records in the project as usual. Commit the refreshed copies with the branch's work; they merge back without conflict.
 
 When a hook fails, its message names the failure. Recover as follows, then make the edit again:
 
-- **The project's check failed:** nothing was pushed and your edit is still in the working copy. Fix the record so the check passes; the next edit to it pushes.
+- **The records check failed:** nothing was pushed and your edit is still in the working copy. Fix the record so the check passes; the next edit to it pushes.
 - **A conflict or an unfinished rebase:** another person changed the same lines moments before. In the sync checkout, resolve the conflicted files keeping both sides, renumber your own record to the next free number (and every reference to it, in the working copy too), `git add` them, then `git rebase --continue` and `git push origin HEAD:main` there.
 - **A git or network failure** (fetch, push, credentials): say so to the user and stop; records are not edited until the sync works.
 - **Anything else:** show the user the message and ask. Never discard a record edit, and never edit records in the sync checkout by hand except to resolve a conflict.
@@ -105,13 +105,13 @@ an engineer who never heard the conversation would build wrong ("the section hea
 its sibling", "prompt construction never makes calls", "retries use the stdlib") is lost if it lives
 only in a tracker ticket, which closes and buries it. That rule is a **DDR**, a design decision
 record: one row in the project's design decision register, a filterable CSV at
-`docs/ddr/register.csv`, tagged with layer and aspect, weighted by priority and risk, marked built or
+`docs/ddr/register.csv`, tagged with layer, area, sub-area and project part, weighted by priority and risk, marked built or
 not per surface, dated, and carrying an explicit status of `proposed`, `in-research`, `accepted`,
 `rejected`, `deferred` or `superseded`.
 
 When such a rule crystallises, hand it to the `design-decision` skill rather than writing it here. It
-routes the rule to the register, a measured value to the project's values file and a term back to
-`GLOSSARY.md`, and it makes sure every `proposed`, `in-research` or `deferred` row names the tracker
+routes the decision to the register, a term back to `GLOSSARY.md` and an action or experiment to the
+tracker, and it makes sure every `proposed`, `in-research` or `deferred` row names the tracker
 issue that will settle it. The row format and vocabularies are in [DDR-FORMAT.md](./DDR-FORMAT.md).
 A decision that passes the ADR test gets the ADR, and a one-line pointer row in the register; never
 two full write-ups.

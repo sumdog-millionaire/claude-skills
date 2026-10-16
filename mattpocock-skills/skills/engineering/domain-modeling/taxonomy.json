@@ -1,0 +1,88 @@
+{
+  "product": {
+    "definition": "What the product does for its users and the business rules behind it.",
+    "sub_areas": {
+      "scope": {"definition": "What is in or out of the product.", "boundary": "Cruises are not quoted: scope. How a cruise line would be shown: presentation."},
+      "eligibility": {"definition": "Which cases, users or records a rule applies to.", "boundary": "Only hotels get a hotel page: eligibility. What the page shows: presentation."},
+      "calculations": {"definition": "How a number the user sees is derived.", "boundary": "Line items sum to the total: calculations. Where the total sits: layout."},
+      "lifecycle": {"definition": "The states a thing moves through and what moves it.", "boundary": "A sent quote becomes a read-only version: lifecycle. How versions are stored: persistence."},
+      "outcomes": {"definition": "What the product must achieve for its user, as a rule the build follows.", "boundary": "A partner who missed the call can decide from the quote alone: outcomes. The intro wording that serves it: wording."}
+    }
+  },
+  "presentation": {
+    "definition": "What a person sees, reads and does on screen, on paper or in an email.",
+    "sub_areas": {
+      "layout": {"definition": "Where things sit, their order and spacing.", "boundary": "The price summary follows the itinerary: layout. Its type size: typography."},
+      "typography": {"definition": "Typefaces, sizes, weights and text treatment.", "boundary": "Headings use the serif: typography. What the heading says: wording."},
+      "colour": {"definition": "Colour, contrast and themes.", "boundary": "Optional items use the muted tone: colour. That they are visibly distinct: interaction or layout."},
+      "shape-and-depth": {"definition": "Borders, radii, shadows, layering and surfaces.", "boundary": "Cards have no shadow: shape-and-depth. Card order: layout."},
+      "media": {"definition": "Images, video, maps and icons: which appear, how they are cropped and framed.", "boundary": "The hero photo is cropped to the subject: media. Which image is chosen for a hotel: sourcing."},
+      "wording": {"definition": "Copy, labels, tone and spelling the reader sees.", "boundary": "Guests see 'travel specialist': wording. That the LLM writes prose only: boundaries."},
+      "interaction": {"definition": "What happens when the reader clicks, taps, scrolls or types.", "boundary": "A day expands on tap: interaction. How it animates open: motion."},
+      "motion": {"definition": "Animation, transitions and their timing.", "boundary": "The route draws as the page scrolls: motion. That a route map exists: media."}
+    }
+  },
+  "information": {
+    "definition": "The data the product holds: its shape, where it comes from and how long it lives.",
+    "sub_areas": {
+      "schemas": {"definition": "The shape of a record: fields, types and nullability.", "boundary": "Room carries its capacity columns: schemas. Which source table they come from: sourcing."},
+      "sourcing": {"definition": "Where each value comes from and what is never collected.", "boundary": "Facts come from the Publishing Centre payload: sourcing. Reading it through read-only access: permissions."},
+      "transformation": {"definition": "How raw values become what is used: selecting, ordering, deriving.", "boundary": "Age is computed from date of birth: transformation. Date of birth never reaches output: disclosure."},
+      "versioning": {"definition": "How a record or contract changes over time and old versions stay readable.", "boundary": "Each sent quote keeps its version number: versioning. Where it is stored: persistence."},
+      "persistence": {"definition": "Where and how data is stored.", "boundary": "Quotes are written to three document tables: persistence. The rights to write them: permissions."},
+      "retention": {"definition": "How long data is kept and when it is removed.", "boundary": "Every sent version is kept: retention. How it is retrieved: interaction."}
+    }
+  },
+  "execution": {
+    "definition": "How the running system behaves while it works.",
+    "sub_areas": {
+      "coordination": {"definition": "The order steps run in and what triggers them.", "boundary": "Generation starts when a quote is published: coordination. Which system owns the trigger: interfaces."},
+      "concurrency": {"definition": "What happens when things run at the same time.", "boundary": "Two regenerations of one quote do not overlap: concurrency. Retrying a failed one: retries."},
+      "retries": {"definition": "When and how a failed step is tried again.", "boundary": "An LLM call is retried twice: retries. What the quote shows if it still fails: failure-handling."},
+      "timeouts": {"definition": "How long a step may take before it is abandoned.", "boundary": "Generation gives up after a set time: timeouts. What the consultant then sees: failure-handling."},
+      "failure-handling": {"definition": "What the system does when data or a step is missing or wrong.", "boundary": "A missing image falls back to a flagged stock image: failure-handling. Which stock image: media."},
+      "resource-use": {"definition": "Limits on cost, memory, row counts and calls.", "boundary": "Development queries are capped in rows: resource-use. The cap's value: configuration."}
+    }
+  },
+  "structure": {
+    "definition": "How the code is divided and what it is built with.",
+    "sub_areas": {
+      "boundaries": {"definition": "What each module owns and must not do.", "boundary": "Prompt construction never makes calls: boundaries. The prompt's wording: wording."},
+      "interfaces": {"definition": "Contracts between modules or with other systems.", "boundary": "The payload contract with Publishing Centre: interfaces. The fields in it: schemas."},
+      "technology": {"definition": "Languages, libraries, services and platforms chosen.", "boundary": "The map uses Mapbox GL JS: technology. How the map looks: media."},
+      "organisation": {"definition": "File layout, naming and code conventions.", "boundary": "One file per group of models: organisation. What the models hold: schemas."}
+    }
+  },
+  "protection": {
+    "definition": "Keeping data and access safe.",
+    "sub_areas": {
+      "identity": {"definition": "Who a user or service is and how that is proved.", "boundary": "A public link cannot identify its viewer: identity. That the link is unguessable: cryptography."},
+      "permissions": {"definition": "What each identity may read, write or run.", "boundary": "Source booking data is read-only: permissions. Which tables are written: persistence."},
+      "disclosure": {"definition": "What must never reach a given reader.", "boundary": "Margins never leave Scott Dunn: disclosure. That they are not collected: sourcing."},
+      "credentials": {"definition": "How secrets are held, supplied and rotated.", "boundary": "Keys live in Key Vault: credentials. Which environment reads them: environments."},
+      "cryptography": {"definition": "Encryption, hashing and random tokens.", "boundary": "Link tokens are random and long: cryptography. Who may open the link: identity."},
+      "abuse-prevention": {"definition": "Defences against misuse: enumeration, flooding, injection.", "boundary": "No index of quote links is public: abuse-prevention. The link format: cryptography."}
+    }
+  },
+  "operations": {
+    "definition": "Running the product once it is built.",
+    "sub_areas": {
+      "environments": {"definition": "Which environments exist and what each may touch.", "boundary": "Legacy procedures run on test only: environments. The identity that runs them: permissions."},
+      "deployment": {"definition": "How a build reaches an environment.", "boundary": "Everything runs in the client's Azure tenant: deployment. Which Azure services: technology."},
+      "configuration": {"definition": "Settings supplied at run time and their defaults.", "boundary": "The SQL server name has no default: configuration. Failing loudly when it is missing: failure-handling."},
+      "logging": {"definition": "What is written to logs and where.", "boundary": "Every log line lands in a JSONL file in development: logging. Alerts on it: monitoring."},
+      "monitoring": {"definition": "How problems are noticed: alerts, dashboards, health checks.", "boundary": "An alert when generation fails: monitoring. What the quote shows: failure-handling."},
+      "recovery": {"definition": "Backups, restores and getting back to a working state.", "boundary": "Re-measure access after a test restore: recovery. The access itself: permissions."}
+    }
+  },
+  "delivery": {
+    "definition": "How the work itself is done and handed over.",
+    "sub_areas": {
+      "development-process": {"definition": "How the team plans, branches, reviews and records work.", "boundary": "Records live on main only: development-process. The record format: documentation."},
+      "testing": {"definition": "What is tested and how.", "boundary": "Golden quotes are reproduced exactly: testing. Who signs off: acceptance."},
+      "acceptance": {"definition": "Who signs work off and against what.", "boundary": "Consultant UAT tests acceptability, not accuracy: acceptance. The accuracy proof: testing."},
+      "documentation": {"definition": "What is written down, where and in what form.", "boundary": "Technical docs describe the handover version: documentation. The handover period: handover."},
+      "handover": {"definition": "Passing the product to its owner: support, warranty, training.", "boundary": "Four weeks of post-integration support: handover. What the docs say: documentation."}
+    }
+  }
+}

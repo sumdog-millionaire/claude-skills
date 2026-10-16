@@ -60,6 +60,8 @@ The defaults are the five canonical roles, each label string equal to its name: 
 
 Offer **multi-context** (a root `GLOSSARY-MAP.md` pointing to per-context `GLOSSARY.md` files) only when exploration found monorepo signals. Then confirm which layout they want.
 
+Then ask for the **project taxonomy**: the few big parts the project is built from as its people talk about them (a data pull, the main screen, an admin screen, imagery), each with a one-line definition. Propose a list from what exploration found and let the user cut and rename it; do not slice the product by data entity. Write it as `docs/ddr/project_taxonomy.json` beside the register ([DDR-FORMAT.md](../domain-modeling/DDR-FORMAT.md), "The project taxonomy").
+
 ### 3. Confirm and edit
 
 Show the user a draft of:

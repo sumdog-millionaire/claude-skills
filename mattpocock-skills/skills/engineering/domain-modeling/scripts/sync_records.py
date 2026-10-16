@@ -4,7 +4,7 @@ The plugin's hooks/hooks.json runs these in every project:
     SessionStart              sync_records.py session
     PreToolUse  Edit|Write    sync_records.py before
     PostToolUse Edit|Write    sync_records.py after
-A project opts in with docs/agents/records.json on origin/main, listing its record paths and check; other folders are left alone.
+A project opts in with docs/agents/records.json on origin/main, naming its record paths, register and ADR folder; other folders are left alone.
 Each reads the hook's JSON on stdin. A failure tells the agent what happened and where the recovery steps are.
 """
 
@@ -17,6 +17,7 @@ from pathlib import Path
 
 CONFIG = "docs/agents/records.json"
 HELP = Path(__file__).resolve().parents[1] / "SKILL.md"
+CHECK = Path(__file__).with_name("check_records.py")
 
 
 class SyncError(Exception):
@@ -42,7 +43,7 @@ def roots(start: Path) -> tuple[Path, Path]:
     return root, root.with_name(root.name + "-records")
 
 
-def load_paths_and_check(root: Path) -> dict:
+def load_config(root: Path) -> dict:
     return json.loads(git(root, "show", f"origin/main:{CONFIG}"))
 
 
@@ -107,11 +108,11 @@ def push(root: Path, sync: Path, config: dict) -> None:
     for rel in files:
         (sync / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(root / rel, sync / rel)
-    check = subprocess.run(config["check"], cwd=sync, capture_output=True, text=True)
+    check = subprocess.run([sys.executable, str(CHECK), config["register"], config["adrs"]], cwd=sync, capture_output=True, text=True)
     if check.returncode:
         git(sync, "checkout", "-f", "HEAD")
         git(sync, "clean", "-fdq", "--", *config["paths"])
-        raise SyncError(f"the project's check failed, so nothing was pushed:\n{check.stdout}{check.stderr}".strip())
+        raise SyncError(f"the records check failed, so nothing was pushed:\n{check.stdout}{check.stderr}".strip())
     git(sync, "add", "-A", "--", *[str(f) for f in files])
     git(sync, "commit", "-m", "Records: " + ", ".join(f.as_posix() for f in files))
     try:
@@ -142,7 +143,7 @@ def main() -> None:
         return
     try:
         root, sync = roots(Path(call["cwd"]))
-        config = load_paths_and_check(root)
+        config = load_config(root)
         if event != "session" and not is_record(root, config["paths"], Path(call["tool_input"]["file_path"])):
             return
         if event in ("session", "before"):

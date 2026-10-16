@@ -7,7 +7,19 @@ import tempfile
 from pathlib import Path
 
 SCRIPT = Path(__file__).with_name("sync_records.py")
-CHECK = [sys.executable, "-c", "import sys; sys.exit('BAD' in open('register.csv').read())"]
+HEADER = '"id","status","layer","area","sub_area","project_taxonomy","priority","risk","built_prototype","built_production","decided","statement","why","alternatives","tracker_issue","settled_by","supersedes","superseded_by","adrs"\n'
+ADR = "---\nstatus: accepted\ndate: 2026-10-17\narea: structure\nsub_area: technology\n---\n\n# x\n"
+
+
+def register(*rows: str) -> str:
+    """A valid register; each row is 'D2 ben' (id and statement), and a status of BAD makes it fail the check."""
+    lines = []
+    for row in rows:
+        number, statement = row.split(" ", 1) if " " in row else (row, "seed")
+        status = "BAD" if statement == "BAD" else "accepted"
+        cells = [number, status, "system", "delivery", "testing", "", "should", "low", "no", "no", "2026-10-17", statement, "", "the other way", "", "", "", "", ""]
+        lines.append(",".join(f'"{cell}"' for cell in cells) + "\n")
+    return HEADER + "".join(lines)
 
 
 def run(cwd: Path, *args: str) -> subprocess.CompletedProcess:
@@ -47,41 +59,46 @@ def main() -> None:
     run(base, "git", "init", "-q", "--bare", "-b", "main", str(remote))
     seed = clone(base, remote, "seed")
     (seed / "docs/agents").mkdir(parents=True)
-    (seed / "docs/agents/records.json").write_text(json.dumps({"paths": ["register.csv", "docs/adr"], "check": CHECK}))
-    (seed / "register.csv").write_text("D1\n")
+    (seed / "docs/adr").mkdir(parents=True)
+    config = {"paths": ["docs/ddr", "docs/adr"], "register": "docs/ddr/register.csv", "adrs": "docs/adr"}
+    (seed / "docs/agents/records.json").write_text(json.dumps(config))
+    (seed / "docs/ddr").mkdir(parents=True)
+    (seed / "docs/ddr/register.csv").write_text(register("D1"))
+    (seed / "docs/ddr/project_taxonomy.json").write_text("{}")
     run(seed, "git", "add", "-A")
     run(seed, "git", "commit", "-q", "-m", "seed")
     run(seed, "git", "push", "-q", "origin", "main")
+    reg = "docs/ddr/register.csv"
 
     ben, alex = clone(base, remote, "ben"), clone(base, remote, "alex")
     for person in (ben, alex):
         run(person, "git", "checkout", "-q", "-b", "feature")
         result = hook("session", person)
         assert result.returncode == 0 and not result.stdout, result.stdout
-    assert (base / "ben-records/register.csv").exists()
+    assert (base / "ben-records" / reg).exists()
 
-    result = edit(ben, "register.csv", "D1\nD2 ben\n")
+    result = edit(ben, reg, register("D1", "D2 ben"))
     assert result.returncode == 0 and not result.stderr, result.stderr
-    assert on_main(seed, "register.csv") == "D1\nD2 ben\n"
+    assert on_main(seed, reg) == register("D1", "D2 ben")
 
-    assert hook("before", alex, alex / "register.csv").returncode == 0
-    assert (alex / "register.csv").read_text() == "D1\nD2 ben\n", "before brings a stale copy up to date"
-    assert edit(alex, "register.csv", "D1\nD2 ben\nD3 alex\n").returncode == 0
-    assert edit(alex, "docs/adr/0001-x.md", "# x\n").returncode == 0, "a new file is pushed"
-    assert on_main(seed, "docs/adr/0001-x.md") == "# x\n"
+    assert hook("before", alex, alex / reg).returncode == 0
+    assert (alex / reg).read_text() == register("D1", "D2 ben"), "before brings a stale copy up to date"
+    assert edit(alex, reg, register("D1", "D2 ben", "D3 alex")).returncode == 0
+    assert edit(alex, "docs/adr/0001-x.md", ADR).returncode == 0, "a new file is pushed"
+    assert on_main(seed, "docs/adr/0001-x.md") == ADR
 
-    result = edit(ben, "register.csv", "D1\nD2 ben\nD3 alex\nD4 BAD\n")
+    result = edit(ben, reg, register("D1", "D2 ben", "D3 alex", "D4 BAD"))
     assert result.returncode == 2 and "SKILL.md" in result.stderr and "check failed" in result.stderr, result.stderr
-    assert "BAD" not in on_main(seed, "register.csv")
-    assert edit(ben, "register.csv", "D1\nD2 ben\nD3 alex\nD4 ben\n").returncode == 0, "the fix goes through"
-    assert on_main(seed, "register.csv").endswith("D4 ben\n")
+    assert "BAD" not in on_main(seed, reg)
+    assert edit(ben, reg, register("D1", "D2 ben", "D3 alex", "D4 ben")).returncode == 0, "the fix goes through"
+    assert on_main(seed, reg) == register("D1", "D2 ben", "D3 alex", "D4 ben")
 
-    assert hook("before", alex, alex / "register.csv").returncode == 0
-    (alex / "register.csv").write_text(on_main(seed, "register.csv") + "D5 alex\n")
-    assert edit(ben, "register.csv", on_main(seed, "register.csv") + "D5 ben\n").returncode == 0
-    result = hook("after", alex, alex / "register.csv")
+    assert hook("before", alex, alex / reg).returncode == 0
+    (alex / reg).write_text(register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 alex"))
+    assert edit(ben, reg, register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben")).returncode == 0
+    result = hook("after", alex, alex / reg)
     assert result.returncode == 2 and "SKILL.md" in result.stderr, "a same-moment clash stops with a message"
-    assert hook("before", alex, alex / "register.csv").returncode == 2, "edits wait until the rebase is resolved"
+    assert hook("before", alex, alex / reg).returncode == 2, "edits wait until the rebase is resolved"
 
     result = hook("before", ben, ben / "README.md")
     assert result.returncode == 0 and not result.stderr and not result.stdout
