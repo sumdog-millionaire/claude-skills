@@ -1,9 +1,10 @@
 """Claude Code hooks that keep a project's decision records on main, silently unless something fails.
 
-The project lists its record paths and check in docs/agents/records.json, and its .claude/settings.json runs:
+The plugin's hooks/hooks.json runs these in every project:
     SessionStart              sync_records.py session
     PreToolUse  Edit|Write    sync_records.py before
     PostToolUse Edit|Write    sync_records.py after
+A project opts in with docs/agents/records.json on origin/main, listing its record paths and check; other folders are left alone.
 Each reads the hook's JSON on stdin. A failure tells the agent what happened and where the recovery steps are.
 """
 
@@ -27,6 +28,11 @@ def git(cwd: Path, *args: str) -> str:
     if result.returncode:
         raise SyncError(f"git {' '.join(args)} failed in {cwd}:\n{result.stderr.strip()}")
     return result.stdout.strip()
+
+
+def opted_in(cwd: Path) -> bool:
+    """True only in a git repository whose origin/main holds the records config."""
+    return subprocess.run(["git", "rev-parse", "--verify", "--quiet", f"origin/main:{CONFIG}"], cwd=cwd, capture_output=True).returncode == 0
 
 
 def roots(start: Path) -> tuple[Path, Path]:
@@ -132,6 +138,8 @@ def fail(event: str, error: Exception) -> None:
 def main() -> None:
     event = sys.argv[1]
     call = json.load(sys.stdin)
+    if not opted_in(Path(call["cwd"])):
+        return
     try:
         root, sync = roots(Path(call["cwd"]))
         config = load_paths_and_check(root)

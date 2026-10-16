@@ -85,6 +85,14 @@ def main() -> None:
 
     result = hook("before", ben, ben / "README.md")
     assert result.returncode == 0 and not result.stderr and not result.stdout
+
+    other = base / "other"
+    run(base, "git", "init", "-q", "other")
+    for folder in (other, Path(tempfile.mkdtemp())):
+        for event in ("session", "before", "after"):
+            result = hook(event, folder, None if event == "session" else folder / "GLOSSARY.md")
+            assert result.returncode == 0 and not result.stdout and not result.stderr, "a project that has not opted in is left alone"
+    assert not (base / "other-records").exists()
     print("sync_records: all checks passed")
 
 
