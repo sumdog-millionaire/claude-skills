@@ -16,14 +16,18 @@ desktop.ini
 node_modules/
 __pycache__/
 
-# Skills that Claude syncs from the account, not ours
-synced/
-
 # Temp files
 *.tmp
 *.bak
 
-# Installed on this machine only, not part of the repository
-image_gen/
-launch-checklist/
-skill-creator/
+# Allowlist: anything else in ~/.claude/skills is installed on this machine only
+/*
+!/.gitignore
+!/README.md
+!/anti-ai-slop-writing/
+!/carry-on-rewind/
+!/marketing_materials/
+!/mattpocock-skills/
+!/prepare-rewind/
+!/ui-dev/
+!/video-digest/

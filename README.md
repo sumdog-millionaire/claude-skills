@@ -24,8 +24,22 @@ plugin, which Claude Code loads from here in the same way and lists as `<name>@s
 git clone https://github.com/sumdog-millionaire/claude-skills.git "$HOME/.claude/skills"
 ```
 
-If `~/.claude/skills` already exists, move its contents out first, clone, then move back anything
-this repository does not hold. Restart Claude Code afterwards.
+If `~/.claude/skills` already exists, back it up and install in place; this replaces only the folders
+this repository holds:
+
+```powershell
+cd "$HOME/.claude/skills"
+git init -b main
+git remote add origin https://github.com/sumdog-millionaire/claude-skills.git
+git fetch origin
+git checkout -f -B main --track origin/main
+```
+
+Restart Claude Code afterwards.
+
+`.gitignore` is an allowlist: it ignores every top-level folder except this repository's own, so a
+skill installed on one machine only (`data-model`, the Azure skills) is never committed. To add a
+skill to the repository, add a `!/<folder>/` line for it.
 
 Two folders need one more step each:
 
