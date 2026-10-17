@@ -126,6 +126,9 @@ drift:
 - **The rewind skills**, `prepare-rewind` and `carry-on-rewind`, in `skills/productivity/`, both
   model-invoked.
 - **`grill-with-docs` is model-invoked**, where upstream makes it user-invoked.
+- **Holdouts in `tdd`**: tests the builder never sees, written by the `tester` agent and run by the
+  `validator` agent (both in `agents/`), hidden by `tdd/scripts/guard_holdouts.py` through
+  `hooks/hooks.json`, and run by `implement` and `implement-spec`.
 - **Fixed default record places**, named in `docs/agents/domain.md` only when a project moves one.
 - **DDRs named beside ADRs** throughout upstream's skills (grill-with-docs, to-tickets, to-spec,
   triage, wayfinder, tdd, diagnosing-bugs, improve-codebase-architecture, handoff).

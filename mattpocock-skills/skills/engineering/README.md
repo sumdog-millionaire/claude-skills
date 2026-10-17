@@ -25,7 +25,7 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 
 - **[diagnosing-bugs](./diagnosing-bugs/SKILL.md)**: Disciplined diagnosis loop for hard bugs and performance regressions: build a feedback loop that goes red on this bug → minimise → hypothesise → instrument → fix → regression-test.
 - **[research](./research/SKILL.md)**: Investigate a question against high-trust primary sources and capture the findings as a cited Markdown file in the repo, run as a background agent.
-- **[tdd](./tdd/SKILL.md)**: Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
+- **[tdd](./tdd/SKILL.md)**: Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time, against holdout tests a separate agent writes and the builder never sees.
 - **[domain-modeling](./domain-modeling/SKILL.md)**: Actively build and sharpen a project's domain model by challenging terms, stress-testing with scenarios, updating `GLOSSARY.md` and ADRs inline, and routing decisions below the ADR bar to DDRs.
 - **[design-decision](./design-decision/SKILL.md)**: Record every choice below the ADR bar where several approaches were possible and one is locked, as a DDR (design decision record): a numbered, dated, statused row in `docs/ddr/register.csv`, tagged by layer, area, sub-area and project part, and weighted by priority and risk, written before the edit that implements it.
 - **[codebase-design](./codebase-design/SKILL.md)**: Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.

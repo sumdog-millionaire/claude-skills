@@ -18,7 +18,7 @@ The glossary, ADR folder and design decision register sit at their defaults (`GL
 
 Explain the ticket in plain terms: what it is for, what it covers, each binding ADR and DDR in one line, and the reuse targets. Do not assume the user remembers the ticket.
 
-List every choice the build needs that the ticket, ADRs, DDRs, glossary and code do not already settle: data shapes, names, file locations, edge cases, error behaviour, scope cuts and the seams to test.
+List every choice the build needs that the ticket, ADRs, DDRs, glossary and code do not already settle: data shapes, names, file locations, edge cases, error behaviour, scope cuts and the seams to test. Holdouts are on unless the user opts out for this ticket.
 
 - **Nothing open:** say "This ticket is detailed enough to build as written" and why, ask how involved the user wants to be, then go to step 3.
 - **Anything open:** ask the whole list in one round, with how involved the user wants to be. If unsure whether a point is settled, it is not: ask. Never resolve an open point with an assumption.
@@ -36,10 +36,10 @@ The user may rewind the session to save tokens, running `/prepare-rewind` before
 
 ## 4. Build
 
-Call the Skill tool with "tdd" at the seams agreed in step 2.
+Call the Skill tool with "tdd" and run its holdout loop at the seams agreed in step 2, unless the user opted out of holdouts.
 
-Run typechecking regularly, single test files regularly, and the full test suite once at the end. If a new open point appears mid-build, stop and ask.
+Run typechecking regularly and the full test suite once at the end. If a new open point appears mid-build, stop and ask.
 
-Once done, call the Skill tool with "code-review" to review the work.
+Once done, call the Skill tool with "code-review" to review the work. Then show the user what was built; once they confirm it meets the intent, have the tester promote the holdouts.
 
 Commit your work to the current branch.

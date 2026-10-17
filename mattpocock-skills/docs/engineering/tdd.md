@@ -1,6 +1,6 @@
 ## What it does
 
-`tdd` builds a feature or fixes a bug test-first: one failing test, then just enough code to pass it, then the next behaviour. It carries the standards that make that loop produce tests worth keeping: what a good test is, where tests go, what mocks are for, and the three anti-patterns that make a suite worthless.
+`tdd` builds a feature or fixes a bug test-first: one slice's failing tests, then just enough code to pass them, then the next slice. The tests are **holdouts**: a `tester` agent writes them before the code exists, a `validator` agent runs them, and the agent writing the code never sees them. It carries the standards that make that loop produce tests worth keeping: what a good test is, where tests go, what mocks are for, and the three anti-patterns that make a suite worthless.
 
 It writes no test at a seam you have not agreed to first. Before any test exists, it names the public boundaries it intends to test at and stops for your confirmation. Testing effort is finite, and this step spends it on the critical paths instead of on every edge case. `tdd` is also a **reference**, not a driver. It contains the rules of the loop, and something else (you, or [implement](https://aihero.dev/skills-implement)) runs the [session](https://www.aihero.dev/ai-coding-dictionary/session) that applies them.
 
@@ -22,15 +22,17 @@ That last row is a real gap. The skill decides *where* the seams go, but nothing
 
 ## Prerequisites
 
-[codebase-design](https://aihero.dev/skills-codebase-design) needs to be installed. `tdd` used to carry its own deep-module and interface-design notes; v1.0 deleted them in favour of the shared skill, and `tdd` now uses its interface-design vocabulary. Nothing else; the skill is [stateless](https://www.aihero.dev/ai-coding-dictionary/stateless) and writes no files of its own.
+[codebase-design](https://aihero.dev/skills-codebase-design) needs to be installed. `tdd` used to carry its own deep-module and interface-design notes; v1.0 deleted them in favour of the shared skill, and `tdd` now uses its interface-design vocabulary. The `tester` and `validator` agents and the hook that hides the holdouts ship in the same plugin. The holdouts live in `holdouts/<ticket>/` inside the repository's git folder, outside the working tree, until they are promoted into the project's tests.
 
 ## The loop, and the seam it runs at
 
 The skill rests on three terms.
 
-**Red-green.** Write the failing test, then only enough code to pass it. Do not write code for the test after next. There is no refactor phase. The skill dropped it in June 2026 because agents almost never performed it, and because review and implementation work better as separate sessions. Refactoring belongs to [code-review](https://aihero.dev/skills-code-review).
+**Holdout.** A test the builder never sees. A builder that can read its tests builds to pass them, and the software ends up good only for those tests. So the `tester` agent writes each slice's tests from the spec and the agreed seams, beside a `seams.md` that tells the builder how the tests call the code and nothing about what they check. A plugin hook keeps every other agent out of the holdout folder. The `validator` agent runs the tests and uses the app the way it is really used, and reports a failure as the behaviour missed and what the code did. The builder can ask for a seam change when a seam would force unnatural code, but that changes only how the tests call the code, never what they check. After three red reports, or a disputed test, the build stops and brings you the evidence. You can opt out, and then the builder writes its own tests as before.
 
-**Vertical slice.** Write one test at one seam, then the minimal implementation, then repeat. The first cycle is a **tracer bullet** that proves a single path end to end. The opposite is horizontal slicing: all the tests first, then all the code. Tests written in bulk verify *imagined* behaviour. They check the shape of things rather than what a user does, and they commit you to a test structure before you understand the implementation.
+**Red-green.** The slice's tests fail first, then only enough code to pass them. Do not write code for the slice after next. There is no refactor phase. The skill dropped it in June 2026 because agents almost never performed it, and because review and implementation work better as separate sessions. Refactoring belongs to [code-review](https://aihero.dev/skills-code-review).
+
+**Vertical slice.** Test one slice at its seams, then the minimal implementation, then repeat. The first cycle is a **tracer bullet** that proves a single path end to end. The opposite is horizontal slicing: all the tests first, then all the code. Tests written in bulk verify *imagined* behaviour. They check the shape of things rather than what a user does, and they commit you to a test structure before you understand the implementation.
 
 **Pre-agreed seam.** A seam is the public boundary you observe behaviour at without reaching inside. The rule has no exceptions. No test goes at an unconfirmed seam. In the full chain the seams are agreed earlier, during [to-spec](https://aihero.dev/skills-to-spec): "`/tdd` is told to only work at pre-agreed test seams, `/code-review` checks that only agreed-upon test seams were used." Invoked on its own, `tdd` asks you directly.
 
@@ -56,7 +58,11 @@ This is the most-reported friction with the skill ([issue #607](https://github.c
 
 **It wrote the implementation before the test, even though the skill says red first.**
 
-It happens. One user pushed the [model](https://www.aihero.dev/ai-coding-dictionary/model) on it and got an unusually honest answer: "I knew the skill said 'one test at a time, watch it fail for the right reason'. I read it. I just defaulted to my normal habit." The skill accepts this. No instruction makes an agent comply 100% of the time, and stricter wording restricts the agent's creativity for little gain. The loop is worth running even when the agent does not follow it strictly, because the results are still better overall. If strict adherence matters for a particular slice, watch the run rather than trusting the skill to enforce it.
+It happens. One user pushed the [model](https://www.aihero.dev/ai-coding-dictionary/model) on it and got an unusually honest answer: "I knew the skill said 'one test at a time, watch it fail for the right reason'. I read it. I just defaulted to my normal habit." No instruction makes an agent comply 100% of the time, which is one reason the tests are now holdouts. The `tester` writes them before the builder starts, so test-first holds by construction rather than by the builder's discipline. It can still happen when you opt out of holdouts; watch the run if strict adherence matters for that slice.
+
+**Why can't the agent writing the code see the tests?**
+
+Because a model that knows the test builds to pass the test. It special-cases the inputs it can see, or quietly weakens an assertion that is in its way. Holding the tests back keeps it building to the spec. The builder still learns what it got wrong: the validator's report names the behaviour it missed and what its code did, without quoting the test. The hook that hides them matches Bash commands by their text, so it stops accidents, not a builder set on getting round it.
 
 **Should it write browser or end-to-end tests first?**
 
@@ -77,7 +83,8 @@ No. Run against one ticket, it can propose work that belongs to a sibling ticket
 ## It's working if
 
 - It stops and names the seams it intends to test at, and waits, before any test file exists.
-- One test appears, goes red, gets just enough code to pass, and only then does the next test appear, not a batch of tests followed by a batch of code.
+- The `tester` agent writes one slice's holdouts before any code for it exists, and the slice gets just enough code to pass before the next slice starts.
+- The builder never opens a holdout test; its traces show `seams.md` and the validator's reports, nothing more.
 - Test names read as capabilities ("user can checkout with valid cart"), not as internals ("checkout calls paymentService.process").
 - Expected values in assertions are literals you can trace to the spec, not values recomputed the way the code computes them.
 - Renaming an internal function breaks nothing in the suite.

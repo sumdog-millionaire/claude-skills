@@ -26,8 +26,10 @@ You invoke this by typing `/implement-spec`, and the agent won't reach for it on
 Everything lands on one branch. Each implementer:
 
 1. confirms its worktree is based on the integration branch before it starts,
-2. builds its ticket with [tdd](https://aihero.dev/skills-tdd), red-green one slice at a time,
+2. builds its ticket with [tdd](https://aihero.dev/skills-tdd) to the `seams.md` the `tester` agent wrote, never seeing the holdout tests themselves,
 3. merges the integration branch tip into its own branch before reporting done, so landing it is a fast-forward.
+
+The orchestrator runs the holdout loop around each implementer, because a subagent cannot launch agents of its own. It launches the `tester` for a ticket before its implementer, the `validator` when the implementer reports done, and the tester again when an implementer asks for a seam change. A ticket merges only on a green validation. After three red reports, or a disputed test, the run stops and brings you the evidence. At the end you check the result against the intent, and only then are the holdouts promoted into the project's tests.
 
 The tracker decides whether a pull request exists at all. If your tracker closes work through PRs, or you ask for one, the skill opens a draft PR after the first merge and marks it ready at the end. Otherwise the run stops on the integration branch with every ticket resolved the way your tracker closes work, which works fully offline against a local markdown tracker.
 
@@ -71,7 +73,7 @@ A worktree holds only what git tracks. Tests that read gitignored fixtures, loca
 
 - Several implementers are running at once whenever the graph allows, not one after another.
 - A ticket starts as soon as its last blocker lands on the integration branch, not when the whole run ends.
-- Every ticket's trace shows `tdd` running, with a failing test before the code.
+- Every ticket's trace shows the `tester` writing holdouts before its implementer starts, and the `validator` reporting green before the merge.
 - Merges into the integration branch are fast-forwards, not conflict resolutions.
 - The run ends on one branch with every ticket resolved, and a PR only if your tracker wanted one.
 

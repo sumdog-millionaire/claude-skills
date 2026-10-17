@@ -34,7 +34,7 @@ A run has four parts, in order:
 1. **Load the context.** It loads [grilling](https://aihero.dev/skills-grilling), [domain-modeling](https://aihero.dev/skills-domain-modeling) and [design-decision](https://aihero.dev/skills-design-decision), fetches the ticket (or the frontier of the scope you named), reads every ADR and DDR the ticket cites or touches, and finds the existing code to reuse.
 2. **Explain, then grill.** It explains the ticket in plain terms, with each binding ADR and DDR in one line, then lists every choice the build needs that nothing settles yet and asks the whole list in one round. When nothing is open, it says the ticket is detailed enough to build as written, and why. Each answer is recorded, usually as a DDR, before the edit that builds it.
 3. **Set the rewind point.** It names the last message before the build starts, so you can rewind to it and carry on with a lighter context ([prepare-rewind](https://aihero.dev/skills-prepare-rewind) before the rewind, [carry-on-rewind](https://aihero.dev/skills-carry-on-rewind) after it), and splits the build into parts that each end in a commit.
-4. **Build.** It drives [tdd](https://aihero.dev/skills-tdd) at the agreed seams, typechecks and runs single test files as it goes, runs the full suite once at the end, runs [code-review](https://aihero.dev/skills-code-review), then commits to the current branch.
+4. **Build.** It drives [tdd](https://aihero.dev/skills-tdd)'s holdout loop at the agreed seams: the `tester` agent writes tests the builder never sees, the builder works to their `seams.md`, and the `validator` agent runs them. It typechecks as it goes, runs the full suite once at the end and runs [code-review](https://aihero.dev/skills-code-review). Once you confirm the result meets the intent, the tester promotes the holdouts into the project's tests, and it commits to the current branch. You can opt out of holdouts for a ticket in the grilling round.
 
 One run covers one ticket. The tickets [to-tickets](https://aihero.dev/skills-to-tickets) produces are tracer-bullet vertical slices sized to fit a single fresh [context window](https://www.aihero.dev/ai-coding-dictionary/context-window), so the intended rhythm is: clear context, implement one ticket, commit, clear again. Each ticket is self-contained, so you can discard the previous ticket's context.
 
@@ -76,7 +76,8 @@ The agent resolved `#2` against another numbered list in context, such as a todo
 
 - The session opens by reading the ticket or spec and restating the ticket, each binding ADR and DDR, and every open choice.
 - You can see an actual `tdd` Skill tool call in the trace, not just tests appearing in the diff.
-- Typechecks and single test files run repeatedly during the run, and the full suite runs once near the end.
+- The `tester` agent writes holdouts before any code, and the `validator` agent's reports name missed behaviour without quoting a test.
+- Typechecks run repeatedly during the run, and the full suite runs once near the end.
 - The run reaches a commit on your current branch without you prompting it to carry on.
 - The diff is one ticket's worth of change: a vertical slice through every layer, not several tickets swept together.
 
