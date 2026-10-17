@@ -6,7 +6,7 @@ It does not re-plan. The plan above it is the reason you rewound to that message
 
 ## When to reach for it
 
-You invoke this by typing `/carry-on-rewind` as the message you rewound to, and the agent won't reach for it on its own. Reach for it only after a rewind; for a fresh [session](https://www.aihero.dev/ai-coding-dictionary/session) that a handoff file seeds, point the agent at the file instead ([handoff](https://aihero.dev/skills-handoff)).
+Type `/carry-on-rewind` as the message you rewound to, or the agent reaches for it when it finds `rewind-status.md` waiting after a rewind. Reach for it only after a rewind; for a fresh [session](https://www.aihero.dev/ai-coding-dictionary/session) that a handoff file seeds, point the agent at the file instead ([handoff](https://aihero.dev/skills-handoff)).
 
 ## Prerequisites
 

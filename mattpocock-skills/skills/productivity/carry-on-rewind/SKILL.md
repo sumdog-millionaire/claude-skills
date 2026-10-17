@@ -1,7 +1,6 @@
 ---
 name: carry-on-rewind
-description: Re-orient after a context rewind and continue the work already agreed.
-disable-model-invocation: true
+description: Re-orient after a context rewind and continue the work already agreed. Use it when the conversation has just been rewound and rewind-status.md waits at the top level of the repo.
 ---
 
 # Carry on

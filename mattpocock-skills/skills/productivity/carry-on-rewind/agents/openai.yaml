@@ -1,5 +1,3 @@
 interface:
   display_name: "Carry On Rewind"
   short_description: "Re-orient after a rewind and carry on"
-policy:
-  allow_implicit_invocation: false

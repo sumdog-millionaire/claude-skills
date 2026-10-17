@@ -1,8 +1,7 @@
 ---
 name: prepare-rewind
-description: Write rewind-status.md before a context rewind, carrying what was built and every decision the rewind would cut.
+description: Write rewind-status.md before a context rewind, carrying what was built and every decision the rewind would cut. Use it when the user says they are about to rewind, or when the context is filling and the handover should be written while there is still room to write it well.
 argument-hint: "The message being rewound to: quote a few words of it"
-disable-model-invocation: true
 ---
 
 # Prepare a rewind

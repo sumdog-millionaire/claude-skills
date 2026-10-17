@@ -123,7 +123,9 @@ drift:
 - **The triage sweep** (`/triage sweep`) and the "Keeping the tracker true" sections in the
   tracker templates.
 - **Decisions sections** in tickets, specs and agent briefs, naming each binding ADR and DDR.
-- **The rewind skills**, `prepare-rewind` and `carry-on-rewind`, in `skills/productivity/`.
+- **The rewind skills**, `prepare-rewind` and `carry-on-rewind`, in `skills/productivity/`, both
+  model-invoked.
+- **`grill-with-docs` is model-invoked**, where upstream makes it user-invoked.
 - **Fixed default record places**, named in `docs/agents/domain.md` only when a project moves one.
 - **DDRs named beside ADRs** throughout upstream's skills (grill-with-docs, to-tickets, to-spec,
   triage, wayfinder, tdd, diagnosing-bugs, improve-codebase-architecture, handoff).

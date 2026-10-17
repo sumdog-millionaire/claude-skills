@@ -6,7 +6,7 @@ It carries only what nothing else holds. The rewound agent still loads `CLAUDE.m
 
 ## When to reach for it
 
-You invoke this by typing `/prepare-rewind`, and the agent won't reach for it on its own. Pass a few words of the message you are rewinding to; with none, it covers the whole [session](https://www.aihero.dev/ai-coding-dictionary/session).
+Type `/prepare-rewind`, or the agent reaches for it on its own when you say you are about to rewind or its context is filling. Pass a few words of the message you are rewinding to; with none, it covers the whole [session](https://www.aihero.dev/ai-coding-dictionary/session).
 
 | The situation | Reach for |
 | --- | --- |
