@@ -12,7 +12,7 @@ First, before anything else, call the Skill tool with "grilling", "domain-modeli
 
 If the user passes a ticket reference, fetch it from the issue tracker with its comments and blocking links, and state its title. If the user passes a scope instead (a label, a milestone, a parent issue), take its **frontier**: the open ticket in that scope whose blockers are all done, because the order of work lives in the tracker's blocking links and nowhere else. If the reference is ambiguous, or the frontier holds more than one ticket or none, ask.
 
-Find where the glossary, ADR folder and design decision register live from the project's `CLAUDE.md`. Read every ADR and DDR the ticket cites, plus those whose nouns (module, element, data field) the ticket touches. Find the existing code to reuse or extend, with `file:line`.
+The glossary, ADR folder and design decision register sit at their defaults (`GLOSSARY.md`, `docs/adr/`, `docs/ddr/register.csv`) unless the project's `docs/agents/domain.md` names another place. Read every ADR and DDR the ticket cites, plus those whose nouns (module, element, data field) the ticket touches. Find the existing code to reuse or extend, with `file:line`.
 
 ## 2. Explain, then decide whether to grill
 

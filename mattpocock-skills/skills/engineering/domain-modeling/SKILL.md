@@ -11,7 +11,7 @@ The domain model is the project's **glossary** (`GLOSSARY.md`), which holds its 
 
 Before you read code, search, plan, or answer a question about the project:
 
-1. Find where the glossary, the ADR folder and the design decision register live. `docs/agents/domain.md` or the project's `CLAUDE.md` says; the defaults are in "File structure" below.
+1. Find where the glossary, the ADR folder and the design decision register live. They sit at the defaults in "File structure" below, unless the project's `docs/agents/domain.md` names another place.
 2. Read the glossary whole. Each entry names one thing, and its `_Avoid_` line lists the words that mean something else here.
 3. Skim the ADR titles, or their index when the folder has one, and open each ADR and DDR that touches the area you are about to work in.
 
@@ -116,5 +116,5 @@ issue that will settle it. The row format and vocabularies are in [DDR-FORMAT.md
 A decision that passes the ADR test gets the ADR, and a one-line pointer row in the register; never
 two full write-ups.
 
-The register's location is the project's to declare, under "Design decisions" in its `CLAUDE.md`. If
-no register is declared, ask before creating one, as with `docs/adr/`.
+The register lives at `docs/ddr/register.csv` unless the project's `docs/agents/domain.md` names
+another place. If the project has none, ask before creating one, as with `docs/adr/`.

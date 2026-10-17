@@ -62,6 +62,12 @@ Offer **multi-context** (a root `GLOSSARY-MAP.md` pointing to per-context `GLOSS
 
 Then ask for the **project taxonomy**: the few big parts the project is built from as its people talk about them (a data pull, the main screen, an admin screen, imagery), each with a one-line definition. Propose a list from what exploration found and let the user cut and rename it; do not slice the product by data entity. Write it as `docs/ddr/project_taxonomy.json` beside the register ([DDR-FORMAT.md](../domain-modeling/DDR-FORMAT.md), "The project taxonomy").
 
+If the project has a design rulebook (a `DESIGN.md` or similar values file), write its path into `docs/agents/domain.md`. Any record kept away from its default path is named there too, and never in `CLAUDE.md` or `AGENTS.md`.
+
+Then write **`docs/agents/records.json`**, which only the sync hooks read: `paths` (every record file and folder), `register` and `adrs`. Once it is on `main`, the hooks keep the records on `main` for every branch.
+
+If `docs/adr/` already holds ADRs without the front matter the records check needs (`date`, `area`, `sub_area`, and `project_taxonomy` where a part applies; [ADR-FORMAT.md](../domain-modeling/ADR-FORMAT.md)), tell the user the check will refuse every push until they are tagged, and offer a tagging pass: one brief file, Opus sub-agents taking about ninety ADRs each, front matter only, each date taken from the commit that added the file. Run `scripts/check_records.py` once it is done, and push `records.json` only when it passes.
+
 ### 3. Confirm and edit
 
 Show the user a draft of:

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Design Decision"
+  short_description: "Record design decisions below the ADR bar"

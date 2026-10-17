@@ -77,6 +77,17 @@ git push
 Git merges his changes into the folder and keeps the edits made here. Where both changed the same
 lines it stops with a conflict to resolve, as any merge does.
 
+The pull works out what he changed from the last squash commit's `git-subtree-split:` line, so that line
+must name a commit in his repository. The folder first arrived from a laptop fork's own commit, which his
+repository never had, so a pull read his version as deleting every edit made here. Commit `5dec628`
+re-anchored it on his `f3fc563`, the version the fork was taken from. Never squash in a copy from another
+fork; merge his repository, and only his.
+
+Edits made here follow his structure: his skill layout, his `docs/engineering/` page and
+`agents/openai.yaml` for every skill, and his default paths. The additions are the design-decision skill,
+the DDR register and its records check, the record-sync hooks, required ADR front matter, the rewritten
+implement skill, the triage sweep and the Decisions sections in tickets.
+
 ## What is not here
 
 `.env` files, `node_modules/`, `.venv/` and `synced/` (the skills Claude syncs from the account) stay

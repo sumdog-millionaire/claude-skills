@@ -26,18 +26,21 @@ area list in [taxonomy.json](../domain-modeling/taxonomy.json). Read both before
 
 ## Project declaration
 
-The skill is the method; each project supplies the places. The project's `CLAUDE.md` (or `AGENTS.md`)
-names, under a "Design decisions" heading:
+The skill is the method; the project supplies the places, and they are fixed defaults, as the ADR
+folder is:
 
-- the **register** file that holds the rows, by convention `docs/ddr/register.csv`, with its
-  `project_taxonomy.json` beside it;
-- the **values file**, the project's design rulebook, such as `DESIGN.md`;
-- the **glossary** for terms, such as `GLOSSARY.md`;
-- the **ADR folder**, such as `docs/adr/`;
-- the **tracker** and where its conventions live, such as Linear via `docs/agents/issue-tracker.md`.
+- the **register**, `docs/ddr/register.csv`, with its `project_taxonomy.json` beside it;
+- the **glossary**, `GLOSSARY.md`;
+- the **ADR folder**, `docs/adr/`;
+- the **tracker** and its conventions, in `docs/agents/issue-tracker.md`;
+- the **values file**, the project's design rulebook (such as `DESIGN.md`), when it has one, named in
+  `docs/agents/domain.md`.
 
-If any of the five is missing, stop and ask the user where it lives before writing anything. Do not
-assume a path, and do not create a register without their go.
+Where a project keeps a record somewhere else, `docs/agents/domain.md` says so. These places are never
+named in `CLAUDE.md` or `AGENTS.md`, whose `## Agent skills` block only points at `docs/agents/`.
+
+If the project has no register or no tracker set up, ask the user before writing anything
+(`setup-matt-pocock-skills` sets both up). Do not create a register without their go.
 
 ## Companion skills
 
