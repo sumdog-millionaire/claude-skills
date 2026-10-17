@@ -52,7 +52,6 @@ The maintainer invokes `/triage` and describes what they want in natural languag
 - "Let's look at #42" (issue or PR)
 - "Move #42 to ready-for-agent"
 - "What's ready for agents to pick up?"
-- "Sweep the tracker" (`/triage sweep`)
 
 ## Show what needs attention
 
@@ -68,13 +67,13 @@ Show counts and a one-line summary per item. Let the maintainer pick.
 
 ## Triage a specific issue or PR
 
-1. **Gather context.** Read the full issue or PR (body, comments, labels, author, dates; for a PR, the diff too). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs and DDRs in the area. Run two checks against the codebase: (a) **redundancy**: search for an existing implementation of the requested behavior by domain concept (not just the request's wording), and report where you looked. If found, it's an already-implemented `wontfix` (step 5). (b) **prior rejection**: read `.out-of-scope/*.md` and surface any that resembles this request.
+1. **Gather context.** Read the full issue or PR (body, comments, labels, author, dates; for a PR, the diff too). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs in the area. Run two checks against the codebase: (a) **redundancy**: search for an existing implementation of the requested behavior by domain concept (not just the request's wording), and report where you looked. If found, it's an already-implemented `wontfix` (step 5). (b) **prior rejection**: read `.out-of-scope/*.md` and surface any that resembles this request.
 
 2. **Recommend.** Tell the maintainer your category and state recommendation with reasoning, plus a brief codebase summary relevant to the request (including whether it's already implemented). Wait for direction.
 
 3. **Verify the claim.** Before any grilling, check that the claim holds up. For a bug, reproduce it from the reporter's steps. For a PR, confirm the diff does what it claims: check it out, run the relevant tests or commands. Report what happened: confirmed (with code path), failed, or insufficient detail (a strong `needs-info` signal). A confirmed verification makes a much stronger agent brief.
 
-4. **Grill (if needed).** If the request needs fleshing out, call the Skill tool three times, for "grilling", "domain-modeling" and "design-decision", and grill it into shape a round of questions at a time, sharpening domain terms and updating `GLOSSARY.md`, ADRs and DDRs inline as decisions land.
+4. **Grill (if needed).** If the request needs fleshing out, call the Skill tool twice, for "grilling" and "domain-modeling", and grill it into shape a round of questions at a time, sharpening domain terms and updating `GLOSSARY.md`/ADRs inline as decisions land.
 
 5. **Apply the outcome:**
    - `ready-for-agent`: post an agent brief comment ([AGENT-BRIEF.md](AGENT-BRIEF.md)).
@@ -85,22 +84,6 @@ Show counts and a one-line summary per item. Let the maintainer pick.
      - **Rejected (bug)**: give a polite explanation, then close.
      - **Rejected (enhancement)**: write to `.out-of-scope/`, link to it from a comment, then close ([OUT-OF-SCOPE.md](OUT-OF-SCOPE.md)).
    - `needs-triage`: apply the role. Optional comment if there's partial progress.
-
-## Sweep
-
-A **sweep** walks every open issue, not only the untriaged ones, and keeps the tracker true (see the tracker config's "Keeping the tracker true"). Run it when the maintainer asks; it is the periodic clean-up.
-
-1. **Gather.** List every open issue with its body, comments, labels, links and dates. Read the domain glossary and the ADR index first, so each issue is judged against what is decided now.
-2. **Judge each issue** against the codebase, the ADRs and the other open issues, and give it one verdict with the evidence behind it:
-   - **Done**: the behaviour exists; name where.
-   - **Obsolete**: a later decision, ADR or build made it moot; name which.
-   - **Duplicate**: another open issue covers it; name which one survives.
-   - **Re-link**: it stands, but its blocking links, parent or labels are wrong; say the fix.
-   - **Keep**: it stands as written.
-3. **Propose in batches** of about ten, grouped by verdict, one line per issue with its evidence. Wait for the maintainer's yes on each batch; they may overrule any line.
-4. **Apply** each approved batch: close with a comment giving the verdict and evidence, mark duplicates, fix links and labels.
-
-**Done when** every open issue has a verdict the maintainer approved, and each approved change is applied.
 
 ## Quick state override
 

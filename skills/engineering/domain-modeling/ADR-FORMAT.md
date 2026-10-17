@@ -36,8 +36,6 @@ All three of these must be true:
 
 If a decision is easy to reverse, skip it: you'll just reverse it. If it's not surprising, nobody will wonder why. If there was no real alternative, there's nothing to record beyond "we did the obvious thing."
 
-A decision that fails this test but is still a rule someone would build wrong without it is a DDR: hand it to `design-decision` ([DDR-FORMAT.md](./DDR-FORMAT.md)). An ADR gets a one-line pointer row in the register, so the register lists every decision.
-
 ### What qualifies
 
 - **Architectural shape.** "We're using a monorepo." "The write model is event-sourced, the read model is projected into Postgres."

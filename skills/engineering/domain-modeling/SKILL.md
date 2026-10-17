@@ -1,6 +1,6 @@
 ---
 name: domain-modeling
-description: Build and sharpen a project's domain model. Use when discussing codebase terminology, writing or editing a GLOSSARY.md, recording or editing an ADR, or deciding whether a design rule is an ADR or a DDR (design decision record) for the project's design decision register.
+description: Build and sharpen a project's domain model. Use when discussing codebase terminology, writing or editing a GLOSSARY.md, or recording or editing an ADR.
 ---
 
 # Domain Modeling
@@ -15,11 +15,9 @@ Most repos have a single context:
 /
 ├── GLOSSARY.md
 ├── docs/
-│   ├── adr/
-│   │   ├── 0001-event-sourced-orders.md
-│   │   └── 0002-postgres-for-write-model.md
-│   └── ddr/
-│       └── register.csv              ← the DDR register, one row per decision
+│   └── adr/
+│       ├── 0001-event-sourced-orders.md
+│       └── 0002-postgres-for-write-model.md
 └── src/
 ```
 
@@ -74,24 +72,3 @@ Only offer to create an ADR when all three are true:
 3. **The result of a real trade-off**: there were genuine alternatives and you picked one for specific reasons
 
 If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
-
-### Route design rules to DDRs
-
-Most decisions that fail the ADR test are not worthless; they are just small and reversible. A rule
-an engineer who never heard the conversation would build wrong ("the section heading pins level with
-its sibling", "prompt construction never makes calls", "retries use the stdlib") is lost if it lives
-only in a tracker ticket, which closes and buries it. That rule is a **DDR**, a design decision
-record: one row in the project's design decision register, a filterable CSV at
-`docs/ddr/register.csv`, tagged with layer and aspect, weighted by priority and risk, marked built or
-not per surface, dated, and carrying an explicit status of `proposed`, `in-research`, `accepted`,
-`rejected`, `deferred` or `superseded`.
-
-When such a rule crystallises, hand it to the `design-decision` skill rather than writing it here. It
-routes the rule to the register, a measured value to the project's values file and a term back to
-`GLOSSARY.md`, and it makes sure every `proposed`, `in-research` or `deferred` row names the tracker
-issue that will settle it. The row format and vocabularies are in [DDR-FORMAT.md](./DDR-FORMAT.md).
-A decision that passes the ADR test gets the ADR, and a one-line pointer row in the register; never
-two full write-ups.
-
-The register's location is the project's to declare, under "Design decisions" in its `CLAUDE.md`. If
-no register is declared, ask before creating one, as with `docs/adr/`.

@@ -57,9 +57,6 @@ Be specific about edge cases and error conditions.
 - `functionName()` return type: what it currently returns vs what it should return
 - Config shape: any new configuration options needed
 
-**Decisions:**
-- Each ADR and DDR that binds this work, by identifier with a one-line gist, or "None"
-
 **Acceptance criteria:**
 - [ ] Specific, testable criterion 1
 - [ ] Specific, testable criterion 2
