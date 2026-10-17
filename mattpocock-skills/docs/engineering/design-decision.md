@@ -39,4 +39,4 @@ It runs underneath a grilling more often than on its own. [grill-with-docs](http
 
 ## Where it fits
 
-`design-decision` is the lower half of the decision record, beside [domain-modeling](https://aihero.dev/skills-domain-modeling), which owns the glossary and the ADRs. [implement](https://aihero.dev/skills-implement) reads the rows a ticket cites, and [to-tickets](https://aihero.dev/skills-to-tickets) and [triage](https://aihero.dev/skills-triage) name them under a ticket's Decisions heading.
+`design-decision` is a **model-invoked reference** that runs underneath grilling, like domain-modeling. It is the lower half of the decision record, beside [domain-modeling](https://aihero.dev/skills-domain-modeling), which owns the glossary and the ADRs. [implement](https://aihero.dev/skills-implement) reads the rows a ticket cites, and [to-tickets](https://aihero.dev/skills-to-tickets) and [triage](https://aihero.dev/skills-triage) name them under a ticket's Decisions heading. [ask-matt](https://aihero.dev/skills-ask-matt) routes the whole set.

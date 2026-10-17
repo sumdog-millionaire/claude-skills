@@ -117,4 +117,4 @@ A decision that passes the ADR test gets the ADR, and a one-line pointer row in 
 two full write-ups.
 
 The register lives at `docs/ddr/register.csv` unless the project's `docs/agents/domain.md` names
-another place. If the project has none, ask before creating one, as with `docs/adr/`.
+another place. If the project has none, ask before creating one.

@@ -2,7 +2,7 @@
 
 `implement` builds work that has already been decided. You point it at a [ticket](https://www.aihero.dev/ai-coding-dictionary/ticket), a [spec](https://www.aihero.dev/ai-coding-dictionary/spec), or the plan you just agreed in the conversation, and it writes the code, drives [tdd](https://aihero.dev/skills-tdd) at the seams, typechecks as it goes, runs [code-review](https://aihero.dev/skills-code-review) at the end, and commits to the current branch.
 
-It never reopens the plan. There is no interview, no clarifying round, no proposal of a different approach. Whatever was settled upstream is the input, and the skill's whole job is to turn that into a commit. That is what separates it from typing "build this" at a fresh [agent](https://www.aihero.dev/ai-coding-dictionary/agent), which often redesigns the work while it builds it.
+It never redesigns the plan, and it never fills a gap with a guess. It loads [grilling](https://aihero.dev/skills-grilling), explains the ticket back to you, and asks every point the ticket, the records and the code leave open, all in one round, before it writes any code. Whatever was settled upstream is the input, and the skill's whole job is to turn that into a commit. That is what separates it from typing "build this" at a fresh [agent](https://www.aihero.dev/ai-coding-dictionary/agent), which often redesigns the work while it builds it, or quietly decides whatever the ticket left open.
 
 ## When to reach for it
 
@@ -13,14 +13,13 @@ Where the work currently lives decides whether this is the right skill:
 | The work is… | Reach for |
 | --- | --- |
 | A ticket on the tracker | `/implement #42`, one ticket per [session](https://www.aihero.dev/ai-coding-dictionary/session), [clearing](https://www.aihero.dev/ai-coding-dictionary/clearing) context between tickets |
+| A set of tickets under a label or milestone | `/implement <label or milestone>`, which takes the frontier: the open ticket whose blockers are all done |
 | A spec, not yet split up, and the build spans sessions | [to-tickets](https://aihero.dev/skills-to-tickets) first, then `/implement` per ticket |
 | A spec, and the build is small | `/implement` directly against the spec |
 | Only in the conversation you just had, and it's still small | `/implement` right there, in the same window |
 | Not written down anywhere yet | [grill-with-docs](https://aihero.dev/skills-grill-with-docs), or [grill-me](https://aihero.dev/skills-grill-me) if there's no codebase |
 | One concrete behaviour you want test-first, with no spec | [tdd](https://aihero.dev/skills-tdd) directly |
 | Already built, and you want it checked | [code-review](https://aihero.dev/skills-code-review) directly |
-
-The same-session case is worth naming because the skill's own first line doesn't cover it. `SKILL.md` says "the spec or tickets", which pushes the [model](https://www.aihero.dev/ai-coding-dictionary/model) to look for a file that doesn't exist. If the plan lives only in the thread, say so when you invoke it.
 
 ## Prerequisites
 
@@ -30,13 +29,12 @@ If the tickets came from [to-tickets](https://aihero.dev/skills-to-tickets), [se
 
 ## What one run does
 
-A run has five steps, in order:
+A run has four parts, in order:
 
-1. Read the ticket or spec and work out the seams.
-2. Drive [tdd](https://aihero.dev/skills-tdd) at the pre-agreed seams, one red-green slice at a time.
-3. Typecheck often, run single test files as it goes.
-4. Run the full test suite once, at the end.
-5. Run [code-review](https://aihero.dev/skills-code-review), then commit to the current branch.
+1. **Load the context.** It loads [grilling](https://aihero.dev/skills-grilling), [domain-modeling](https://aihero.dev/skills-domain-modeling) and [design-decision](https://aihero.dev/skills-design-decision), fetches the ticket (or the frontier of the scope you named), reads every ADR and DDR the ticket cites or touches, and finds the existing code to reuse.
+2. **Explain, then grill.** It explains the ticket in plain terms, with each binding ADR and DDR in one line, then lists every choice the build needs that nothing settles yet and asks the whole list in one round. When nothing is open, it says the ticket is detailed enough to build as written, and why. Each answer is recorded, usually as a DDR, before the edit that builds it.
+3. **Set the rewind point.** It names the last message before the build starts, so you can rewind to it and carry on with a lighter context, and splits the build into parts that each end in a commit.
+4. **Build.** It drives [tdd](https://aihero.dev/skills-tdd) at the agreed seams, typechecks and runs single test files as it goes, runs the full suite once at the end, runs [code-review](https://aihero.dev/skills-code-review), then commits to the current branch.
 
 One run covers one ticket. The tickets [to-tickets](https://aihero.dev/skills-to-tickets) produces are tracer-bullet vertical slices sized to fit a single fresh [context window](https://www.aihero.dev/ai-coding-dictionary/context-window), so the intended rhythm is: clear context, implement one ticket, commit, clear again. Each ticket is self-contained, so you can discard the previous ticket's context.
 
@@ -44,7 +42,7 @@ One run covers one ticket. The tickets [to-tickets](https://aihero.dev/skills-to
 
 The skill's central idea is the **seam**, the public boundary you observe behaviour at without reaching inside. Tests live at seams. When the seam is agreed before any code exists, the tests last, and you can rewrite the implementation underneath without changing them.
 
-The "pre-agreed" part matters, and it is also the skill's weakest point. Nothing inside `implement` agrees the seams. `tdd` is the skill that asks, and it refuses to write a test at an unconfirmed seam. So in practice the agreement happens either upstream in the spec, or in the first exchange of the run. If it happens nowhere, the run becomes "just write the code" and nothing warns you. Naming the seams in the spec is what stops that.
+The "pre-agreed" part matters. The agreement happens either upstream in the spec, or in the run's grilling round, where the seams to test are among the open choices it asks about. `tdd` then refuses to write a test at an unconfirmed seam. Naming the seams in the spec saves that question.
 
 ## Common questions
 
@@ -76,7 +74,7 @@ The agent resolved `#2` against another numbered list in context, such as a todo
 
 ## It's working if
 
-- The session opens by reading the ticket or spec and restating what it will build, rather than asking you what to build.
+- The session opens by reading the ticket or spec and restating the ticket, each binding ADR and DDR, and every open choice.
 - You can see an actual `tdd` Skill tool call in the trace, not just tests appearing in the diff.
 - Typechecks and single test files run repeatedly during the run, and the full suite runs once near the end.
 - The run reaches a commit on your current branch without you prompting it to carry on.

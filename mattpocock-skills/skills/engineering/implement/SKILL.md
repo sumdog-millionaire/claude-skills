@@ -8,7 +8,7 @@ Implement the work described by the user in the spec or tickets.
 
 ## 1. Load the context
 
-First, before anything else, call the Skill tool with "grilling", "domain-modeling" and "design-decision". Every question to the user follows `grilling`'s format.
+First, before anything else, call the Skill tool three times, for "grilling", "domain-modeling" and "design-decision". Every question to the user follows `grilling`'s format.
 
 If the user passes a ticket reference, fetch it from the issue tracker with its comments and blocking links, and state its title. If the user passes a scope instead (a label, a milestone, a parent issue), take its **frontier**: the open ticket in that scope whose blockers are all done, because the order of work lives in the tracker's blocking links and nowhere else. If the reference is ambiguous, or the frontier holds more than one ticket or none, ask.
 

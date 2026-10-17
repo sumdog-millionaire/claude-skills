@@ -57,7 +57,7 @@ Nothing keeps it in sync. In practice it is a snapshot of what you knew at that 
 Less well, and this is a known limitation. The template relies heavily on user stories, which do not fit architectural work. You end up writing stories nobody asked for around decisions that are really about interfaces and invariants. Use the implementation-decisions and testing-decisions sections instead. Record the lasting architectural decisions as ADRs through [grill-with-docs](https://aihero.dev/skills-grill-with-docs), not in the spec.
 
 **Will it check the tracker for related work, or cite the ADRs it's respecting?**
-No to both. It reads and follows the ADRs for the area it touches, but it does not link them. It also does not search the tracker for overlapping issues before it writes, so a spec can duplicate work that someone already filed, and nothing warns you. If the area is busy, search the tracker yourself first.
+It lists every binding ADR and DDR under a Decisions heading. It does not search the tracker; [to-tickets](https://aihero.dev/skills-to-tickets) does that before publishing.
 
 **`/to-tickets` couldn't read my spec: it kept truncating.**
 A tracker issue may not return a very large spec in full, and there is no local copy to use instead. To fix this, do not [clear](https://www.aihero.dev/ai-coding-dictionary/clearing) or [compact](https://www.aihero.dev/ai-coding-dictionary/compaction) between `/to-spec` and `/to-tickets`. Run them in the same window, and `/to-tickets` never has to fetch the spec again.

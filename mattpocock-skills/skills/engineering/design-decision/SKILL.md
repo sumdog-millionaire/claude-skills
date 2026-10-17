@@ -1,6 +1,6 @@
 ---
 name: design-decision
-description: Record proposed, in-research and accepted decisions that fall below the ADR bar as DDRs (design decision records) - numbered, dated, statused rows tagged by layer, area, sub-area, project part, priority and risk in the project's design decision register, a filterable CSV - before implementation, for prototype and production alike. Use this whenever a choice is settled in conversation where there were several ways to approach it - how something acts, layout, motion, colour, copy placement, disclosure behaviour, a module boundary, a coding style, a package, a logging or data-handling rule - and whenever the user says "record that", "design note", "make that a decision", "D-row", "DDR", "add it to the register", "put this in for prod", or closes a grilling question with a choice. Run it beside domain-modeling in every grilling; also use it when a review round (users, client stakeholders, the product owner) produces accepted changes that need writing down before they are built.
+description: Record proposed, in-research and accepted decisions that fall below the ADR bar as DDRs (design decision records): numbered, dated, statused rows tagged by layer, area, sub-area, project part, priority and risk in the project's design decision register, a filterable CSV, before implementation, for prototype and production alike. Use this whenever a choice is settled in conversation where there were several ways to approach it, such as how something acts, layout, motion, colour, copy placement, disclosure behaviour, a module boundary, a coding style, a package, a logging or data-handling rule, and whenever the user says "record that", "design note", "make that a decision", "D-row", "DDR", "add it to the register", "put this in for prod", or closes a grilling question with a choice. Run it beside domain-modeling in every grilling; also use it when a review round (users, client stakeholders, the product owner) produces accepted changes that need writing down before they are built.
 ---
 
 # Design decision
@@ -44,8 +44,8 @@ If the project has no register or no tracker set up, ask the user before writing
 
 ## Companion skills
 
-- **Explicit invocation:** when the user invokes this skill by name, load both `grilling` and
-  `domain-modeling` before recording decisions. Loading them does not require asking questions whose
+- **Explicit invocation:** when the user invokes this skill by name, call the Skill tool twice,
+  for "grilling" and "domain-modeling", before recording decisions. Loading them does not require asking questions whose
   answers are already established.
 - **Automatic invocation:** normally load both companions too. They may be skipped only when the
   context unambiguously supplies every column of the row with no unresolved choice or terminology

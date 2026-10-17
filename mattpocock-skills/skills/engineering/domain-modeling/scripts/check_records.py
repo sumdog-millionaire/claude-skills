@@ -120,7 +120,7 @@ def check_register(rows: list[dict[str, str]], project_taxonomy: dict, adr_numbe
         for column in ("supersedes", "superseded_by", "settled_by"):
             for reference in ids(row[column]):
                 # settled_by may name a tracker issue, which is not a row in this file
-                if re.fullmatch(r"[A-Z]+-\d+", reference):
+                if re.fullmatch(r"[A-Z]+-\d+|#?\d+", reference):
                     continue
                 if reference not in known:
                     errors.append(f"{this}: {column} names {reference}, which is not in the register")

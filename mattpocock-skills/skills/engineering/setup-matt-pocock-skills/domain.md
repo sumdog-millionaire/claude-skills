@@ -9,7 +9,7 @@ How the engineering skills should consume this repo's domain documentation when 
 - **`docs/adr/`** and **`docs/ddr/register.csv`**: read the ADRs and DDRs that touch the area you're about to work in. ADRs and DDRs always travel together: wherever you read, respect, cite or flag one, do the same for the other. In multi-context repos, also check `src/<context>/docs/adr/` for context-scoped decisions.
 - **The design rulebook** (the values file, such as `DESIGN.md`), when the project has one: setup writes its path here.
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` and `/design-decision` skills (reached via `/grill-with-docs` and `/improve-codebase-architecture`) create them lazily when terms or decisions actually get resolved.
+If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. `/domain-modeling` creates `GLOSSARY.md` and `docs/adr/` lazily; `/design-decision` asks before creating the register.
 
 ## File structure
 
@@ -22,6 +22,8 @@ Single-context repo (most repos):
 │   ├── 0001-event-sourced-orders.md
 │   └── 0002-postgres-for-write-model.md
 ├── docs/ddr/register.csv
+├── docs/ddr/project_taxonomy.json
+├── docs/agents/records.json
 └── src/
 ```
 
@@ -31,6 +33,7 @@ Multi-context repo (presence of `GLOSSARY-MAP.md` at the root):
 /
 ├── GLOSSARY-MAP.md
 ├── docs/adr/                          ← system-wide decisions
+├── docs/ddr/register.csv
 └── src/
     ├── ordering/
     │   ├── GLOSSARY.md

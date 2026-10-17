@@ -66,7 +66,7 @@ If the project has a design rulebook (a `DESIGN.md` or similar values file), wri
 
 Then write **`docs/agents/records.json`**, which only the sync hooks read: `paths` (every record file and folder), `register` and `adrs`. Once it is on `main`, the hooks keep the records on `main` for every branch.
 
-If `docs/adr/` already holds ADRs without the front matter the records check needs (`date`, `area`, `sub_area`, and `project_taxonomy` where a part applies; [ADR-FORMAT.md](../domain-modeling/ADR-FORMAT.md)), tell the user the check will refuse every push until they are tagged, and offer a tagging pass: one brief file, Opus sub-agents taking about ninety ADRs each, front matter only, each date taken from the commit that added the file. Run `scripts/check_records.py` once it is done, and push `records.json` only when it passes.
+If `docs/adr/` already holds ADRs without the front matter the records check needs (`status`, `date`, `area`, `sub_area`, and `project_taxonomy` where a part applies; [ADR-FORMAT.md](../domain-modeling/ADR-FORMAT.md)), tell the user the check will refuse every push until they are tagged, and offer a tagging pass: one brief file, Opus sub-agents taking about ninety ADRs each, front matter only, each date taken from the commit that added the file. Run `scripts/check_records.py` once it is done, and push `records.json` only when it passes.
 
 ### 3. Confirm and edit
 

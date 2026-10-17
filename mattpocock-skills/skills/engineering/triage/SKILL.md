@@ -90,8 +90,8 @@ Show counts and a one-line summary per item. Let the maintainer pick.
 
 A **sweep** walks every open issue, not only the untriaged ones, and keeps the tracker true (see the tracker config's "Keeping the tracker true"). Run it when the maintainer asks; it is the periodic clean-up.
 
-1. **Gather.** List every open issue with its body, comments, labels, links and dates. Read the domain glossary and the ADR index first, so each issue is judged against what is decided now.
-2. **Judge each issue** against the codebase, the ADRs and the other open issues, and give it one verdict with the evidence behind it:
+1. **Gather.** List every open issue with its body, comments, labels, links and dates. Read the glossary, the ADR index and the DDR register first, so each issue is judged against what is decided now.
+2. **Judge each issue** against the codebase, the ADRs, the DDRs and the other open issues, and give it one verdict with the evidence behind it:
    - **Done**: the behaviour exists; name where.
    - **Obsolete**: a later decision, ADR or build made it moot; name which.
    - **Duplicate**: another open issue covers it; name which one survives.

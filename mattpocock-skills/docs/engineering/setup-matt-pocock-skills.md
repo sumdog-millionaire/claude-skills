@@ -1,6 +1,6 @@
 ## What it does
 
-`setup-matt-pocock-skills` answers three questions about one repo: where issues live, what the triage labels are called, and where the domain docs sit. It records the answers as markdown files under `docs/agents/`.
+`setup-matt-pocock-skills` answers four questions about one repo: where issues live, what the triage labels are called, where the domain docs sit, and which big parts the project is built from (its project taxonomy). It records the answers as markdown files under `docs/agents/`.
 
 Those files are the only thing that varies between repos. The skills themselves are identical everywhere. They read `docs/agents/issue-tracker.md` at run time and do what it says. That is why the set is not tied to GitHub, and why you never edit a skill file to point it at another tracker. Invoking it with "link the skills to a custom issue tracker" works with anything you can connect to programmatically, with no changes to the skills.
 
@@ -21,19 +21,22 @@ It writes into the repo you run it in:
 | `issue-tracker.md` | `docs/agents/` |
 | `domain.md` | `docs/agents/` |
 | `triage-labels.md` | `docs/agents/`, only when the `triage` skill is installed |
+| `records.json`, which tells the plugin's hooks which record files to keep on `main` | `docs/agents/` |
+| `project_taxonomy.json`, the project's parts that decision records are tagged by | `docs/ddr/` |
 | An `## Agent skills` block | whichever of `CLAUDE.md` or `AGENTS.md` already exists |
 
 You commit all of it as markdown. There is no user-level or global mode. The config lives in the repo, so every repo gets its own copy.
 
-## The three decisions
+## The four decisions
 
-It starts each section with the recommended answer, and skips any question its exploration already answered. Most runs need only two confirmations.
+It starts each section with the recommended answer, and skips any question its exploration already answered. Most runs need only two or three confirmations.
 
 | Decision | What it proposes | When it asks |
 | --- | --- | --- |
 | **Issue tracker** | the one matching your `git remote` | always, because this is the one real choice |
 | **Triage labels** | keep the five canonical names (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) | only if the `triage` skill is installed |
-| **Domain docs** | single-context: one `GLOSSARY.md` plus `docs/adr/` at the root | only if it spots monorepo signals, and then it offers a multi-context `GLOSSARY-MAP.md` |
+| **Domain docs** | single-context: one `GLOSSARY.md` plus `docs/adr/` and `docs/ddr/register.csv` at the root | only if it spots monorepo signals, and then it offers a multi-context `GLOSSARY-MAP.md` |
+| **Project taxonomy** | the few big parts the project is built from, as its people talk about them, each with a one-line definition | always, so you can cut and rename the list |
 
 The tracker options:
 
@@ -71,7 +74,7 @@ It doesn't. `docs/agents/triage-labels.md` is a *mapping*: it tells `/triage` wh
 
 **Can I configure the other skills' behaviour here ([grilling](https://www.aihero.dev/ai-coding-dictionary/grilling) cadence, question format, tone)?**
 
-No. It configures three things: tracker, labels, doc layout. Users have asked to make it the place for per-user preferences. The answer is that skills stay opinionated and take no per-user config. Preferences belong in your `CLAUDE.md` as plain instructions, which every skill already reads.
+No. It configures four things: tracker, labels, doc layout and the project taxonomy. Users have asked to make it the place for per-user preferences. The answer is that skills stay opinionated and take no per-user config. Preferences belong in your `CLAUDE.md` as plain instructions, which every skill already reads.
 
 **Can I keep the config in `~/.claude` instead of committing it to every repo?**
 

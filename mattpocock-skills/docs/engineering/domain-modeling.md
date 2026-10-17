@@ -2,7 +2,7 @@
 
 `domain-modeling` builds and sharpens a project's **ubiquitous language** while you are designing. It challenges a term that conflicts with the glossary, asks for a precise word where you used a vague one, and tests a relationship against a concrete scenario until the boundaries are exact.
 
-It is the **active** discipline, not the passive one. Any skill can read `GLOSSARY.md` to borrow its vocabulary. This skill is for when you are *changing* the model, which is why it interrupts you. It writes a term into `GLOSSARY.md` at the moment you settle it, in the middle of the conversation, rather than producing a tidy glossary at the end. A glossary written at the end is a summary of a [session](https://www.aihero.dev/ai-coding-dictionary/session); the inline version is the session's output.
+It is loaded first in any project: it reads the glossary and the records before code is read, then sharpens the model as you design, which is why it interrupts you. It writes a term into `GLOSSARY.md` at the moment you settle it, in the middle of the conversation, rather than producing a tidy glossary at the end. A glossary written at the end is a summary of a [session](https://www.aihero.dev/ai-coding-dictionary/session); the inline version is the session's output.
 
 ## When to reach for it
 
@@ -21,27 +21,32 @@ Reach for it when the *words* are the problem:
 
 ## Prerequisites
 
-None up front. The skill writes into two places and creates both lazily:
+None up front. The skill writes into three places:
 
 - **`GLOSSARY.md`** at the repo root. The skill creates it when you settle the first term. In a repo with a `GLOSSARY-MAP.md` at the root, terms go into the per-context `GLOSSARY.md` the map points at instead.
 - **`docs/adr/`**. The skill creates it with the first ADR that clears the bar.
+- **`docs/ddr/register.csv`**, the design decision register. The skill hands each smaller rule to [design-decision](https://aihero.dev/skills-design-decision), which writes the row, and asks before creating the register.
 
 Nothing needs to exist before you start, and the skill creates nothing in advance.
 
-## Two artifacts, two bars
+## Three artifacts, three bars
 
-The glossary and the ADR have different bars. Most of the trouble with this skill comes from mixing them up.
+The glossary, the ADR and the DDR have different bars. Most of the trouble with this skill comes from mixing them up.
 
-| | `GLOSSARY.md` | `docs/adr/NNNN-slug.md` |
-| --- | --- | --- |
-| Holds | Terms. What a thing **is**, in one or two sentences, with rejected synonyms under `_Avoid_` | One decision, in one to three sentences: context, choice, reason |
-| Bar to write | A vague term became canonical | **All three**: hard to reverse, surprising without context, the result of a real trade-off |
-| Written | Inline, the moment the term is settled | Offered, not assumed |
-| Never holds | Implementation details, a [spec](https://www.aihero.dev/ai-coding-dictionary/spec), a scratch pad, general programming concepts | A diary of every choice made this session |
+| | `GLOSSARY.md` | `docs/adr/NNNN-slug.md` | A DDR row in `docs/ddr/register.csv` |
+| --- | --- | --- | --- |
+| Holds | Terms. What a thing **is**, in one or two sentences, with rejected synonyms under `_Avoid_` | One decision, in one to three sentences: context, choice, reason | One design rule, with the alternatives that lost |
+| Bar to write | A vague term became canonical | **All three**: hard to reverse, surprising without context, the result of a real trade-off | There were several ways, and the project locked one: one you would just change |
+| Written | Inline, the moment the term is settled | Offered, not assumed | By [design-decision](https://aihero.dev/skills-design-decision), before the edit that builds it |
+| Never holds | Implementation details, a [spec](https://www.aihero.dev/ai-coding-dictionary/spec), a scratch pad, general programming concepts | A diary of every choice made this session | A choice nobody had to make |
 
 Miss any one of the ADR's three tests and there is no ADR. An easily-reversed decision will just get reversed; an unsurprising one is nobody's question; one with no real alternative records that you did the obvious thing.
 
 The `GLOSSARY.md` rule matters most, because it is the one that breaks in practice. **It is a glossary and nothing else.** Left unchecked, models treat "write to `GLOSSARY.md`" as permission to persist every answer you give, and the file turns into a running spec. This is the most-reported problem with the skill, across several models.
+
+## Keep the records on main
+
+When several people work on separate branches, they can number two records the same or edit one apart. A project that puts `docs/agents/records.json` on `main`, listing its record files, avoids that. The plugin's hooks then keep those records on `main` for every branch, silently: they bring the records up to date before each edit, check the edited record, and push it to `main`. You edit records as usual and commit the refreshed copies with the branch's work. In a project without that file, the hooks do nothing.
 
 ## Cross-referencing, and where it stops
 
