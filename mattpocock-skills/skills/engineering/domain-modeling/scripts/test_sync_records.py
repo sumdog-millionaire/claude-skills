@@ -75,7 +75,8 @@ def main() -> None:
         run(person, "git", "checkout", "-q", "-b", "feature")
         result = hook("session", person)
         assert result.returncode == 0 and not result.stdout, result.stdout
-    assert (base / "ben-records" / reg).exists()
+    assert (ben / ".git/records-sync" / reg).exists(), "the sync checkout lives inside .git"
+    assert not (base / "ben-records").exists(), "nothing appears beside the project"
 
     result = edit(ben, reg, register("D1", "D2 ben"))
     assert result.returncode == 0 and not result.stderr, result.stderr
@@ -109,7 +110,7 @@ def main() -> None:
         for event in ("session", "before", "after"):
             result = hook(event, folder, None if event == "session" else folder / "GLOSSARY.md")
             assert result.returncode == 0 and not result.stdout and not result.stderr, "a project that has not opted in is left alone"
-    assert not (base / "other-records").exists()
+    assert not (other / ".git/records-sync").exists()
     print("sync_records: all checks passed")
 
 

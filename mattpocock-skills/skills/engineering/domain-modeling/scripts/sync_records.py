@@ -37,10 +37,10 @@ def opted_in(cwd: Path) -> bool:
 
 
 def roots(start: Path) -> tuple[Path, Path]:
-    """The project's main checkout and its sync checkout beside it, from anywhere in either."""
+    """The project's main checkout and its sync checkout inside its .git folder, from anywhere in either."""
     common = Path(git(start, "rev-parse", "--path-format=absolute", "--git-common-dir"))
     root = common.parent
-    return root, root.with_name(root.name + "-records")
+    return root, common / "records-sync"
 
 
 def load_config(root: Path) -> dict:
