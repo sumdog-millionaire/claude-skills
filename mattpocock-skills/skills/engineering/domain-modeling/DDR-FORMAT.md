@@ -10,13 +10,17 @@ learn. They differ in one test, and it is not breadth:
 
 > **An ADR is a decision you would pay to undo. A DDR is one you would just change.**
 
-A narrow choice can be irreversible and belongs in an ADR ("published quotes are reached by a public
+A narrow choice can be irreversible and belongs in an ADR ("shared documents are reached by a public
 unguessable link"). A decision as wide as a whole visual language can be reversed in an afternoon and
 belongs in a row. Route on the cost of undoing it.
 
 The register is one file because its value is in being filtered: every decision in one area, every
 unbuilt `must`, everything waiting on one tracker issue, in one sort. Nothing about a DDR lives
 outside its row. A decision that needs a page of argument wants an ADR instead.
+
+The register holds DDRs only. An ADR is written in `docs/adr/` and carries the same tags in its front
+matter ([ADR-FORMAT.md](./ADR-FORMAT.md)), so one filter over the register and the ADR folder reads
+both. A row names the ADRs it relates to in `adrs`.
 
 ## Columns
 
@@ -39,7 +43,7 @@ quote or a newline can never shift the columns.
 | `statement` | The rule: one or two plain present-tense sentences, no implementation detail beyond what the rule needs |
 | `why` | The observation or trade-off that produced it, one or two sentences |
 | `alternatives` | The other approaches seriously considered, and why each lost. Required |
-| `tracker_issue` | Where the discussion happened, by identifier (`AI-134`); semicolon-separated if several |
+| `tracker_issue` | Where the discussion happened, by identifier (`ENG-134`); semicolon-separated if several |
 | `settled_by` | The tracker issue that will settle a `proposed`, `in-research` or `deferred` row. Empty on settled rows |
 | `supersedes` | Semicolon-separated ids this row replaces |
 | `superseded_by` | The one id that replaced this row |
@@ -53,13 +57,6 @@ not back-filled.
 
 There is no `consequences` column: a decision with real consequences to record usually wants an ADR.
 There is no detail file. A row is the whole record.
-
-### Requirements, conflicts and sources
-
-A project that also records what its sources asked for may add a `type` column after `id`
-(`decision`, `requirement`, `conflict`, `source`), plus `provenance` and `citation` after
-`alternatives` and `section` at the end. Requirements carry `area` and `sub_area` too; conflicts and
-sources do not. The check accepts either shape and nothing in between.
 
 ## Tags
 
@@ -88,7 +85,7 @@ A rule that genuinely lives in two layers is two rows, or `system`.
 
 `project_taxonomy.json` sits beside the register: a JSON object from each part's name to a one-line
 definition, naming the few big parts the project is built from as its people talk about them
-(`"quote-ui": "The guest-facing quote page"`). It is not a second cut of the area list. The setup skill
+(`"checkout": "The pages a customer pays through"`). It is not a second cut of the area list. The setup skill
 writes the first version with the user. Afterwards an agent may propose adding, renaming or retiring
 a part, and asks before changing the file; retiring one means retagging its rows in the same change.
 
@@ -105,8 +102,8 @@ touches money, and a must-have can be low-risk.
 
 | Risk | Meaning, as the cost of building it wrong |
 |---|---|
-| `high` | A defect that blocks acceptance: accuracy, money, regulation, security, a client-stated requirement |
-| `medium` | A visible deviation the client would flag but ship |
+| `high` | A defect that blocks acceptance: accuracy, money, regulation, security, a stakeholder's stated requirement |
+| `medium` | A visible deviation a stakeholder would flag but ship |
 | `low` | A preference a reasonable engineer could vary without harm |
 
 ## Built

@@ -9,11 +9,11 @@ every session, in every project.
 | Folder | What it does |
 |---|---|
 | `anti-ai-slop-writing/` | the writing standard for anything a person reads as a finished piece |
-| `prepare-rewind/`, `carry-on-rewind/` | write a handover before the conversation is rewound, then resume from it |
+| `maintain-mattpocock-fork/` | how to edit `mattpocock-skills/` and take Matt Pocock's updates into it |
 | `video-digest/` | turn a recorded meeting or video into a timestamped evidence map of what was said and shown |
 | `marketing_materials/` | the design system for branded decks, one-pagers and documents |
 | `ui-dev/` | a plugin, not a single skill: fifteen skills and a hook for designing and building interfaces. It has its own README. |
-| `mattpocock-skills/` | a plugin: Matt Pocock's engineering skills (grilling, implement, to-tickets, triage, tdd and the rest) with Benedict's changes |
+| `mattpocock-skills/` | a plugin: Matt Pocock's engineering skills (grilling, implement, to-tickets, triage, tdd and the rest) with Benedict's changes, including the rewind skills `prepare-rewind` and `carry-on-rewind` |
 
 A folder with a `SKILL.md` at its top is one skill. A folder with `.claude-plugin/plugin.json` is a
 plugin, which Claude Code loads from here in the same way and lists as `<name>@skills-dir`.
@@ -66,27 +66,10 @@ clone the fork to `~/.claude/skills/`, push there, and open a pull request back 
 ### Take Matt Pocock's updates
 
 `mattpocock-skills/` is Benedict's version of [`mattpocock/skills`](https://github.com/mattpocock/skills),
-kept here as a git subtree: an ordinary folder that git can still merge his repository into. Edit it
-like any other folder. To take his updates, from `~/.claude/skills/` with nothing uncommitted:
-
-```powershell
-git subtree pull --prefix=mattpocock-skills https://github.com/mattpocock/skills.git main --squash
-git push
-```
-
-Git merges his changes into the folder and keeps the edits made here. Where both changed the same
-lines it stops with a conflict to resolve, as any merge does.
-
-The pull works out what he changed from the last squash commit's `git-subtree-split:` line, so that line
-must name a commit in his repository. The folder first arrived from a laptop fork's own commit, which his
-repository never had, so a pull read his version as deleting every edit made here. Commit `5dec628`
-re-anchored it on his `f3fc563`, the version the fork was taken from. Never squash in a copy from another
-fork; merge his repository, and only his.
-
-Edits made here follow his structure: his skill layout, his `docs/engineering/` page and
-`agents/openai.yaml` for every skill, and his default paths. The additions are the design-decision skill,
-the DDR register and its records check, the record-sync hooks, required ADR front matter, the rewritten
-implement skill, the triage sweep and the Decisions sections in tickets.
+kept here as a git subtree. To take his updates, from `~/.claude/skills/` with nothing uncommitted under
+it, run `git subtree pull --prefix=mattpocock-skills https://github.com/mattpocock/skills.git main --squash`.
+The `maintain-mattpocock-fork` skill holds the rest: how to edit the fork, how to resolve a pull, and
+which differences from his repository are deliberate.
 
 ## What is not here
 

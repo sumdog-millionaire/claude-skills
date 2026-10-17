@@ -113,8 +113,9 @@ When such a rule crystallises, hand it to the `design-decision` skill rather tha
 routes the decision to the register, a term back to `GLOSSARY.md` and an action or experiment to the
 tracker, and it makes sure every `proposed`, `in-research` or `deferred` row names the tracker
 issue that will settle it. The row format and vocabularies are in [DDR-FORMAT.md](./DDR-FORMAT.md).
-A decision that passes the ADR test gets the ADR, and a one-line pointer row in the register; never
-two full write-ups.
+A decision that passes the ADR test gets an ADR in `docs/adr/`, with its tags in the front matter,
+and no row: the register holds DDRs only, and a filter reads both. A DDR row may name related ADRs in
+its `adrs` column.
 
 The register lives at `docs/ddr/register.csv` unless the project's `docs/agents/domain.md` names
 another place. If the project has none, ask before creating one.

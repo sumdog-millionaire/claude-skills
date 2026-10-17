@@ -1,5 +1,5 @@
 interface:
   display_name: "Implement"
-  short_description: "Carry a tracker issue to done"
+  short_description: "Carry a tracker issue, or the next free ticket in a scope, to done"
 policy:
   allow_implicit_invocation: false

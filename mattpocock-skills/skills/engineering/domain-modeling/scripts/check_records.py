@@ -19,36 +19,14 @@ AREA_OF = {sub: area for area, spec in TAXONOMY.items() for sub in spec["sub_are
 NEW_ROWS_FROM = "2026-10-17"
 
 COLUMNS = "id status layer area sub_area project_taxonomy priority risk built_prototype built_production decided statement why alternatives tracker_issue settled_by supersedes superseded_by adrs".split()
-# A register that also holds requirements, conflicts and sources adds a type column and four more
-TYPED_COLUMNS = "id type status layer area sub_area project_taxonomy priority risk built_prototype built_production decided statement why alternatives provenance citation tracker_issue settled_by supersedes superseded_by adrs section".split()
 
 BUILT = "yes partial no".split()
 UNDECIDED = {"proposed", "in-research", "deferred"}
 TAGS = {"area", "sub_area"}
 
-# Each type has its own id shape, its own statuses, and its own required columns
-RULES = {
-    "decision": {
-        "id": r"D\d+",
-        "status": "proposed in-research accepted rejected deferred superseded".split(),
-        "required": "status layer area sub_area priority risk built_prototype built_production decided statement".split(),
-    },
-    "requirement": {
-        "id": r"REQ-\d+",
-        "status": "proposed accepted rejected deferred superseded".split(),
-        "required": "status area sub_area priority statement provenance citation".split(),
-    },
-    "conflict": {
-        "id": r"C\d+",
-        "status": ["open", "resolved"],
-        "required": "status statement why".split(),
-    },
-    "source": {
-        "id": r"[A-Z0-9][A-Z0-9-]*",
-        "status": [""],
-        "required": "statement provenance".split(),
-    },
-}
+ID = r"D\d+"
+STATUSES = "proposed in-research accepted rejected deferred superseded".split()
+REQUIRED = "status layer area sub_area priority risk built_prototype built_production decided statement".split()
 
 VOCABULARY = {
     "layer": "frontend backend data infra architecture content system".split(),
@@ -59,7 +37,8 @@ VOCABULARY = {
     "built_prototype": BUILT,
     "built_production": BUILT,
 }
-ADR_STATUSES = "proposed accepted deprecated superseded".split()
+# A superseded ADR names every successor by number: "superseded by 0340", "superseded by 0105 and 0106"
+ADR_STATUS = r"proposed|accepted|deprecated|superseded by \d{4}((, \d{4})* and \d{4})?"
 STATEMENT_LIMIT = 600
 
 
@@ -88,20 +67,16 @@ def check_register(rows: list[dict[str, str]], project_taxonomy: dict, adr_numbe
         errors.append(f"{len(rows) - len(known)} duplicate id(s)")
 
     for row in rows:
-        this, kind = row["id"], row.get("type", "decision")
-        if kind not in RULES:
-            errors.append(f"{this}: type is {kind!r}, not one of {', '.join(RULES)}")
-            continue
-        rule = RULES[kind]
+        this = row["id"]
         new = row["decided"] >= NEW_ROWS_FROM
 
-        if not re.fullmatch(rule["id"], this):
-            errors.append(f"{this!r}: not a valid id for a {kind}")
-        if row["status"] not in rule["status"]:
-            errors.append(f"{this}: status is {row['status']!r}, not valid for a {kind}")
-        for column in rule["required"]:
+        if not re.fullmatch(ID, this):
+            errors.append(f"{this!r}: not a valid id")
+        if row["status"] not in STATUSES:
+            errors.append(f"{this}: status is {row['status']!r}, not an allowed value")
+        for column in REQUIRED:
             if not row[column]:
-                errors.append(f"{this}: {column} is empty on a {kind}")
+                errors.append(f"{this}: {column} is empty")
         for column, allowed in VOCABULARY.items():
             if row[column] and row[column] not in allowed:
                 errors.append(f"{this}: {column} is {row[column]!r}, not an allowed value")
@@ -109,13 +84,12 @@ def check_register(rows: list[dict[str, str]], project_taxonomy: dict, adr_numbe
         if row["decided"] and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", row["decided"]):
             errors.append(f"{this}: decided is {row['decided']!r}, not an ISO date")
 
-        if kind == "decision":
-            if new and not row["alternatives"]:
-                errors.append(f"{this}: alternatives is empty; a decision names the approaches it chose between")
-            if (row["status"] == "superseded") != bool(row["superseded_by"]):
-                errors.append(f"{this}: status is {row['status']} but superseded_by is {row['superseded_by']!r}")
-            if row["status"] in UNDECIDED and not row["settled_by"]:
-                errors.append(f"{this}: {row['status']} with nothing named to settle it")
+        if new and not row["alternatives"]:
+            errors.append(f"{this}: alternatives is empty; a decision names the approaches it chose between")
+        if (row["status"] == "superseded") != bool(row["superseded_by"]):
+            errors.append(f"{this}: status is {row['status']} but superseded_by is {row['superseded_by']!r}")
+        if row["status"] in UNDECIDED and not row["settled_by"]:
+            errors.append(f"{this}: {row['status']} with nothing named to settle it")
 
         for column in ("supersedes", "superseded_by", "settled_by"):
             for reference in ids(row[column]):
@@ -153,9 +127,9 @@ def check_adrs(folder: Path, project_taxonomy: dict) -> list[str]:
         if not meta:
             errors.append(f"{where}: no front matter")
             continue
-        status = meta.get("status", "").split(" ")[0]
-        if status not in ADR_STATUSES:
-            errors.append(f"{where}: status is {meta.get('status')!r}, not one of {', '.join(ADR_STATUSES)}")
+        status = meta.get("status", "")
+        if not re.fullmatch(ADR_STATUS, status):
+            errors.append(f"{where}: status is {status!r}, not proposed, accepted, deprecated or superseded by NNNN")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", meta.get("date", "")):
             errors.append(f"{where}: date is {meta.get('date')!r}, not an ISO date")
         for column in TAGS:
@@ -174,8 +148,8 @@ def main() -> None:
     # utf-8-sig so the byte-order mark Excel needs does not arrive attached to the first column name
     with register.open(encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
-        if reader.fieldnames not in (COLUMNS, TYPED_COLUMNS):
-            sys.exit(f"register columns are {reader.fieldnames}, expected {COLUMNS}, or with a type column {TYPED_COLUMNS}")
+        if reader.fieldnames != COLUMNS:
+            sys.exit(f"register columns are {reader.fieldnames}, expected {COLUMNS}")
         rows = list(reader)
 
     adr_numbers = {path.name[:4] for path in adr_folder.glob("[0-9][0-9][0-9][0-9]-*.md")}

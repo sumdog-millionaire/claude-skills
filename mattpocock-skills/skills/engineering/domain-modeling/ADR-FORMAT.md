@@ -12,7 +12,7 @@ status: accepted
 date: 2026-10-17
 area: structure
 sub_area: technology
-project_taxonomy: booking-data
+project_taxonomy: billing
 ---
 
 # {Short title of the decision}
@@ -22,7 +22,7 @@ project_taxonomy: booking-data
 
 That's it. An ADR can be a single paragraph. The value is in recording *that* a decision was made and *why*, not in filling out sections.
 
-The front matter is required, because the records check reads it. `status` is `proposed`, `accepted`, `deprecated` or `superseded by ADR-NNNN`. `area`, `sub_area` and `project_taxonomy` are the same tags a register row carries ([DDR-FORMAT.md](./DDR-FORMAT.md), "Tags"); `project_taxonomy` is semicolon-separated and may be left out when the ADR touches no part in particular.
+The front matter is required, because the records check reads it. `status` is `proposed`, `accepted`, `deprecated` or `superseded by NNNN`, naming every successor by number (`superseded by 0105 and 0106`). A bare `superseded` fails the check. `area`, `sub_area` and `project_taxonomy` are the same tags a register row carries ([DDR-FORMAT.md](./DDR-FORMAT.md), "Tags"); `project_taxonomy` is semicolon-separated and may be left out when the ADR touches no part in particular.
 
 ## Optional sections
 
@@ -45,7 +45,7 @@ All three of these must be true:
 
 If a decision is easy to reverse, skip it: you'll just reverse it. If it's not surprising, nobody will wonder why. If there was no real alternative, there's nothing to record beyond "we did the obvious thing."
 
-A decision that fails this test but is still a rule someone would build wrong without it is a DDR: hand it to `design-decision` ([DDR-FORMAT.md](./DDR-FORMAT.md)). An ADR gets a one-line pointer row in the register, so the register lists every decision.
+A decision that fails this test but is still a rule someone would build wrong without it is a DDR: hand it to `design-decision` ([DDR-FORMAT.md](./DDR-FORMAT.md)). The register holds DDRs only. An ADR stays in `docs/adr/` with its tags in its front matter, so a filter reads both, and a DDR row may name related ADRs in its `adrs` column.
 
 ### What qualifies
 

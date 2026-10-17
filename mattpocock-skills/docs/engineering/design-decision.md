@@ -4,17 +4,17 @@
 
 The test that separates the two records is cost, not size. **An ADR is a decision you would pay to undo. A DDR is one you would just change.** A narrow choice can be irreversible and want an ADR; a whole visual language can be reversed in an afternoon and want a row. If there was only one sensible way, there is nothing to record.
 
-The register is a CSV because its value is in being filtered: every unbuilt `must`, every `high` risk row, everything in one area, in one sort.
+The register is a CSV because its value is in being filtered: every unbuilt `must`, every `high` risk row, everything in one area, in one sort. It holds DDRs only. An ADR carries the same tags in its own front matter, so one filter reads both, and a row names the ADRs it relates to in its `adrs` column.
 
 ## When to reach for it
 
-It runs underneath a grilling more often than on its own. [grill-with-docs](https://aihero.dev/skills-grill-with-docs) and [wayfinder](https://aihero.dev/skills-wayfinder) load it beside [domain-modeling](https://aihero.dev/skills-domain-modeling), and it writes a row the moment a question closes with a choice. Type `/design-decision` directly when a review round, a client or a product owner settles something that needs writing down before it is built.
+It runs underneath a grilling more often than on its own. [grill-with-docs](https://aihero.dev/skills-grill-with-docs) and [wayfinder](https://aihero.dev/skills-wayfinder) load it beside [domain-modeling](https://aihero.dev/skills-domain-modeling), and it writes a row the moment a question closes with a choice. Type `/design-decision` directly when a review round, a stakeholder or a product owner settles something that needs writing down before it is built.
 
 | The situation | The move |
 | --- | --- |
 | "The section heading pins level with its sibling" was agreed in a call | `design-decision`: a row, written before the edit that builds it |
 | You chose a package, a module boundary or a logging rule | `design-decision`: a row naming the alternatives that lost |
-| The choice would cost real money or time to undo | [domain-modeling](https://aihero.dev/skills-domain-modeling): an ADR, plus a one-line pointer row |
+| The choice would cost real money or time to undo | [domain-modeling](https://aihero.dev/skills-domain-modeling): an ADR in `docs/adr/`, tagged in its front matter, and no row |
 | A new word settled | [domain-modeling](https://aihero.dev/skills-domain-modeling): the glossary |
 | An action, an experiment or a check | The issue tracker, not a record |
 

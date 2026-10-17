@@ -1,0 +1,5 @@
+interface:
+  display_name: "Prepare Rewind"
+  short_description: "Write the handover before a context rewind"
+policy:
+  allow_implicit_invocation: false

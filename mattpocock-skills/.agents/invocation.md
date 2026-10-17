@@ -23,4 +23,4 @@ This whole convention only holds when the named skill is **model-invoked**. A us
 
 ## Passive vs active domain work
 
-Merely _reading_ `GLOSSARY.md` for vocabulary is a one-line prose pointer, not the `domain-modeling` skill. Only the active build/sharpen discipline (challenge terms, edge-case scenarios, write ADRs, update `GLOSSARY.md` inline) is `domain-modeling`.
+`domain-modeling` is loaded first in any project. Before code is read, it reads the glossary and the decision records (ADRs and DDRs), so every later step speaks the project's words and respects what was decided. It then sharpens the model as you design: challenge terms, invent edge-case scenarios, write ADRs, and update `GLOSSARY.md` inline.

@@ -68,7 +68,7 @@
     "definition": "Running the product once it is built.",
     "sub_areas": {
       "environments": {"definition": "Which environments exist and what each may touch.", "boundary": "Data migrations run on staging first: environments. The identity that runs them: permissions."},
-      "deployment": {"definition": "How a build reaches an environment.", "boundary": "Everything runs in the client's own cloud account: deployment. Which cloud services: technology."},
+      "deployment": {"definition": "How a build reaches an environment.", "boundary": "Everything runs in the customer's own cloud account: deployment. Which cloud services: technology."},
       "configuration": {"definition": "Settings supplied at run time and their defaults.", "boundary": "The database host has no default: configuration. Failing loudly when it is missing: failure-handling."},
       "logging": {"definition": "What is written to logs and where.", "boundary": "Every log line lands in a JSONL file in development: logging. Alerts on it: monitoring."},
       "monitoring": {"definition": "How problems are noticed: alerts, dashboards, health checks.", "boundary": "An alert when generation fails: monitoring. What the user sees: failure-handling."},

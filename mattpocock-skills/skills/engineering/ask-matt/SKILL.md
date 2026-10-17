@@ -78,6 +78,8 @@ A **phase** is a chunk of work inside a session: the grilling, the implementatio
 
 Read [PHASE-BOUNDARIES.md](PHASE-BOUNDARIES.md) for the ordered tree: the five questions, the reasoning behind each branch, and why the primary-source cost makes **Continue** the one to rule out first. Make the decision **at** a boundary; mid-phase, continue or split the rest into subagents.
 
+Where the harness can rewind a conversation to an earlier message, **`/prepare-rewind`** and **`/carry-on-rewind`** are a sharper `/compact` inside a build: rewind to the message where the plan was agreed, so everything up to it stays a primary source and only the build after it is summarised. `/prepare-rewind` writes that summary to a file before the rewind; `/carry-on-rewind` reads it, checks git, and carries on. `/implement` names the rewind point for you.
+
 ## Standalone
 
 Off the main flow entirely.

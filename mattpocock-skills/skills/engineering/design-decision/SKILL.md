@@ -1,6 +1,6 @@
 ---
 name: design-decision
-description: Record proposed, in-research and accepted decisions that fall below the ADR bar as DDRs (design decision records): numbered, dated, statused rows tagged by layer, area, sub-area, project part, priority and risk in the project's design decision register, a filterable CSV, before implementation, for prototype and production alike. Use this whenever a choice is settled in conversation where there were several ways to approach it, such as how something acts, layout, motion, colour, copy placement, disclosure behaviour, a module boundary, a coding style, a package, a logging or data-handling rule, and whenever the user says "record that", "design note", "make that a decision", "D-row", "DDR", "add it to the register", "put this in for prod", or closes a grilling question with a choice. Run it beside domain-modeling in every grilling; also use it when a review round (users, client stakeholders, the product owner) produces accepted changes that need writing down before they are built.
+description: Record proposed, in-research and accepted decisions that fall below the ADR bar as DDRs (design decision records): numbered, dated, statused rows tagged by layer, area, sub-area, project part, priority and risk in the project's design decision register, a filterable CSV, before implementation, for prototype and production alike. Use this whenever a choice is settled in conversation where there were several ways to approach it, such as how something acts, layout, motion, colour, copy placement, disclosure behaviour, a module boundary, a coding style, a package, a logging or data-handling rule, and whenever the user says "record that", "design note", "make that a decision", "D-row", "DDR", "add it to the register", "put this in for prod", or closes a grilling question with a choice. Run it beside domain-modeling in every grilling; also use it when a review round (users, stakeholders, the product owner) produces accepted changes that need writing down before they are built.
 ---
 
 # Design decision
@@ -72,7 +72,7 @@ Decide where the thing belongs before writing anything. One place per thing; the
 | It is | Home |
 |---|---|
 | A decision: several approaches, one locked | A row in the register |
-| A decision you would pay to undo | An ADR, via `domain-modeling`, plus a one-line pointer row naming it in `adrs` |
+| A decision you would pay to undo | An ADR in `docs/adr/`, via `domain-modeling`, with its tags in the front matter and no row |
 | A term | The glossary, via `domain-modeling` |
 | A change to the design rulebook | The values file, and only when the user has set out to change that rulebook |
 | An action, an experiment, a verification, a question for someone | The tracker |
@@ -165,15 +165,15 @@ be solid from the header's edge so released cards are never seen again.
 Row written (line wrapped here; it is one line in the file):
 
 ```csv
-"D99","accepted","frontend","presentation","layout","quote-ui","should","medium","partial","no",
-"2026-09-16","The pinned section heading sits at the header's bottom edge, level with its sibling
+"D99","accepted","frontend","presentation","layout","checkout","should","medium","partial","no",
+"2026-03-16","The pinned section heading sits at the header's bottom edge, level with its sibling
 heading, with a solid background from the header to the docked card top; a released card passes
 behind it and is not seen again.","Cards had reappeared above the label through a 16px gap.","A fade
-beneath the heading was tried and rejected as fogging.","AI-134","","D62","",""
+beneath the heading was tried and rejected as fogging.","ENG-134","","D62","",""
 ```
 
 Report: "D99, the pinned section heading sits solid at the header's edge: accepted, presentation /
-layout, quote UI, should / medium, built partial in the prototype; supersedes D62, the earlier fade."
+layout, checkout, should / medium, built partial in the prototype; supersedes D62, the earlier fade."
 
 ## What this skill does not do
 

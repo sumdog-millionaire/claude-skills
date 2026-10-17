@@ -33,8 +33,8 @@ Three things come out of a session, and they are not equal.
 | What resolved | Where it lands |
 | --- | --- |
 | A term: the project's own word for a thing | `GLOSSARY.md`, inline, the moment it resolves |
-| A decision that is hard to reverse, surprising without context, and a real trade-off | An ADR under `docs/adr/` |
-| A rule you would just change | A DDR row in `docs/ddr/register.csv` |
+| A decision that is hard to reverse, surprising without context, and a real trade-off | An ADR under `docs/adr/`, tagged in its front matter |
+| A rule you would just change | A DDR row in `docs/ddr/register.csv`, which holds DDRs only |
 
 That third row is where most of a session's decisions land. `GLOSSARY.md` is only a glossary. It holds no implementation details, no [spec](https://www.aihero.dev/ai-coding-dictionary/spec), and no scratch notes. An ADR needs all three conditions at once, so most decisions do not qualify and most sessions produce none. A choice that was one of several ways to build something, and that you could reverse cheaply, becomes a DDR instead. Anything that is neither a term nor a choice between alternatives still lives only in the [context window](https://www.aihero.dev/ai-coding-dictionary/context-window) you agreed it in, so hand that same conversation to [to-spec](https://aihero.dev/skills-to-spec) rather than [clearing](https://www.aihero.dev/ai-coding-dictionary/clearing) it.
 

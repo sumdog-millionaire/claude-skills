@@ -1,10 +1,10 @@
 ---
 name: implement
-description: "Implement a piece of work based on a spec or set of tickets."
+description: "Carry a tracker issue, or the next free ticket in a scope, to done."
 disable-model-invocation: true
 ---
 
-Implement the work described by the user in the spec or tickets.
+Carry a tracker issue, or the next free ticket in a scope, to done.
 
 ## 1. Load the context
 
@@ -23,14 +23,14 @@ List every choice the build needs that the ticket, ADRs, DDRs, glossary and code
 - **Nothing open:** say "This ticket is detailed enough to build as written" and why, ask how involved the user wants to be, then go to step 3.
 - **Anything open:** ask the whole list in one round, with how involved the user wants to be. If unsure whether a point is settled, it is not: ask. Never resolve an open point with an assumption.
 
-Record each answer before the edit that implements it. Most become DDRs; one that passes the ADR test becomes an ADR with a pointer row in the register.
+Record each answer before the edit that implements it. Most become DDRs; one that passes the ADR test becomes an ADR in `docs/adr/`.
 
 ## 3. Set the rewind point
 
-The user may rewind the session (`prepare-rewind`, then `carry-on-rewind`) to save tokens, so split the work at a common point.
+The user may rewind the session to save tokens, running `/prepare-rewind` before the rewind and `/carry-on-rewind` after it, so split the work at a common point.
 
 - Steps 1 and 2 are the exploration. Finish them, every agent and check included, before any build work.
-- Once the answers are in, name the **rewind point** to the user: the last message before the build starts, quoted by its first words. The user rewinds to it and sends `carry-on-rewind` in its place.
+- Once the answers are in, name the **rewind point** to the user: the last message before the build starts, quoted by its first words. The user runs `/prepare-rewind`, rewinds to that point, and sends `/carry-on-rewind` in its place.
 - Everything above the point must stay true for the whole session. Never set it where the explored facts are expected to change between rewinds, because the rewound context would then contradict the repository.
 - Split the build into mechanical parts (A, B, C), one per rewind, each ending in a commit, so a handover carries only what that part built and decided.
 
