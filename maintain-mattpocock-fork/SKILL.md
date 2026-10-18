@@ -10,6 +10,11 @@ kept as a git subtree inside the `~/.claude/skills` repository. It ships as a pl
 two things hold at once: it follows upstream's rules as if it were upstream, and it carries a small set
 of deliberate additions. Everything below serves one of those two.
 
+## Pull first
+
+Always pull before making any changes, so you work from the newest version: run `git pull` in
+`~/.claude/skills/` before the first edit, and stop and report if it does not fast-forward cleanly.
+
 ## The one rule: nothing project-specific
 
 The fork carries only project-agnostic material. Nothing in it names the user, a client, one
