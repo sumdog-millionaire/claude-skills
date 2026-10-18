@@ -22,9 +22,14 @@ It writes two files at the repo root and adds both to `.gitignore`: `rewind-stat
 
 The file's centre is a **DECISIONS LOCKED** list. Each entry is a decision from the discarded stretch, with the reason it was taken and the option it beat. The next agent treats the list as settled and does not ask you to confirm any of it. The file ends with a **FIRST TASK ON RESUME**, so the next agent starts working instead of asking what to do.
 
+## Where to rewind to
+
+A rewind menu shows only your messages, so the skill names the one to pick by its first words, beside the agent's message just above it: *I said "...", then you said "...". Rewind to your message and send `/carry-on-rewind` in its place.* Rewinding to that message drops it, and keeps the agent's message above it.
+
 ## It's working if
 
 - The file fits on a screen, and names commits and tracker issues rather than copying them.
+- You find the message to rewind to in the menu on the first look.
 - After the rewind, the agent never re-asks a question you had already answered.
 - A rule you gave for the whole task still holds three rewinds later, worded as you said it.
 

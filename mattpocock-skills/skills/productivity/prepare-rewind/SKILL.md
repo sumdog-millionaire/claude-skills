@@ -103,6 +103,14 @@ you have deliberately left out because it survives on its own. Confirm the file 
 user they can rewind and run the carry-on command: `/carry-on-rewind` in Claude Code or
 `/skill:carry-on-rewind` in Pi.
 
+Tell the user exactly where to rewind to, in their own messages. A rewind menu lists only the user's
+messages, and rewinding to one drops that message and everything after it, so the target is the user's
+first message after the rewind point, and they send the carry-on command in its place. Name it by its
+first words, beside the agent message just above it, in this order: *I said "<first words of the agent's
+message>", then you said "<first words of the user's message>". Rewind to your message and send
+`/carry-on-rewind` in its place.* Quote both exactly as written, typos included, so the user can find
+theirs in the menu.
+
 If anything is genuinely at risk of being lost that belongs somewhere permanent (a design decision
 with no record, an agreement with no tracker issue), say so and offer to write it down properly first.
 `rewind-status.md` is deleted the moment it is read, so it is a worse home for a decision than a
