@@ -53,8 +53,9 @@ Filled after the round with the user: each item's number and what it became.
 ## Rules
 
 - **Quote lines** are `> <timestamp> <speaker>: <words>`, one per line, words copied exactly from
-  the transcript turn. `scripts/check_quotes.py` reads this form; a quote in any other form is not
-  checked. An item may carry several quote lines.
+  the transcript turn. When the transcript has no timestamps, write `> <speaker>: <words>` and the
+  check matches the words anywhere in it. `scripts/check_quotes.py` reads these two forms; a quote in
+  any other form is not checked. An item may carry several quote lines.
 - **Item headings** are `### <n>. <title> (<class>, <decided | proposed | discussed>)`, numbered in
   transcript order and never renumbered after the round.
 - **Timestamps** are offsets into the recording as the transcript prints them. The real start time

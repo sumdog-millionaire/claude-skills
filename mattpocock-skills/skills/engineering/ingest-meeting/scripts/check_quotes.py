@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 QUOTE_LINE = re.compile(r"^> (\d{1,2}:\d{2}(?::\d{2})?) ([^:]+): (.+)$")
+UNTIMED_QUOTE_LINE = re.compile(r"^> ([^:\d][^:]*): (.+)$")
 TIMESTAMP = re.compile(r"\d{1,2}:\d{2}")
 
 
@@ -24,13 +25,19 @@ def turns(transcript: str) -> list[str]:
 
 
 def check(note: str) -> list[str]:
-    """Return one message per quote line not found in the turn at its timestamp."""
+    """Return one message per quote line not found in the turn at its timestamp, or anywhere if untimed."""
     head, marker, transcript = note.partition("\n## Transcript")
     if not marker:
         raise ValueError("note has no '## Transcript' section")
     all_turns = turns(transcript)
+    whole = normalise(transcript)
     failures = []
     for line in head.splitlines():
+        untimed = UNTIMED_QUOTE_LINE.match(line)
+        if untimed:
+            if normalise(untimed.group(2)) not in whole:
+                failures.append(f"not in the transcript: {line}")
+            continue
         match = QUOTE_LINE.match(line)
         if not match:
             continue
