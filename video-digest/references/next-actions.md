@@ -16,6 +16,11 @@ For every write outside `<report>`:
 If implementation reveals a change outside the proposal, stop and explain it rather than
 improvising.
 
+For a recorded meeting, when the selected routes include tracker work or project records (decisions,
+ADRs, glossary terms), call the Skill tool with "ingest-meeting" and give it `<report>` and
+`transcript.txt`; it owns those writes. Use the branches below only when that skill is not installed
+or the source is not a meeting.
+
 ## Issue tracker work
 
 Use the issue tracker named by the user or documented by the current project. This may be Linear,

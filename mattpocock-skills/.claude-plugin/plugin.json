@@ -35,6 +35,7 @@
     "./skills/engineering/research",
     "./skills/engineering/domain-modeling",
     "./skills/engineering/design-decision",
+    "./skills/engineering/ingest-meeting",
     "./skills/engineering/codebase-design",
     "./skills/engineering/code-review",
     "./skills/engineering/pr",
