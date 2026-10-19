@@ -1,6 +1,6 @@
 ---
 name: ingest-meeting
-description: Turn a meeting transcript into the project's records. It saves a dated meeting note in `docs/meetings/`, extracts every candidate decision, term, ADR, ticket and open question with a verbatim quote and timestamp, checks each against the glossary, the ADRs, the DDR register and the tracker, then settles them with the user in one grilling round before writing anything. Use it whenever the user supplies or pastes a meeting transcript, call notes, Teams or Zoom captions, or a digest of a recorded meeting and wants decisions, actions, tickets, ADRs, DDRs or glossary terms out of it, or says "process this meeting", "ingest this call", "what came out of this meeting" or "write up the meeting". Use it after a video digest when its findings should become project records.
+description: Turn a meeting transcript into the project's records. It saves a dated meeting note in `docs/meetings/`, extracts every candidate decision, term, ADR, ticket and open question with a verbatim quote and timestamp, checks each against the glossary, the ADRs, the DDR register and the tracker, then settles them with the user in a grilling, conflicts first, before writing anything. Use it whenever the user supplies or pastes a meeting transcript, call notes, Teams or Zoom captions, or a digest of a recorded meeting and wants decisions, actions, tickets, ADRs, DDRs or glossary terms out of it, or says "process this meeting", "ingest this call", "what came out of this meeting" or "write up the meeting". Use it after a video digest when its findings should become project records.
 ---
 
 # Ingest meeting
@@ -50,7 +50,7 @@ timestamp, and a recommendation.
 | Term | A word the meeting defined, sharpened or used against the glossary | The glossary, via `domain-modeling` |
 | Ticket | Work someone has to do | The tracker |
 | Question | Something unknown, or a question for someone outside the meeting | The tracker, as the project's guidance says |
-| Conflict | Something said that contradicts a recorded decision or term | Raised with the user; never resolved silently |
+| Conflict | Something said that contradicts a recorded decision or term | Put to the user in the grilling; it goes in only as they resolve it (a new record, a superseding one, or nothing) |
 
 Hold the evidence to these rules, because a record that overstates the meeting is worse than none:
 
@@ -89,11 +89,14 @@ It fails any quote line whose words or timestamp are not in the note's transcrip
 a plausible quote nobody said; this check is what catches it. Re-anchor or drop each failure, then
 run it again until it passes.
 
-## 5. One round with the user
+## 5. Grill the user
 
-Call the Skill tool with "grilling" and put every candidate to the user in one round, in its format,
-naming the note's item number in each question. For a ticket or question, show the title and a
-one-line body, so "yes" approves the exact write. Conflicts come first, because their answers can change the rest.
+Call the Skill tool with "grilling" and put every candidate to the user in its format, naming the
+note's item number in each question. For a ticket or question, show the title and a one-line body, so
+"yes" approves the exact write. Conflicts come first, because their answers can change the rest.
+
+Aim for one round. Ask another when an answer opens a question the first round could not ask, such as
+a resolved conflict that changes other items.
 
 A decision agreed in the meeting is still recorded as `proposed` unless the user accepts it in this
 round: the meeting suggested it, the user decides it.

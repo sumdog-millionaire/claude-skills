@@ -2,7 +2,7 @@
 
 `ingest-meeting` turns a meeting transcript into the project's records: DDRs, ADRs, glossary terms, tickets and open questions, each carrying the quote and timestamp that justify it, plus a dated meeting note in `docs/meetings/` that keeps the transcript and links every record it produced.
 
-A meeting is not a decision-maker, so nothing goes straight from the transcript into a record. Every candidate is quoted, classed as decided, proposed or discussed, checked against what is already recorded, and put to you in one grilling round. A decision everyone agreed in the call is still written as `proposed` unless you accept it.
+A meeting is not a decision-maker, so nothing goes straight from the transcript into a record. Every candidate is quoted, classed as decided, proposed or discussed, checked against what is already recorded, and put to you in a grilling, ideally in one round. A decision everyone agreed in the call is still written as `proposed` unless you accept it.
 
 ## When to reach for it
 
@@ -22,7 +22,7 @@ The project needs the records set up by [setup-matt-pocock-skills](https://aiher
 
 Every candidate carries a **verbatim quote** with its speaker and timestamp, taken from where the outcome was reached rather than where the topic first came up. A bundled script then checks each quote against the transcript, because a model can write a plausible line nobody said. Owners and dates appear only where someone in the meeting accepted them; otherwise the note says "owner not set" and a question goes on the list.
 
-Candidates that clash with a recorded decision come first in the round, because their answers can change the rest.
+Candidates that clash with a recorded decision come first in the grilling, because their answers can change the rest. A clash goes into the records only as you resolve it: a new record, one that supersedes the old, or nothing.
 
 ## Common questions
 
@@ -35,7 +35,7 @@ The register records what the project decided, and you are the one who decides i
 ## It's working if
 
 - Every item in the meeting note has a quote you can find in its transcript.
-- The round with you is a single numbered list, and nothing appears in the register or tracker that you did not see in it.
+- The grilling is usually one numbered round, and nothing appears in the register or tracker that you did not see in it.
 - The note's Outcome section links every record and issue the meeting produced.
 
 ## Where it fits
