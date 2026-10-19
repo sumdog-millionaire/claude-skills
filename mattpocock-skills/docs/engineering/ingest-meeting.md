@@ -2,7 +2,7 @@
 
 `ingest-meeting` turns a meeting transcript into the project's records: DDRs, ADRs, glossary terms, tickets and open questions, each carrying the quote and timestamp that justify it, plus a dated meeting note in `docs/meetings/` that keeps the transcript and links every record it produced.
 
-A meeting is not a decision-maker, so nothing goes straight from the transcript into a record. Every candidate is quoted, classed as decided, proposed or discussed, checked against what is already recorded, and put to you in a grilling, ideally in one round. A decision everyone agreed in the call is still written as `proposed` unless you accept it.
+A meeting is not a decision-maker, so nothing goes straight from the transcript into a record. Every candidate is quoted, classed as decided, proposed or discussed, checked against what is already recorded, and put to you in a [grilling](https://aihero.dev/skills-grilling) round, in that skill's own numbered format with a recommended answer for each. A decision everyone agreed in the call is still written as `proposed` unless you accept it.
 
 ## When to reach for it
 
