@@ -13,17 +13,43 @@ re-deriving anything.
 The user does not paste anything. After rewinding they run `/carry-on-rewind`, which reads that file
 and deletes it. So the file IS the handover: if a decision is not in it, it is gone.
 
-The rewind point is the invocation argument, a few words of the message the user is going back to,
-**if they name one**. Claude Code expands it below; Pi supplies it in the final `User:` line appended
-to this skill.
+## Choose the rewind point before writing anything
 
-Claude argument: `$ARGUMENTS`
+The rewind point decides what the handover must carry, so choose it first. It is always one of the
+user's messages: rewinding to it drops that message and everything after it, and keeps the context
+the agent held just before it.
 
-Everything after that message is about to be discarded, so that is the stretch to comb.
+**Run the script.** It reads the session log your harness keeps and lists every message the user sent
+on the live branch, with the context in tokens just before each, and an `R` beside any message that
+follows a stated rewind point. From this skill's folder:
 
-**The user often will not name one. Do not ask.** Cover the whole session instead: every decision taken
-and where the work stands. Err towards including: a decision restated needlessly costs a line,
-where one lost costs an argument you already had.
+```bash
+cd scripts && python -m rewind_point --agent <claude|codex|pi|opencode> --repo <repo root> --limit 200000
+```
+
+Pass the agent you are running in. `--limit` is 200,000 unless the user gives another.
+
+**If it prints `REWIND POINT FAILED`, stop.** Tell the user the script broke, quote its error, and ask
+them to name the message to rewind to. Do the same if your harness is not one of the four. Never pick a
+point by hand in its place.
+
+**Then choose, in this order:**
+
+1. **The user named one** (the invocation argument, a few words of their message): use it. Claude Code
+   expands it here: `$ARGUMENTS`. Pi supplies it in the final `User:` line appended to this skill.
+2. **A rewind point was stated** (the latest `R`): use it, and never go earlier, because the research
+   and grilling sit just above it. If its context is over the limit, tell the user and let them choose.
+3. **None was stated:** start from the latest message under the limit. Go earlier only where the
+   context above the earlier message still holds the research and the answers the work rests on, and
+   say why it is better.
+
+**If the message at the limit falls before that research and grilling finished, stop.** Tell the user
+the rewind cannot be made there, and give the two choices with their token counts: rewind to a later
+message and save less, or rewind there and answer the grilling again.
+
+Everything from the chosen message on is about to be discarded, so that is the stretch to comb. Err
+towards including: a decision restated needlessly costs a line, where one lost costs an argument you
+already had.
 
 ## What survives without your help: do not restate any of it
 
@@ -31,9 +57,9 @@ where one lost costs an argument you already had.
   same files.
 - **Memories.** Same store, same index. If you saved one during this session it survives too. Do
   not repeat its content, though you may say it now exists if the work turns on it.
-- **Anything above a named rewind point.** The user is rewinding *to* that message, so it stays in
-  context. Do not summarise the plan agreed there; they kept it deliberately. With no point named,
-  assume nothing survives and cover the session.
+- **Anything above the chosen rewind point.** The user is rewinding *to* that message, so it stays in
+  context. Do not summarise the research, the grilling or the plan agreed there; they kept it
+  deliberately.
 - **Committed code, and its commit messages.** Name the commits and let them speak.
 - **Anything written to disk or the tracker**: tracker issues, records, plan files. Point at them by
   name and say in one line what each holds.
@@ -42,8 +68,7 @@ Repeating any of the above wastes the tokens the rewind was for. Be ruthless abo
 
 ## What you must carry across
 
-Walk the conversation, from the rewind point where the user named one and otherwise the whole of it,
-and pull out:
+Walk the conversation from the chosen rewind point and pull out:
 
 1. **What was built.** Which commits, and what each one settled. Two lines each at most: the commit
    message is already on disk and the agent will read it.
@@ -69,6 +94,11 @@ every rewind and drifts. So it goes in `rewind-durable.md` at the repo root inst
 - **The test:** would every future session in this series go wrong without it? If yes, `rewind-durable.md`.
   If it matters only to the next session, `rewind-status.md`. If it matters beyond this repo or
   ticket, memory.
+- **A researched fact that changed.** The research above the rewind point is meant to hold for the whole
+  session. Where the work changed something it established (a file moved, a field renamed, a finding
+  overturned), append a dated entry naming what the research said and what is true now, because the
+  rewound context still says the old thing. If the change is large enough that the rewound context would
+  mislead, tell the user the rewind point is out of date and recommend researching afresh.
 - **Append only.** Add each new durable fact as one dated bullet, quoting the user's own words where
   they gave the instruction. Never reword, tidy or summarise an existing entry: copying, not
   regenerating, is what stops the drift.
@@ -103,11 +133,11 @@ you have deliberately left out because it survives on its own. Confirm the file 
 user they can rewind and run the carry-on command: `/carry-on-rewind` in Claude Code or
 `/skill:carry-on-rewind` in Pi.
 
-Tell the user exactly where to rewind to, in their own messages. A rewind menu lists only the user's
-messages, and rewinding to one drops that message and everything after it, so the target is the user's
-first message after the rewind point, and they send the carry-on command in its place. Name it by its
-first words, beside the agent message just above it, in this order: *I said "<first words of the agent's
-message>", then you said "<first words of the user's message>". Rewind to your message and send
+Tell the user exactly where to rewind to: the message chosen above, with its number in the script's
+table and the context it keeps. A rewind menu lists only the user's messages, and they send the
+carry-on command in place of the chosen one. Name it by its first words, beside the agent message just
+above it, in this order: *I said "<first words of the agent's message>", then you said "<first words of
+the user's message>". Rewind to your message (number N, keeping about X tokens) and send
 `/carry-on-rewind` in its place.* Quote both exactly as written, typos included, so the user can find
 theirs in the menu.
 

@@ -22,6 +22,7 @@ List every choice the build needs that the ticket, ADRs, DDRs, glossary and code
 
 - **Nothing open:** say "This ticket is detailed enough to build as written" and why, ask how involved the user wants to be, then go to step 3.
 - **Anything open:** ask the whole list in one round, with how involved the user wants to be. If unsure whether a point is settled, it is not: ask. Never resolve an open point with an assumption.
+- **Answers that open more:** run further rounds of research and grilling until nothing is open, each round finished, every agent and check included, before its questions go out. Aim every round at facts that will hold for the whole session, because they sit above the rewind point.
 
 Record each answer before the edit that implements it. Most become DDRs; one that passes the ADR test becomes an ADR in `docs/adr/`.
 
@@ -30,8 +31,8 @@ Record each answer before the edit that implements it. Most become DDRs; one tha
 The user may rewind the session to save tokens, running `/prepare-rewind` before the rewind and `/carry-on-rewind` after it, so split the work at a common point.
 
 - Steps 1 and 2 are the exploration. Finish them, every agent and check included, before any build work.
-- Once the answers are in, name the **rewind point** to the user: your last message before the build starts, quoted by its first words. The user runs `/prepare-rewind`, rewinds to their own message that follows it, and sends `/carry-on-rewind` in its place, so your message stays. A rewind menu lists only the user's messages, so `prepare-rewind` names that message of theirs by its first words.
-- Everything above the point must stay true for the whole session. Never set it where the explored facts are expected to change between rewinds, because the rewound context would then contradict the repository.
+- Once the answers are in, state the **rewind point** in your last message before the build starts, on a line of its own that opens with `**Rewind point.**`, followed by a sentence saying the research and grilling above it hold for the session. `prepare-rewind` finds that line in the session log, so never write it anywhere else. Before a rewind the user runs `/prepare-rewind`, rewinds to their own message that follows yours, and sends `/carry-on-rewind` in its place, so your message stays.
+- Everything above the point must stay true for the whole session. Never set it where the explored facts are expected to change between rewinds, because the rewound context would then contradict the repository. If one changes anyway, `prepare-rewind` records the change in `rewind-durable.md`.
 - Split the build into mechanical parts (A, B, C), one per rewind, each ending in a commit, so a handover carries only what that part built and decided.
 
 ## 4. Build

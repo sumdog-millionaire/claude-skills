@@ -6,7 +6,7 @@ It carries only what nothing else holds. The rewound agent still loads `CLAUDE.m
 
 ## When to reach for it
 
-Type `/prepare-rewind`, or the agent reaches for it on its own when you say you are about to rewind or its context is filling. Pass a few words of the message you are rewinding to; with none, it covers the whole [session](https://www.aihero.dev/ai-coding-dictionary/session).
+Type `/prepare-rewind`, or the agent reaches for it on its own when you say you are about to rewind or its context is filling. Pass a few words of the message you are rewinding to; with none, it chooses one before writing anything, as below.
 
 | The situation | Reach for |
 | --- | --- |
@@ -16,7 +16,7 @@ Type `/prepare-rewind`, or the agent reaches for it on its own when you say you 
 
 ## Prerequisites
 
-It writes two files at the repo root and adds both to `.gitignore`: `rewind-status.md`, read once and deleted on resume, and `rewind-durable.md`, which holds the facts every session in a series of rewinds needs (how you want the work run, a command never to run again) and is only ever appended to.
+It writes two files at the repo root and adds both to `.gitignore`: `rewind-status.md`, read once and deleted on resume, and `rewind-durable.md`, which holds the facts every session in a series of rewinds needs (how you want the work run, a command never to run again) and is only ever appended to. When the work changes something the research above the rewind point established, it appends that too, because the rewound context still says the old thing.
 
 ## Locked decisions
 
@@ -24,7 +24,16 @@ The file's centre is a **DECISIONS LOCKED** list. Each entry is a decision from 
 
 ## Where to rewind to
 
-A rewind menu shows only your messages, so the skill names the one to pick by its first words, beside the agent's message just above it: *I said "...", then you said "...". Rewind to your message and send `/carry-on-rewind` in its place.* Rewinding to that message drops it, and keeps the agent's message above it.
+The rewind point decides what the handover must carry, so the skill chooses it first. A script in `scripts/rewind_point/` reads the session log your harness already keeps (Claude Code, Codex, Pi or opencode) and lists each of your messages with the context in [tokens](https://www.aihero.dev/ai-coding-dictionary/token) just before it. It needs only Python's standard library.
+
+- A message you name wins.
+- Otherwise it takes the rewind point [implement](https://aihero.dev/skills-implement) stated, a line opening `**Rewind point.**`, and never goes earlier, because the research and grilling sit just above it.
+- Otherwise it starts from your latest message under 200,000 tokens, and goes earlier only when the context above still holds the research the work rests on.
+- If that message falls before the research and grilling finished, it stops and offers two choices with their token counts: rewind later and save less, or rewind there and answer the grilling again.
+
+If the script breaks, it prints `REWIND POINT FAILED` with the error, and the agent tells you and asks you to name the message rather than guessing one.
+
+A rewind menu shows only your messages, so the skill names the one to pick by its first words, beside the agent's message just above it: *I said "...", then you said "...". Rewind to your message (number N, keeping about X tokens) and send `/carry-on-rewind` in its place.* Rewinding to that message drops it, and keeps the agent's message above it.
 
 ## It's working if
 
