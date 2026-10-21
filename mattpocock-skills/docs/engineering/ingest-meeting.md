@@ -18,6 +18,8 @@ Type `/ingest-meeting`, or the agent reaches for it automatically when you hand 
 
 The project needs the records set up by [setup-matt-pocock-skills](https://aihero.dev/skills-setup-matt-pocock-skills): a glossary, an ADR folder, a DDR register and a tracker. The skill writes meeting notes to `docs/meetings/`, or wherever `docs/agents/domain.md` names.
 
+If you hand it a loose transcript file, such as `meeting.md` at the top of the repo, the note becomes that file's renamed and moved home, and the loose file is deleted once the note holds the whole transcript. A loose file whose transcript already has a note is deleted, not ingested twice.
+
 ## Quoted, then agreed
 
 Every candidate carries a **verbatim quote** with its speaker and timestamp, taken from where the outcome was reached rather than where the topic first came up. A bundled script then checks each quote against the transcript, because a model can write a plausible line nobody said. Owners and dates appear only where someone in the meeting accepted them; otherwise the note says "owner not set" and a question goes on the list.

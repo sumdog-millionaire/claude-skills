@@ -20,7 +20,11 @@ transcript to its home, and write nothing the user has not seen and accepted.
    a comment on that issue. Note likely mishearings of names and terms as guesses.
 4. **Save the note** at `docs/meetings/YYYY-MM-DD-HHMM-<slug>.md`, or where `docs/agents/domain.md`
    names, in [NOTE-FORMAT.md](./NOTE-FORMAT.md), with the transcript at the end. Run
-   `python <this skill>/scripts/check_quotes.py <note>` and fix every quote it fails.
+   `python <this skill>/scripts/check_quotes.py <note>` and fix every quote it fails. If the
+   transcript came as a loose file elsewhere in the project, the note is its renamed, moved home:
+   once the note holds the whole transcript, delete the loose file. Before ingesting a loose file,
+   check `docs/meetings/` for a note already holding its transcript; if one does, delete the loose
+   file and do not ingest it again.
 5. **Grill the user.** Call the Skill tool with "grilling" and put every candidate to the user in its
    format, conflicts first, naming the note's item number. A ticket or comment shows its title and a
    one-line body, so "yes" approves that exact write. A decision the meeting agreed stays `proposed`
