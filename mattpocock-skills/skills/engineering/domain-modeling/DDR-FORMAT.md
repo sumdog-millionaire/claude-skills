@@ -120,7 +120,7 @@ touches money, and a must-have can be low-risk.
 
 Production means the application that ships to users. Scripts, data pulls, design files and anything
 under a prototype or discovery folder are not production. Built is not acceptance: only `status` says
-whether a rule is agreed. The implementing code carries a comment with the id, so `grep D99` finds it.
+whether a rule is agreed. Code comments never cite the id, nor an ADR or a tracker issue.
 File paths do not go in the register; they rot.
 
 ## Status

@@ -76,7 +76,7 @@ Decide where the thing belongs before writing anything. One place per thing; the
 | A term | The glossary, via `domain-modeling` |
 | A change to the design rulebook | The values file, and only when the user has set out to change that rulebook |
 | An action, an experiment, a verification, a question for someone | The tracker |
-| A pointer from code | A comment carrying the DDR id and nothing else |
+| A pointer from code | Nothing: code comments never cite a DDR, an ADR or a tracker issue |
 
 A value that realises a decision (16px, a hex colour, 0.7s) lives in the code and, where the value is
 the decision, in the row's `statement`. It does not go in the values file unless the user is changing
@@ -99,8 +99,8 @@ source to fill a cell.
 - **`priority`** and **`risk`**. Priority is how vital the feature is; risk is the cost of building it
   wrong and sets how much care implementation gets. Weigh them separately.
 - **`built_prototype`** and **`built_production`**, each `yes`, `partial` or `no`. A new row is
-  normally `no` and `no`. After the implementing edit, flip that surface to `partial` in the same change
-  and give the code a comment carrying the id. `yes` is the user's alone, with "signed off <surface>
+  normally `no` and `no`. After the implementing edit, flip that surface to `partial` in the same change.
+  `yes` is the user's alone, with "signed off <surface>
   <date>" added to `why`.
 - **`decided`**, the date in ISO form.
 - **`statement`**, the rule in one or two plain present-tense sentences. One rule per row: past about
@@ -138,8 +138,8 @@ it happens. The records check runs from the sync hook on every register edit and
 reaching `main`; fix what it names and edit again.
 
 Write the row **before** the edit that implements it: the user steers the record, not just the code.
-Keep the row's wording the same as the code comment and the tracker comment, so one search finds all
-three.
+Keep the row's wording the same as the tracker comment, so one search finds both. The code carries
+no id: code comments never cite a DDR, an ADR or a tracker issue.
 
 ## 5. The tracker
 
