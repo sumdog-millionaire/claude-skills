@@ -37,9 +37,9 @@ def opted_in(cwd: Path) -> bool:
 
 
 def roots(start: Path) -> tuple[Path, Path]:
-    """The project's main checkout and its sync checkout inside its .git folder, from anywhere in either."""
+    """The checkout the hook runs in (the main one or a linked worktree) and the one sync checkout in the shared .git folder."""
     common = Path(git(start, "rev-parse", "--path-format=absolute", "--git-common-dir"))
-    root = common.parent
+    root = Path(git(start, "rev-parse", "--show-toplevel"))
     return root, common / "records-sync"
 
 

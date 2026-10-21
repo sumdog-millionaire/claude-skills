@@ -104,6 +104,14 @@ def main() -> None:
     result = hook("before", ben, ben / "README.md")
     assert result.returncode == 0 and not result.stderr and not result.stdout
 
+    worktree = base / "ben-worktree"
+    run(ben, "git", "worktree", "add", "-q", "-b", "second", str(worktree))
+    assert hook("session", worktree).returncode == 0
+    assert (worktree / reg).read_text() == register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben"), "a linked worktree is brought up to date"
+    assert edit(worktree, reg, register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben", "D6 worktree")).returncode == 0
+    assert on_main(seed, reg) == register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben", "D6 worktree"), "an edit in a linked worktree reaches main"
+    assert not (worktree / ".git/records-sync").exists(), "worktrees share the one sync checkout"
+
     other = base / "other"
     run(base, "git", "init", "-q", "other")
     for folder in (other, Path(tempfile.mkdtemp())):
