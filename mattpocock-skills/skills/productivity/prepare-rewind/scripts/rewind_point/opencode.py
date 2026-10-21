@@ -2,25 +2,23 @@ import json
 import sqlite3
 from pathlib import Path
 
-from .models import Turn, states_rewind_point
+from .models import Session, Turn, states_rewind_point
 
 DATABASE = Path.home() / ".local" / "share" / "opencode" / "opencode.db"
 
 
-def find_session(repo: Path) -> str:
-    """The id of the newest top-level opencode session in this repository."""
+def list_sessions(repo: Path) -> list[str]:
+    """The ids of every top-level opencode session in this repository."""
     with sqlite3.connect(f"file:{DATABASE}?mode=ro", uri=True) as connection:
-        rows = connection.execute(
-            "select id, directory from session where parent_id is null order by time_updated desc"
-        ).fetchall()
-    for session_id, directory in rows:
-        if Path(directory).resolve() == repo.resolve():
-            return session_id
-    raise FileNotFoundError(f"No opencode session for {repo} in {DATABASE}")
+        rows = connection.execute("select id, directory from session where parent_id is null").fetchall()
+    sessions = [session_id for session_id, directory in rows if Path(directory).resolve() == repo.resolve()]
+    if not sessions:
+        raise FileNotFoundError(f"No opencode session for {repo} in {DATABASE}")
+    return sessions
 
 
-def read_turns(session: str) -> list[Turn]:
-    """The user's messages before any undo and since the last compaction, oldest first."""
+def read_session(session: str) -> Session:
+    """The first message, and the user's messages before any undo and since the last compaction, oldest first."""
     with sqlite3.connect(f"file:{DATABASE}?mode=ro", uri=True) as connection:
         (revert,) = connection.execute("select revert from session where id = ?", (session,)).fetchone()
         messages = connection.execute(
@@ -32,15 +30,20 @@ def read_turns(session: str) -> list[Turn]:
             parts_by_message.setdefault(message_id, []).append(json.loads(data))
     undone_from = json.loads(revert)["messageID"] if revert else None
 
+    first_message = None
     turns: list[Turn] = []
     context_tokens = 0
     marker_seen = False
+    undone = False
     for message_id, data in messages:
-        if message_id == undone_from:
-            break
+        undone |= message_id == undone_from
         message = json.loads(data)
         message_parts = parts_by_message.get(message_id, [])
         text = "\n".join(part["text"] for part in message_parts if part["type"] == "text" and not part.get("synthetic"))
+        if message["role"] == "user" and text and first_message is None:
+            first_message = text
+        if undone:
+            continue
         if any(part["type"] == "compaction" for part in message_parts):
             turns = []
         elif message["role"] == "assistant":
@@ -55,4 +58,4 @@ def read_turns(session: str) -> list[Turn]:
         elif message["role"] == "user" and text:
             turns.append(Turn(text, context_tokens, marker_seen))
             marker_seen = False
-    return turns
+    return Session(first_message, turns)

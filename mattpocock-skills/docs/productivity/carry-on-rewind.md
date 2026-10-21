@@ -10,7 +10,7 @@ Type `/carry-on-rewind` as the message you rewound to, or the agent reaches for 
 
 ## Prerequisites
 
-It works best after `/prepare-rewind` has written `rewind-status.md` at the repo root, and carries on from git alone if that file is missing. If a `rewind-durable.md` is there, it reads that first and never deletes it.
+It works best after `/prepare-rewind` has written `rewind-status-<stream>.md` at the repo root, and carries on from git alone if that file is missing. If a `rewind-durable-<stream>.md` is there, it reads that first and never deletes it. The stream name comes from the prepare-rewind script, taken from the session's first message, so two streams of work in one repo never pick up each other's files.
 
 ## Four states
 

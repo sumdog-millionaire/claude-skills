@@ -2,21 +2,27 @@ import json
 import re
 from pathlib import Path
 
-from .models import Turn, states_rewind_point
+from .models import Session, Turn, states_rewind_point
 
 
-def find_session(repo: Path) -> Path:
-    """The newest Claude Code transcript for this repository."""
+def list_sessions(repo: Path) -> list[Path]:
+    """Every Claude Code transcript for this repository."""
     folder = Path.home() / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(repo.resolve()))
     sessions = list(folder.glob("*.jsonl"))
     if not sessions:
         raise FileNotFoundError(f"No Claude Code session for {repo} in {folder}")
-    return max(sessions, key=lambda path: path.stat().st_mtime)
+    return sessions
 
 
-def read_turns(session: Path) -> list[Turn]:
-    """The user's messages on the live branch, oldest first."""
+def is_user_text(record: dict) -> bool:
+    """Whether a record is a message the user typed, not a tool result or harness note."""
+    return record.get("type") == "user" and isinstance(record["message"]["content"], str) and not record.get("isMeta")
+
+
+def read_session(session: Path) -> Session:
+    """The first message, and the user's messages on the live branch, oldest first."""
     records = [json.loads(line) for line in session.read_text(encoding="utf-8").splitlines()]
+    first_message = next((record["message"]["content"] for record in records if is_user_text(record)), None)
     by_uuid = {record["uuid"]: record for record in records if "uuid" in record}
     # Walking parent links from the newest record skips abandoned branches and stops at a compaction.
     chain = []
@@ -29,17 +35,16 @@ def read_turns(session: Path) -> list[Turn]:
     context_tokens = 0
     marker_seen = False
     for record in reversed(chain):
-        message = record.get("message")
         if record["type"] == "assistant":
-            usage = message["usage"]
+            usage = record["message"]["usage"]
             context_tokens = (
                 usage["input_tokens"]
                 + usage["cache_creation_input_tokens"]
                 + usage["cache_read_input_tokens"]
                 + usage["output_tokens"]
             )
-            marker_seen |= any(states_rewind_point(block.get("text", "")) for block in message["content"])
-        elif record["type"] == "user" and isinstance(message["content"], str) and not record.get("isMeta"):
-            turns.append(Turn(message["content"], context_tokens, marker_seen))
+            marker_seen |= any(states_rewind_point(block.get("text", "")) for block in record["message"]["content"])
+        elif is_user_text(record):
+            turns.append(Turn(record["message"]["content"], context_tokens, marker_seen))
             marker_seen = False
-    return turns
+    return Session(first_message, turns)

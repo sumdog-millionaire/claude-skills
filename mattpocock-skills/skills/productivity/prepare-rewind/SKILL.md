@@ -24,10 +24,17 @@ on the live branch, with the context in tokens just before each, and an `R` besi
 follows a stated rewind point. From this skill's folder:
 
 ```bash
-cd scripts && python -m rewind_point --agent <claude|codex|pi|opencode> --repo <repo root> --limit 200000
+cd scripts && python -m rewind_point --agent <claude|codex|pi|opencode> --repo <repo root> --quote "<phrase>" --limit 200000
 ```
 
-Pass the agent you are running in. `--limit` is 200,000 unless the user gives another.
+Pass the agent you are running in. `--quote` is a distinctive phrase copied exactly from one of the
+user's recent messages in this conversation, never from a command; it picks this session out from any
+other running in the same repo. `--limit` is 200,000 unless the user gives another.
+
+**The script also prints `Stream: <name>`**, taken from the session's first message, which no rewind
+removes. Use that name exactly and never make one up: in this skill, `rewind-status.md` and
+`rewind-durable.md` mean `rewind-status-<name>.md` and `rewind-durable-<name>.md`, so two streams of
+work in one repo never share a file.
 
 **If it prints `REWIND POINT FAILED`, stop.** Tell the user the script broke, quote its error, and ask
 them to name the message to rewind to. Do the same if your harness is not one of the four. Never pick a
@@ -105,15 +112,15 @@ every rewind and drifts. So it goes in `rewind-durable.md` at the repo root inst
 - **Edit an entry only when the user explicitly changes their mind** about it. Then change that entry
   and date the change; do not add a second, contradicting entry.
 - Do not restate anything already in `rewind-durable.md` in `rewind-status.md`.
-- Create it if it does not exist, and add it to `.gitignore`.
+- Create it if it does not exist, and make sure `.gitignore` holds the pattern `rewind-durable-*.md`.
 - **When the whole task is done** (the ticket or series of rewinds is finished, not just this
   stretch), ask the user whether to delete `rewind-durable.md`. Never delete it without their yes.
 
 ## Shape of the file
 
 Write it with the Write tool to `rewind-status.md` at the repo root, never anywhere else, and
-never as a fenced block in your reply. Add it to `.gitignore` if it is not already there: it is
-scratch that must never reach a commit.
+never as a fenced block in your reply. Make sure `.gitignore` holds the pattern `rewind-status-*.md`:
+the file is scratch that must never reach a commit.
 
 Address it to the next agent, not to the user. Structure it roughly:
 

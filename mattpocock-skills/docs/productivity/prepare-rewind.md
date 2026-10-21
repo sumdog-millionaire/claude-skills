@@ -16,7 +16,7 @@ Type `/prepare-rewind`, or the agent reaches for it on its own when you say you 
 
 ## Prerequisites
 
-It writes two files at the repo root and adds both to `.gitignore`: `rewind-status.md`, read once and deleted on resume, and `rewind-durable.md`, which holds the facts every session in a series of rewinds needs (how you want the work run, a command never to run again) and is only ever appended to. When the work changes something the research above the rewind point established, it appends that too, because the rewound context still says the old thing.
+It writes two files at the repo root and keeps both out of git through `.gitignore` patterns: `rewind-status-<stream>.md`, read once and deleted on resume, and `rewind-durable-<stream>.md`, which holds the facts every session in a series of rewinds needs (how you want the work run, a command never to run again) and is only ever appended to. When the work changes something the research above the rewind point established, it appends that too, because the rewound context still says the old thing.
 
 ## Locked decisions
 
@@ -24,7 +24,7 @@ The file's centre is a **DECISIONS LOCKED** list. Each entry is a decision from 
 
 ## Where to rewind to
 
-The rewind point decides what the handover must carry, so the skill chooses it first. A script in `scripts/rewind_point/` reads the session log your harness already keeps (Claude Code, Codex, Pi or opencode) and lists each of your messages with the context in [tokens](https://www.aihero.dev/ai-coding-dictionary/token) just before it. It needs only Python's standard library.
+The rewind point decides what the handover must carry, so the skill chooses it first. A script in `scripts/rewind_point/` reads the session log your harness already keeps (Claude Code, Codex, Pi or opencode) and lists each of your messages with the context in [tokens](https://www.aihero.dev/ai-coding-dictionary/token) just before it. It needs only Python's standard library. The agent passes a phrase from one of your messages, so the script finds this session even when another runs in the same repo, and the script names the stream from the session's first message, so each stream's files stay apart.
 
 - A message you name wins.
 - Otherwise it takes the rewind point [implement](https://aihero.dev/skills-implement) stated, a line opening `**Rewind point.**`, and never goes earlier, because the research and grilling sit just above it.

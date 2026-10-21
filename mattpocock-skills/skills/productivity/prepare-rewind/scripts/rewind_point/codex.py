@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 
-from .models import Turn, states_rewind_point
+from .models import Session, Turn, states_rewind_point
 
 
-def find_session(repo: Path) -> Path:
-    """The newest Codex session started in this repository, leaving out sub-agents' sessions."""
+def list_sessions(repo: Path) -> list[Path]:
+    """Every Codex session started in this repository, leaving out sub-agents' sessions."""
     folder = Path.home() / ".codex" / "sessions"
     matches = []
     for path in folder.rglob("rollout-*.jsonl"):
@@ -16,11 +16,12 @@ def find_session(repo: Path) -> Path:
             matches.append(path)
     if not matches:
         raise FileNotFoundError(f"No Codex session for {repo} in {folder}")
-    return max(matches, key=lambda path: path.stat().st_mtime)
+    return matches
 
 
-def read_turns(session: Path) -> list[Turn]:
-    """The user's messages since the last compaction, oldest first."""
+def read_session(session: Path) -> Session:
+    """The first message, and the user's messages since the last compaction, oldest first."""
+    first_message = None
     turns: list[Turn] = []
     context_tokens = 0
     marker_seen = False
@@ -39,6 +40,8 @@ def read_turns(session: Path) -> list[Turn]:
             marker_seen |= any(states_rewind_point(block["text"]) for block in payload["content"])
         elif kind == "item_completed" and payload["item"]["type"] == "UserMessage":
             text = "\n".join(block["text"] for block in payload["item"]["content"] if block["type"] == "text")
+            if first_message is None:
+                first_message = text
             turns.append(Turn(text, context_tokens, marker_seen))
             marker_seen = False
-    return turns
+    return Session(first_message, turns)

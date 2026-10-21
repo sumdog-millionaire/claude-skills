@@ -32,7 +32,7 @@ The user may rewind the session to save tokens, running `/prepare-rewind` before
 
 - Steps 1 and 2 are the exploration. Finish them, every agent and check included, before any build work.
 - Once the answers are in, state the **rewind point** in your last message before the build starts, on a line of its own that opens with `**Rewind point.**`, followed by a sentence saying the research and grilling above it hold for the session. `prepare-rewind` finds that line in the session log, so never write it anywhere else. Before a rewind the user runs `/prepare-rewind`, rewinds to their own message that follows yours, and sends `/carry-on-rewind` in its place, so your message stays.
-- Everything above the point must stay true for the whole session. Never set it where the explored facts are expected to change between rewinds, because the rewound context would then contradict the repository. If one changes anyway, `prepare-rewind` records the change in `rewind-durable.md`.
+- Everything above the point must stay true for the whole session. Never set it where the explored facts are expected to change between rewinds, because the rewound context would then contradict the repository. If one changes anyway, `prepare-rewind` records the change in this stream's `rewind-durable` file.
 - Split the build into mechanical parts (A, B, C), one per rewind, each ending in a commit, so a handover carries only what that part built and decided.
 
 ## 4. Build

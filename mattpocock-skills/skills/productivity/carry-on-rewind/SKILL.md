@@ -1,6 +1,6 @@
 ---
 name: carry-on-rewind
-description: Re-orient after a context rewind and continue the work already agreed. Use it when the conversation has just been rewound and rewind-status.md waits at the top level of the repo.
+description: Re-orient after a context rewind and continue the work already agreed. Use it when the conversation has just been rewound and a rewind-status file waits at the top level of the repo.
 ---
 
 # Carry on
@@ -14,6 +14,24 @@ not go hunting for it in plan files, and do not re-plan it. Take it as settled.
 
 What is missing is everything that happened *after* that agreement: the work you then did. Some or
 all of it is already on disk and committed, and none of it is in your context.
+
+## Find this stream's name first
+
+Several streams of work can run in one repo at once, each with its own handover files. Learn which are
+yours by running the prepare-rewind skill's script, which sits beside this skill's folder:
+
+```bash
+cd ../prepare-rewind/scripts && python -m rewind_point --agent <claude|codex|pi|opencode> --repo <repo root> --quote "<phrase>"
+```
+
+`--quote` is a distinctive phrase copied exactly from one of the user's messages still in your context,
+never from a command. The script prints `Stream: <name>`, taken from the session's first message, which
+the rewind did not remove. In this skill, `rewind-status.md` and `rewind-durable.md` mean
+`rewind-status-<name>.md` and `rewind-durable-<name>.md`. Use the name exactly; never make one up.
+
+If the script prints `REWIND POINT FAILED`, tell the user, quote its error, and ask which files are
+yours. If an unnamed `rewind-status.md` or `rewind-durable.md` is at the top level instead, read it as
+yours and tell the user it carries the old name.
 
 ## 0. Read rewind-durable.md whole, and keep it
 
@@ -38,7 +56,7 @@ Read it whole. Then **delete the file**: it is scratch, it goes stale the moment
 and a second rewind writes a fresh one.
 
 ```bash
-rm rewind-status.md
+rm rewind-status-<name>.md
 ```
 
 Treat what it says as settled. Its "DECISIONS LOCKED" list is exactly the set of arguments already
