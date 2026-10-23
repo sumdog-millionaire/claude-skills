@@ -1,3 +1,11 @@
+# /// script
+# dependencies = [
+#     "faster-whisper==1.2.1",
+#     # av 18 ships DLLs that Windows Application Control policies block on some
+#     # machines, so the pin stays at 17.0.1 until both are re-tested together.
+#     "av==17.0.1",
+# ]
+# ///
 """Transcribe a video to timestamped text using faster-whisper (ASR only, no diarisation)."""
 
 import argparse

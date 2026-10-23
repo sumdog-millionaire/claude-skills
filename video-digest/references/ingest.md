@@ -127,13 +127,11 @@ start time.
 If no captions exist, transcribe the downloaded video:
 
 ```bash
-<venv-python> <skill-dir>/scripts/transcribe.py "<workspace>/video.mp4"
+uv run <skill-dir>/scripts/transcribe.py "<workspace>/video.mp4"
 ```
 
-The skill interpreter is:
-
-- Windows: `<skill-dir>/.venv/Scripts/python.exe`
-- macOS or Linux: `<skill-dir>/.venv/bin/python`
+`uv run` reads the pinned dependencies from the script's header and builds its environment on first use.
+Do not call a Python interpreter directly, because none is set up for this skill.
 
 The first transcription downloads the public `distil-large-v3` model, about 1.5 GB. Tell the user
 before that download starts. Ordinary errors on technical vocabulary do not justify a slower second

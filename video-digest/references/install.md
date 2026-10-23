@@ -26,8 +26,8 @@ Check: `uv --version`. If that prints a version, skip to ffmpeg.
 - **macOS**: `brew install uv` — or `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **Linux**: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-Open a new shell afterwards so it is on the path. `uv` fetches Python 3.13 itself when the venv is
-built, so no separate Python install is needed, whatever the machine already has.
+Open a new shell afterwards so it is on the path. `uv` fetches the Python it needs itself, so no
+separate Python install is needed, whatever the machine already has.
 
 ## 2. `ffmpeg`
 
@@ -37,31 +37,21 @@ Check: `ffmpeg -version` and `ffprobe -version`. Both ship together.
 - **macOS**: `brew install ffmpeg`
 - **Linux** (Debian/Ubuntu): `sudo apt install ffmpeg`
 
-Only frame extraction needs it. Transcription decodes audio through `av`, which is inside the venv.
+Only frame extraction needs it. Transcription decodes audio through `av`, which `uv` installs for you.
 
-## 3. The venv
+## 3. The pinned transcription libraries
 
-Built once, in the skill's own folder, so it never collides with a project's environment:
+Nothing is installed by hand. The versions of `faster-whisper` and `av` are pinned in the header of
+`scripts/transcribe.py`, and `uv run` builds a matching environment the first time it runs:
 
 ```bash
-uv venv --python 3.13 ~/.claude/skills/video-digest/.venv
-uv pip install --python ~/.claude/skills/video-digest/.venv \
-  -r ~/.claude/skills/video-digest/requirements.txt
+uv run ~/.claude/skills/video-digest/scripts/transcribe.py --help
 ```
 
-The interpreter lands in a different place per OS, and every command in `SKILL.md` that says
-`<venv-python>` means this path:
-
-- **Windows**: `~/.claude/skills/video-digest/.venv/Scripts/python.exe`
-- **macOS and Linux**: `~/.claude/skills/video-digest/.venv/bin/python`
-
-Check it: `<venv-python> -c "import faster_whisper, av; print('ok')"`.
-
-`requirements.txt` pins `av` to 17.x. Version 18 ships DLLs that Windows Application Control
-policies block on some corporate machines, and the failure ("DLL load failed ... blocked by an
-Application Control policy") appears at import time, three layers below anything the transcription
-script reports. 17 works everywhere. Leave the pin unless you have tested 18 on the machine in
-question.
+The pin `av==17.0.1` is deliberate. Version 18 ships DLLs that Windows Application Control policies
+block on some corporate machines, and the failure ("DLL load failed ... blocked by an Application
+Control policy") appears at import time. 17 works everywhere. Leave the pin unless you have tested 18
+on the machine in question.
 
 ## 4. The Whisper model
 
