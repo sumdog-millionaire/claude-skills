@@ -22,6 +22,7 @@ __pycache__/
 
 # Allowlist: anything else in ~/.claude/skills is installed on this machine only
 /*
+!/.gitattributes
 !/.gitignore
 !/README.md
 !/anti-ai-slop-writing/

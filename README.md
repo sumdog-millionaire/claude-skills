@@ -20,14 +20,16 @@ plugin, which Claude Code loads from here in the same way and lists as `<name>@s
 
 ## Install on a machine
 
-```powershell
+Every command in this file runs as written in bash (Linux and macOS) and in PowerShell (Windows).
+
+```
 git clone https://github.com/sumdog-millionaire/claude-skills.git "$HOME/.claude/skills"
 ```
 
 If `~/.claude/skills` already exists, back it up and install in place; this replaces only the folders
 this repository holds:
 
-```powershell
+```
 cd "$HOME/.claude/skills"
 git init -b main
 git remote add origin https://github.com/sumdog-millionaire/claude-skills.git
@@ -44,7 +46,8 @@ skill to the repository, add a `!/<folder>/` line for it.
 Two folders need one more step each:
 
 - `ui-dev/`: `npm ci --omit=dev`, and a Stitch API key in `ui-dev/.env` (see its README).
-- `video-digest/`: a Python environment from its `requirements.txt`.
+- `video-digest/`: `uv` and `ffmpeg` on the path. `uv run` builds its Python environment on first use
+  (see `video-digest/references/install.md`).
 
 
 ## Change a skill
@@ -52,7 +55,7 @@ Two folders need one more step each:
 Ask the agent to edit the skill where it is installed. The edit is live in the next session. Then,
 from `~/.claude/skills/`:
 
-```powershell
+```
 git add -A
 git commit -m "what changed, and why"
 git push
