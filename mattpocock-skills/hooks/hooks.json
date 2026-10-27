@@ -33,13 +33,12 @@
         ]
       }
     ],
-    "PostToolUse": [
+    "Stop": [
       {
-        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/skills/engineering/domain-modeling/scripts/sync_records.py\" after",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/skills/engineering/domain-modeling/scripts/sync_records.py\" stop",
             "timeout": 120
           }
         ]

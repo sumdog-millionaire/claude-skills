@@ -48,7 +48,7 @@ The `GLOSSARY.md` rule matters most, because it is the one that breaks in practi
 
 ## Keep the records on main
 
-When several people work on separate branches, they can number two records the same or edit one apart. A project that puts `docs/agents/records.json` on `main`, listing its record files, avoids that. The plugin's hooks then keep those records on `main` for every branch, silently: they bring the records up to date before each edit, check the edited record, and push it to `main`. You edit records as usual and commit the refreshed copies with the branch's work. In a project without that file, the hooks do nothing.
+When several people work on separate branches, they can number two records the same or edit one apart. A project that puts `docs/agents/records.json` on `main`, listing its record files, avoids that. The plugin's hooks then keep those records on `main` for every branch, silently: they bring the records up to date before each edit, then check the records and push the turn's edits to `main` in one commit when the turn ends. A turn you interrupt does not push; its edits go out when the next turn ends. You edit records as usual and commit the refreshed copies with the branch's work. In a project without that file, the hooks do nothing.
 
 ## Cross-referencing, and where it stops
 

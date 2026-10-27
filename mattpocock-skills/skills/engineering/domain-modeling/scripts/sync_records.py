@@ -3,8 +3,9 @@
 The plugin's hooks/hooks.json runs these in every project:
     SessionStart              sync_records.py session
     PreToolUse  Edit|Write    sync_records.py before
-    PostToolUse Edit|Write    sync_records.py after
+    Stop                      sync_records.py stop
 A project opts in with docs/agents/records.json on origin/main, naming its record paths, register and ADR folder; other folders are left alone.
+The push waits for the end of the turn, so one turn's record edits go in one commit; a turn the user interrupts does not run it, and its edits are pushed at the end of the next turn.
 Each reads the hook's JSON on stdin. A failure tells the agent what happened and where the recovery steps are.
 """
 
@@ -70,9 +71,10 @@ def pending(root: Path, sync: Path, paths: list[str]) -> list[Path]:
     """Record files edited in the working copy but not yet on main: they differ from both main and the branch."""
     found = []
     for rel in record_files(root, paths):
-        on_main = (sync / rel).is_file() and filecmp.cmp(root / rel, sync / rel, shallow=False)
-        on_branch = not git(root, "status", "--porcelain", "--", str(rel))
-        if not on_main and not on_branch:
+        # A file already on main needs no git status call, which is the slow part.
+        if (sync / rel).is_file() and filecmp.cmp(root / rel, sync / rel, shallow=False):
+            continue
+        if git(root, "status", "--porcelain", "--", str(rel)):
             found.append(rel)
     return found
 
@@ -101,6 +103,9 @@ def pull(root: Path, sync: Path, paths: list[str]) -> None:
 
 
 def push(root: Path, sync: Path, config: dict) -> None:
+    # A turn that edited no records returns here, before the fetch.
+    if sync.exists() and not pending(root, sync, config["paths"]):
+        return
     ensure_sync(root, sync)
     files = pending(root, sync, config["paths"])
     if not files:
@@ -144,14 +149,15 @@ def main() -> None:
     try:
         root, sync = roots(Path(call["cwd"]))
         config = load_config(root)
-        if event != "session" and not is_record(root, config["paths"], Path(call["tool_input"]["file_path"])):
+        if event in ("before", "after") and not is_record(root, config["paths"], Path(call["tool_input"]["file_path"])):
             return
         if event in ("session", "before"):
             pull(root, sync, config["paths"])
-        elif event == "after":
+        # `after` stays only until sessions that loaded the old hooks.json have ended.
+        elif event in ("after", "stop"):
             push(root, sync, config)
         else:
-            raise SyncError(f"unknown hook event {event}: use session, before or after.")
+            raise SyncError(f"unknown hook event {event}: use session, before or stop.")
     except SyncError as error:
         fail(event, error)
 

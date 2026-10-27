@@ -32,13 +32,13 @@ def hook(event: str, cwd: Path, file: Path | None = None) -> subprocess.Complete
 
 
 def edit(person: Path, rel: str, text: str) -> subprocess.CompletedProcess:
-    """What Claude Code does around one Edit: the before hook, the edit, the after hook."""
+    """What Claude Code does around a turn with one Edit: the before hook, the edit, the Stop hook."""
     before = hook("before", person, person / rel)
     if before.returncode:
         return before
     (person / rel).parent.mkdir(parents=True, exist_ok=True)
     (person / rel).write_text(text)
-    return hook("after", person, person / rel)
+    return hook("stop", person)
 
 
 def clone(base: Path, remote: Path, name: str) -> Path:
@@ -51,6 +51,11 @@ def clone(base: Path, remote: Path, name: str) -> Path:
 def on_main(seed: Path, rel: str) -> str:
     run(seed, "git", "pull", "-q")
     return (seed / rel).read_text()
+
+
+def commit_count(seed: Path) -> int:
+    run(seed, "git", "pull", "-q")
+    return int(run(seed, "git", "rev-list", "--count", "HEAD").stdout)
 
 
 def main() -> None:
@@ -97,7 +102,7 @@ def main() -> None:
     assert hook("before", alex, alex / reg).returncode == 0
     (alex / reg).write_text(register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 alex"))
     assert edit(ben, reg, register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben")).returncode == 0
-    result = hook("after", alex, alex / reg)
+    result = hook("stop", alex)
     assert result.returncode == 2 and "SKILL.md" in result.stderr, "a same-moment clash stops with a message"
     assert hook("before", alex, alex / reg).returncode == 2, "edits wait until the rebase is resolved"
 
@@ -112,11 +117,22 @@ def main() -> None:
     assert on_main(seed, reg) == register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben", "D6 worktree"), "an edit in a linked worktree reaches main"
     assert not (worktree / ".git/records-sync").exists(), "worktrees share the one sync checkout"
 
+    rows = ("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben", "D6 worktree")
+    assert hook("before", worktree, worktree / reg).returncode == 0
+    count = commit_count(seed)
+    assert hook("stop", worktree).returncode == 0 and commit_count(seed) == count, "a turn with no record edits pushes nothing"
+    (worktree / reg).write_text(register(*rows, "D7 one"))
+    assert hook("before", worktree, worktree / reg).returncode == 0, "a second edit in the turn waits for no push"
+    (worktree / reg).write_text(register(*rows, "D7 one", "D8 two"))
+    assert hook("stop", worktree).returncode == 0
+    assert on_main(seed, reg) == register(*rows, "D7 one", "D8 two")
+    assert commit_count(seed) == count + 1, "a turn's edits go in one commit"
+
     other = base / "other"
     run(base, "git", "init", "-q", "other")
     for folder in (other, Path(tempfile.mkdtemp())):
-        for event in ("session", "before", "after"):
-            result = hook(event, folder, None if event == "session" else folder / "GLOSSARY.md")
+        for event in ("session", "before", "stop"):
+            result = hook(event, folder, folder / "GLOSSARY.md" if event == "before" else None)
             assert result.returncode == 0 and not result.stdout and not result.stderr, "a project that has not opted in is left alone"
     assert not (other / ".git/records-sync").exists()
     print("sync_records: all checks passed")
