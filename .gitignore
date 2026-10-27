@@ -25,6 +25,7 @@ __pycache__/
 !/.gitattributes
 !/.gitignore
 !/README.md
+!/package.json
 !/anti-ai-slop-writing/
 !/maintain-mattpocock-fork/
 !/marketing_materials/

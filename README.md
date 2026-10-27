@@ -50,6 +50,18 @@ Two folders need one more step each:
   (see `video-digest/references/install.md`).
 
 
+## Use the same checkout in Pi
+
+```
+pi install "$HOME/.claude/skills"
+```
+
+Remove any separate `mattpocock/skills` or `ui-dev` package entries first to avoid duplicate skills.
+Pi reads the installed skills directly, including the fork's engineering and productivity skills,
+and loads the UI plugin's Pi extension. The fork's `prototype` takes precedence over the UI plugin's
+same-named skill. Claude-only hooks and plugin agents are not installed in Pi by this package.
+Run `/reload` in Pi after pulling changes.
+
 ## Change a skill
 
 Ask the agent to edit the skill where it is installed. The edit is live in the next session. Then,

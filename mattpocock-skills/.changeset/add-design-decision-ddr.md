@@ -14,3 +14,4 @@ Add the `design-decision` skill and DDRs (design decision records), with the mac
 - **The rewind skills.** `prepare-rewind` writes `rewind-status.md` before the conversation is rewound to save tokens; `carry-on-rewind` reads it after the rewind, checks git, and carries on. Both are model-invoked, so the agent can write the handover while its context still has room.
 - **`grill-with-docs` is model-invoked**, so the agent reaches for it when asked to grill a plan inside a repo, rather than only when the user types it.
 - **No ids in code.** Code comments never cite a DDR, an ADR or a tracker issue; the records point at the code, never the reverse.
+- **Portable skill metadata.** Fold the `design-decision` description as a YAML string so Pi can load it without treating its colon as a mapping.
