@@ -135,8 +135,8 @@ number is the highest existing id plus one. Append the row at the end of the fil
 order given in DDR-FORMAT.md, **every field double-quoted**.
 
 A proposed row names its proposer and proposal date. Record acceptance or rejection with its date when
-it happens. The records check runs from the sync hook on every register edit and stops a bad row
-reaching `main`; fix what it names and edit again.
+it happens. The records check runs from the sync hook when the turn ends and stops a bad row
+reaching `main`; fix what it names and the check runs again at the end of the turn.
 
 Write the row **before** the edit that implements it: the user steers the record, not just the code.
 Keep the row's wording the same as the tracker comment, so one search finds both. The code carries
