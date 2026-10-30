@@ -1,11 +1,11 @@
 {
   "hooks": {
-    "SessionStart": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/skills/engineering/domain-modeling/scripts/sync_records.py\" session",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/skills/engineering/domain-modeling/scripts/sync_records.py\" prompt",
             "timeout": 60
           }
         ]
@@ -19,16 +19,6 @@
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/skills/engineering/tdd/scripts/guard_holdouts.py\"",
             "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/skills/engineering/domain-modeling/scripts/sync_records.py\" before",
-            "timeout": 60
           }
         ]
       }

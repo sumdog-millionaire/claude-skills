@@ -1,11 +1,10 @@
 """Claude Code hooks that keep a project's decision records on main, silently unless something fails.
 
 The plugin's hooks/hooks.json runs these in every project:
-    SessionStart              sync_records.py session
-    PreToolUse  Edit|Write    sync_records.py before
-    Stop                      sync_records.py stop
+    UserPromptSubmit    sync_records.py prompt
+    Stop                sync_records.py stop
 A project opts in with docs/agents/records.json on origin/main, naming its record paths, register and ADR folder; other folders are left alone.
-The push waits for the end of the turn, so one turn's record edits go in one commit; a turn the user interrupts does not run it, and its edits are pushed at the end of the next turn.
+Records refresh at the start of each turn and push in one commit at its end. Interrupted edits stay local for the next turn. Only a rejected push triggers another fetch.
 Each reads the hook's JSON on stdin. A failure tells the agent what happened and where the recovery steps are.
 """
 
@@ -60,13 +59,6 @@ def record_files(base: Path, paths: list[str]) -> list[Path]:
     return found
 
 
-def is_record(root: Path, paths: list[str], target: Path) -> bool:
-    if not target.resolve().is_relative_to(root.resolve()):
-        return False
-    rel = target.resolve().relative_to(root.resolve()).as_posix()
-    return any(rel == p or rel.startswith(p.rstrip("/") + "/") for p in paths)
-
-
 def pending(root: Path, sync: Path, paths: list[str]) -> list[Path]:
     """Record files edited in the working copy but not yet on main: they differ from both main and the branch."""
     found = []
@@ -86,7 +78,6 @@ def copy_back(root: Path, sync: Path, paths: list[str]) -> None:
 
 
 def ensure_sync(root: Path, sync: Path) -> None:
-    git(root, "fetch", "origin", "main")
     if not sync.exists():
         git(root, "worktree", "add", "--detach", str(sync), "origin/main")
     if (Path(git(sync, "rev-parse", "--absolute-git-dir")) / "rebase-merge").exists():
@@ -103,7 +94,7 @@ def pull(root: Path, sync: Path, paths: list[str]) -> None:
 
 
 def push(root: Path, sync: Path, config: dict) -> None:
-    # A turn that edited no records returns here, before the fetch.
+    # A turn that edited no records needs no commit or push.
     if sync.exists() and not pending(root, sync, config["paths"]):
         return
     ensure_sync(root, sync)
@@ -127,16 +118,11 @@ def push(root: Path, sync: Path, config: dict) -> None:
         git(sync, "fetch", "origin", "main")
         git(sync, "rebase", "origin/main")
         git(sync, "push", "origin", "HEAD:main")
-    git(sync, "fetch", "origin", "main")
     copy_back(root, sync, config["paths"])
 
 
 def fail(event: str, error: Exception) -> None:
     message = f"Decision-record sync failed ({event}): {error}\nWhat to do: {HELP}, section \"Keep the records on main\"."
-    # SessionStart passes stdout to the agent; tool hooks pass stderr on exit 2.
-    if event == "session":
-        print(message)
-        sys.exit(0)
     print(message, file=sys.stderr)
     sys.exit(2)
 
@@ -148,16 +134,15 @@ def main() -> None:
         return
     try:
         root, sync = roots(Path(call["cwd"]))
+        if event == "prompt":
+            git(root, "fetch", "origin", "main")
         config = load_config(root)
-        if event in ("before", "after") and not is_record(root, config["paths"], Path(call["tool_input"]["file_path"])):
-            return
-        if event in ("session", "before"):
+        if event == "prompt":
             pull(root, sync, config["paths"])
-        # `after` stays only until sessions that loaded the old hooks.json have ended.
-        elif event in ("after", "stop"):
+        elif event == "stop":
             push(root, sync, config)
         else:
-            raise SyncError(f"unknown hook event {event}: use session, before or stop.")
+            raise SyncError(f"unknown hook event {event}: use prompt or stop.")
     except SyncError as error:
         fail(event, error)
 
