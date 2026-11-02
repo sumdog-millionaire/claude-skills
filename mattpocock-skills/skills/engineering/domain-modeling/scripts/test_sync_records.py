@@ -104,9 +104,9 @@ def main() -> None:
     (alex / reg).write_text(register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 alex"))
     assert edit(ben, reg, register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 ben")).returncode == 0
     result = hook("stop", alex)
-    assert result.returncode == 2 and "SKILL.md" in result.stderr, "a same-moment clash stops with a message"
-    assert hook("prompt", alex).returncode == 2, "a new turn is blocked until the rebase is resolved"
-    assert (alex / reg).read_text() == register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 alex"), "a conflict leaves the working copy intact"
+    assert result.returncode == 2 and "D5" in result.stderr and "SKILL.md" in result.stderr, "a same-moment clash stops and names the id"
+    assert hook("prompt", alex).returncode == 0, "nothing is left half-done, so the next turn starts"
+    assert (alex / reg).read_text() == register("D1", "D2 ben", "D3 alex", "D4 ben", "D5 alex"), "a clash leaves the working copy intact"
 
     for event in ("session", "before", "after"):
         result = hook(event, ben)
@@ -151,6 +151,39 @@ def main() -> None:
     for rel in (saved, concurrent):
         assert on_main(seed, rel) == ADR, "non-conflicting concurrent records survive the push"
         assert (interrupted / rel).read_text() == ADR, "the merged records are copied back"
+
+    latest = (*rows, "D7 one", "D8 two")
+    first = run(seed, "git", "rev-list", "--max-parents=0", "HEAD").stdout.strip()
+    old = clone(base, remote, "old")
+    run(old, "git", "checkout", "-q", "-b", "old", first)
+    (old / reg).write_bytes(register("D1").replace("\n", "\r\n").encode())
+    count = commit_count(seed)
+    assert hook("stop", old).returncode == 0 and commit_count(seed) == count, "an old copy differing only in line endings is never pushed"
+    assert hook("prompt", old).returncode == 0 and (old / reg).read_text() == register(*latest), "the next turn replaces it with main's"
+
+    (old / reg).write_text(register("D1", "D20 old"))
+    assert hook("stop", old).returncode == 0
+    assert on_main(seed, reg) == register(*latest, "D20 old"), "a new row on an old copy is appended and main's newer rows stay"
+
+    late = clone(base, remote, "late")
+    run(late, "git", "checkout", "-q", "-b", "late", first)
+    (late / reg).write_text(register("D1", "D21 late"))
+    run(late, "git", "commit", "-qam", "a decision made while the hook was off")
+    assert hook("prompt", late).returncode == 0 and (late / reg).read_text() == register("D1", "D21 late"), "switching the hook on keeps a committed row main lacks"
+    assert hook("stop", late).returncode == 0
+    assert on_main(seed, reg) == register(*latest, "D20 old", "D21 late"), "and pushes it"
+
+    assert hook("prompt", old).returncode == 0
+    (old / reg).write_text(register(*latest[1:], "D20 changed", "D21 late"))
+    assert hook("stop", old).returncode == 0
+    assert on_main(seed, reg) == register(*latest, "D20 changed", "D21 late"), "a changed row is applied and a missing row is not deleted"
+
+    assert hook("prompt", old).returncode == 0
+    assert edit(ben, reg, register(*latest, "D20 ben", "D21 late")).returncode == 0
+    (old / reg).write_text(register(*latest, "D20 old again", "D21 late"))
+    result = hook("stop", old)
+    assert result.returncode == 2 and "D20" in result.stderr, "a row main changed after you started stops the push and is named"
+    assert on_main(seed, reg) == register(*latest, "D20 ben", "D21 late"), "main keeps the other person's change"
 
     run(ben, "git", "remote", "set-url", "origin", str(base / "missing.git"))
     result = hook("prompt", ben)
