@@ -157,6 +157,36 @@ def main() -> None:
     assert result.returncode == 2 and "fetch" in result.stderr, "a failed refresh blocks the prompt"
     run(ben, "git", "remote", "set-url", "origin", str(remote))
 
+    disabled = clone(base, remote, "disabled")
+    local_config = disabled / "docs/agents/records.json"
+    local_config.write_text(json.dumps({**config, "enabled": False}))
+    original = (disabled / reg).read_text()
+    (disabled / reg).write_text("unsent local records")
+    run(disabled, "git", "remote", "set-url", "origin", str(base / "missing.git"))
+    disabled_trace = base / "disabled-git-trace.log"
+    for event in ("prompt", "stop"):
+        result = hook(event, disabled / "docs", disabled_trace)
+        assert result.returncode == 0 and not result.stdout and not result.stderr, result.stderr
+    assert (disabled / reg).read_text() == "unsent local records", "disabled sync leaves local records untouched"
+    assert not (disabled / ".git/records-sync").exists(), "disabled sync creates no worktree"
+    assert "git fetch" not in disabled_trace.read_text() and "git push" not in disabled_trace.read_text(), "the local switch prevents network operations"
+
+    local_config.write_text(json.dumps({**config, "enabled": True}))
+    (disabled / reg).write_text(original)
+    run(disabled, "git", "remote", "set-url", "origin", str(remote))
+    assert hook("prompt", disabled).returncode == 0, "enabled true resumes refreshes"
+    assert (disabled / ".git/records-sync").exists()
+    paused = "docs/adr/0004-paused.md"
+    (disabled / paused).write_text(ADR)
+    local_config.write_text(json.dumps({**config, "enabled": False}))
+    count = commit_count(seed)
+    assert hook("stop", disabled).returncode == 0 and commit_count(seed) == count, "disabling mid-turn prevents a push"
+    assert (disabled / paused).read_text() == ADR
+    local_config.write_text(json.dumps({**config, "enabled": True}))
+    assert hook("prompt", disabled).returncode == 0
+    assert hook("stop", disabled).returncode == 0
+    assert on_main(seed, paused) == ADR, "re-enabling publishes the preserved edits"
+
     other = base / "other"
     run(base, "git", "init", "-q", "other")
     for folder in (other, Path(tempfile.mkdtemp())):

@@ -134,6 +134,9 @@ def main() -> None:
         return
     try:
         root, sync = roots(Path(call["cwd"]))
+        local_config = root / CONFIG
+        if local_config.is_file() and json.loads(local_config.read_text(encoding="utf-8")).get("enabled", True) is False:
+            return
         if event == "prompt":
             git(root, "fetch", "origin", "main")
         config = load_config(root)
