@@ -28,8 +28,10 @@ cd scripts && python -m rewind_point --agent <claude|codex|pi|opencode> --repo <
 ```
 
 Pass the agent you are running in. `--quote` is a distinctive phrase copied exactly from one of the
-user's recent messages in this conversation, never from a command; it picks this session out from any
-other running in the same repo. `--limit` is 200,000 unless the user gives another.
+user's recent messages in this conversation, never from a command. In Claude Code the script reads only
+the running conversation, which Claude Code names in `CLAUDE_CODE_SESSION_ID`, and the quote confirms
+it; for the other harnesses the quote picks this session out from any other running in the same repo.
+`--limit` is 200,000 unless the user gives another.
 
 **The script also prints `Stream: <name>`**, taken from the session's first message, which no rewind
 removes. Use that name exactly and never make one up: in this skill, `rewind-status.md` and

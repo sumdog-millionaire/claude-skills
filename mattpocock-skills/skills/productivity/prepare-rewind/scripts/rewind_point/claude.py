@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from pathlib import Path
 
@@ -6,12 +7,12 @@ from .models import Session, Turn, states_rewind_point
 
 
 def list_sessions(repo: Path) -> list[Path]:
-    """Every Claude Code transcript for this repository."""
+    """The running conversation's transcript, which Claude Code names in every shell it starts."""
     folder = Path.home() / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(repo.resolve()))
-    sessions = list(folder.glob("*.jsonl"))
-    if not sessions:
-        raise FileNotFoundError(f"No Claude Code session for {repo} in {folder}")
-    return sessions
+    session = folder / f"{os.environ['CLAUDE_CODE_SESSION_ID']}.jsonl"
+    if not session.is_file():
+        raise FileNotFoundError(f"No transcript for this conversation at {session}")
+    return [session]
 
 
 def is_user_text(record: dict) -> bool:

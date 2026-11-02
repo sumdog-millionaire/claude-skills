@@ -24,7 +24,7 @@ The file's centre is a **DECISIONS LOCKED** list. Each entry is a decision from 
 
 ## Where to rewind to
 
-The rewind point decides what the handover must carry, so the skill chooses it first. A script in `scripts/rewind_point/` reads the session log your harness already keeps (Claude Code, Codex, Pi or opencode) and lists each of your messages with the context in [tokens](https://www.aihero.dev/ai-coding-dictionary/token) just before it. It needs only Python's standard library. The agent passes a phrase from one of your messages, so the script finds this session even when another runs in the same repo, and the script names the stream from the session's first message, so each stream's files stay apart.
+The rewind point decides what the handover must carry, so the skill chooses it first. A script in `scripts/rewind_point/` reads the session log your harness already keeps (Claude Code, Codex, Pi or opencode) and lists each of your messages with the context in [tokens](https://www.aihero.dev/ai-coding-dictionary/token) just before it. It needs only Python's standard library. In Claude Code it reads only the running conversation, which Claude Code names for every command it runs; for the other harnesses the agent passes a phrase from one of your messages, so the script finds this session even when another runs in the same repo. The script names the stream from the session's first message, so each stream's files stay apart.
 
 - A message you name wins.
 - Otherwise it takes the rewind point [implement](https://aihero.dev/skills-implement) stated, a line opening `**Rewind point.**`, and never goes earlier, because the research and grilling sit just above it.
