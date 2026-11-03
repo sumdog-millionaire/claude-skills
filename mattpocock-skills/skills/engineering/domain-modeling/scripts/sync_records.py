@@ -70,12 +70,16 @@ def read(path: Path) -> bytes | None:
 
 
 def committed(root: Path, rel: Path) -> bytes | None:
-    """The branch's committed copy of a record file, or None when the branch has none."""
-    if not git(root, "ls-tree", "--name-only", "HEAD", "--", rel.as_posix()):
+    """A record file as the branch last shared it with main, at their merge-base, or None when it had none there.
+
+    A row the branch changed and committed differs from this copy, so it still counts as your change.
+    """
+    shared = git(root, "merge-base", "HEAD", "origin/main")
+    if not git(root, "ls-tree", "--name-only", shared, "--", rel.as_posix()):
         return None
-    result = subprocess.run(["git", "show", f"HEAD:{rel.as_posix()}"], cwd=root, capture_output=True)
+    result = subprocess.run(["git", "show", f"{shared}:{rel.as_posix()}"], cwd=root, capture_output=True)
     if result.returncode:
-        raise SyncError(f"git show HEAD:{rel.as_posix()} failed in {root}:\n{result.stderr.decode('utf-8', 'replace').strip()}")
+        raise SyncError(f"git show {shared}:{rel.as_posix()} failed in {root}:\n{result.stderr.decode('utf-8', 'replace').strip()}")
     return result.stdout.replace(b"\r\n", b"\n")
 
 
@@ -97,13 +101,13 @@ def unparse(header: list[str], by_id: dict[str, list[str]]) -> bytes:
     return out.getvalue().encode("utf-8")
 
 
-def merge_register(local: bytes, head: bytes | None, given: bytes | None, main: bytes | None) -> tuple[bytes | None, list[str]]:
+def merge_register(local: bytes, shared: bytes | None, given: bytes | None, main: bytes | None) -> tuple[bytes | None, list[str]]:
     """Main's register with your new rows appended and your changed rows applied, and the ids main changed under you."""
     if main is None:
         return local, []
     mine = parse(local)[1]
-    # The copies you may have started from: the branch's commit and the hook's last refresh.
-    started = [parse(copy)[1] for copy in (head, given) if copy is not None]
+    # The copies you may have started from: where the branch last met main, and the hook's last refresh.
+    started = [parse(copy)[1] for copy in (shared, given) if copy is not None]
     header, theirs = parse(main)
     if unparse(header, theirs) != main:
         raise SyncError("the register on main does not quote every field one row per line, so rows cannot be merged into it.")
@@ -124,11 +128,11 @@ def merge_register(local: bytes, head: bytes | None, given: bytes | None, main: 
     return unparse(header, merged), clashes
 
 
-def merge_file(rel: Path, local: bytes, head: bytes | None, given: bytes | None, main: bytes | None) -> tuple[bytes | None, list[str]]:
+def merge_file(rel: Path, local: bytes, shared: bytes | None, given: bytes | None, main: bytes | None) -> tuple[bytes | None, list[str]]:
     """Your copy of a whole record file when you changed it and main still holds the copy you started from."""
-    if local in (head, given):
+    if local in (shared, given):
         return main, []
-    if main is None or main in (head, given):
+    if main is None or main in (shared, given):
         return local, []
     return main, [rel.as_posix()]
 
@@ -138,10 +142,10 @@ def merged(root: Path, sync: Path, base: Path, rel: Path, register: str) -> tupl
     local, main = read(root / rel), read(sync / rel)
     if local is None or local == main:
         return main, []
-    head, given = committed(root, rel), read(base / rel)
+    shared, given = committed(root, rel), read(base / rel)
     if rel.as_posix() == register:
-        return merge_register(local, head, given, main)
-    return merge_file(rel, local, head, given, main)
+        return merge_register(local, shared, given, main)
+    return merge_file(rel, local, shared, given, main)
 
 
 def refresh(root: Path, sync: Path, base: Path, config: dict) -> None:

@@ -193,6 +193,16 @@ def main() -> None:
     assert result.returncode == 0 and "D20" in json.loads(result.stdout)["systemMessage"], "a row main changed after you started stops the push and is named"
     assert on_main(seed, reg) == register(*latest, "D20 ben", "D21 late"), "main keeps the other person's change"
 
+    committer = clone(base, remote, "committer")
+    run(committer, "git", "checkout", "-q", "-b", "committer")
+    assert hook("prompt", committer).returncode == 0
+    (committer / reg).write_text(register(*latest, "D20 ben", "D21 committed"))
+    run(committer, "git", "commit", "-qam", "a changed row committed before the turn ends")
+    assert hook("stop", committer).returncode == 0
+    assert on_main(seed, reg) == register(*latest, "D20 ben", "D21 committed"), "a changed row committed in the turn still reaches main"
+    assert hook("prompt", committer).returncode == 0
+    assert (committer / reg).read_text() == register(*latest, "D20 ben", "D21 committed"), "the next turn does not revert it"
+
     run(ben, "git", "remote", "set-url", "origin", str(base / "missing.git"))
     result = hook("prompt", ben)
     assert result.returncode == 0 and "fetch" in result.stdout and "investigate" in result.stdout, "a failed refresh tells the agent and lets the prompt through"
