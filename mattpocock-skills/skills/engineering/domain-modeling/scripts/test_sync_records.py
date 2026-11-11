@@ -35,7 +35,8 @@ def hook(event: str, cwd: Path, trace: Path | None = None) -> subprocess.Complet
 def edit(person: Path, rel: str, text: str) -> subprocess.CompletedProcess:
     """A turn with one edit: refresh on prompt submission, then push on Stop."""
     prompt = hook("prompt", person)
-    if prompt.returncode:
+    # A failed refresh exits 0 so the prompt goes through, and says so on stdout.
+    if prompt.returncode or prompt.stdout:
         return prompt
     (person / rel).parent.mkdir(parents=True, exist_ok=True)
     (person / rel).write_text(text)
@@ -187,8 +188,13 @@ def main() -> None:
 
     run(ben, "git", "remote", "set-url", "origin", str(base / "missing.git"))
     result = hook("prompt", ben)
-    assert result.returncode == 2 and "fetch" in result.stderr, "a failed refresh blocks the prompt"
+    assert result.returncode == 0 and "fetch" in result.stdout and "investigate" in result.stdout, "a failed refresh tells the agent and lets the prompt through"
     run(ben, "git", "remote", "set-url", "origin", str(remote))
+
+    lock = ben / ".git/worktrees/records-sync/index.lock"
+    lock.write_text("")
+    result = hook("prompt", ben)
+    assert result.returncode == 0 and not result.stdout and not lock.exists(), "a lock left by a killed run is cleared"
 
     disabled = clone(base, remote, "disabled")
     local_config = disabled / "docs/agents/records.json"

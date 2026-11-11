@@ -215,6 +215,10 @@ def push(root: Path, sync: Path, base: Path, config: dict) -> None:
 
 def fail(event: str, error: Exception) -> None:
     message = f"Decision-record sync failed ({event}): {error}\nWhat to do: {HELP}, section \"Keep the records on main\"."
+    if event == "prompt":
+        # A prompt hook's stdout on exit 0 reaches the agent as context and lets the user's prompt through.
+        print(message + "\nThe user's prompt was not blocked. Tell the user, investigate the cause, and edit no record until the sync works.")
+        sys.exit(0)
     print(message, file=sys.stderr)
     sys.exit(2)
 
