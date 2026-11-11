@@ -16,7 +16,7 @@ Type `/task-prioritisation`, or the agent reaches for it on its own when you ask
 
 ## Prerequisites
 
-The project declares its tracker and sheet in `docs/agents/task-prioritisation.json`: where the table is written, the tracker's link prefix, the label that marks committed work, how the tracker's statuses and priorities map onto the table's three words each, and which column of the sheet holds which field. When the file is missing, the agent proposes one from what your tracker and sheet hold and writes it once you agree. The build needs Python with `openpyxl`, and the output folder must be ignored by git, because a feedback sheet can carry personal data.
+The project declares its tracker and sheet in `docs/agents/task-prioritisation.json`: where the table is written, the tracker's link prefix, the label that marks committed work, how the tracker's statuses and priorities map onto the table's three words each, and which column of the sheet holds which field. When the file is missing, the agent proposes one from what your tracker and sheet hold and writes it once you agree. On Linear, the config also names the project and the project's `.env` holds a personal API key as `LINEAR_API_KEY`, so a script fetches the issues and no agent copies them. The scripts need Python with `openpyxl` and `python-dotenv`, and the output folder must be ignored by git, because a feedback sheet can carry personal data.
 
 ## The walk-through
 
