@@ -260,4 +260,4 @@ General workflow tools, not code-specific.
 - **[writing-for-agents](./skills/productivity/writing-for-agents/SKILL.md)**: Writing documents for agents: skills, AGENTS.md/CLAUDE.md, and any doc an agent reaches by a pointer.
 - **[prepare-rewind](./skills/productivity/prepare-rewind/SKILL.md)**: Before rewinding the conversation to save tokens, write `rewind-status.md` with what was built and every decision the rewind would cut.
 - **[carry-on-rewind](./skills/productivity/carry-on-rewind/SKILL.md)**: After a context rewind, read the handover `/prepare-rewind` left, line it up against git and the agreed plan, and carry on without re-planning.
-- **[task-prioritisation](./skills/productivity/task-prioritisation/SKILL.md)**: Build one local, colour-coded table of every open tracker issue and the last week's finished ones, to walk through on a prioritisation call.
+- **[task-prioritisation](./skills/productivity/task-prioritisation/SKILL.md)**: Build one local, colour-coded table of every open tracker issue and the last week's finished ones, to walk through on a prioritisation call, and turn a stakeholder's agreed feedback rows into issues.

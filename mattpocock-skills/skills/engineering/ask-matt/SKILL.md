@@ -47,7 +47,7 @@ A starting situation that generates work, then merges onto the main flow.
 
   Triage is only for issues **you didn't create**: bug reports, incoming feature requests, anything that arrives raw. Tickets that `/to-tickets` produced are already agent-ready, so **don't triage them**. The exception is **`/triage sweep`**, the periodic clean-up of the whole tracker: it proposes closing what is done, obsolete or duplicated, and applies only what you approve.
 
-- **Choosing what to work on next** → **`/task-prioritisation`**. It builds one colour-coded table of every open issue and the last week's finished ones, for the call where you agree priorities; you set priority, owner and the queue on the page, and it writes them back to the tracker.
+- **Choosing what to work on next** → **`/task-prioritisation`**. It builds one colour-coded table of every open issue and the last week's finished ones, for the call where you agree priorities; you set priority, owner and the queue on the page, and it writes them back to the tracker. It also turns a stakeholder's agreed feedback rows into issues.
 
 - **Something's broken** → **`/diagnosing-bugs`**. For the hard ones: the bug that resists a first glance, the intermittent flake, the regression that crept in between two known-good states. It refuses to theorise until it has a **tight feedback loop** (one command that already goes red on *this* bug), then fixes with a regression test. Once the fix is in, run **`/retro`** in the same session to ask what would have prevented the bug; where the real finding is that there's no good seam to lock it down, that's a job for **`/improve-codebase-architecture`**.
 

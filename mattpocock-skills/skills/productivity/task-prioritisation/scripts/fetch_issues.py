@@ -7,12 +7,13 @@ Run from the project root, whose .env holds LINEAR_API_KEY:
 import json
 import os
 import sys
-import urllib.request
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-API_URL = "https://api.linear.app/graphql"
+# A sibling module: Python puts this script's folder on the import path when it runs the script.
+from linear import run_query
+
 QUERY = """
 query ProjectIssues($project: String!, $after: String) {
   project(id: $project) {
@@ -34,23 +35,12 @@ query ProjectIssues($project: String!, $after: String) {
 """
 
 
-def run_query(api_key: str, variables: dict) -> dict:
-    """Send the query to Linear and return its data, raising on any error Linear reports."""
-    body = json.dumps({"query": QUERY, "variables": variables}).encode("utf-8")
-    request = urllib.request.Request(API_URL, data=body, headers={"Authorization": api_key, "Content-Type": "application/json"})
-    with urllib.request.urlopen(request) as response:
-        reply = json.load(response)
-    if "errors" in reply:
-        raise RuntimeError(f"Linear refused the query: {reply['errors']}")
-    return reply["data"]
-
-
 def fetch_issues(api_key: str, project: str) -> list[dict]:
     """Every issue in the project, open or closed, following every page; the build chooses what to show."""
     issues = []
     after = None
     while True:
-        data = run_query(api_key, {"project": project, "after": after})
+        data = run_query(api_key, QUERY, {"project": project, "after": after})
         if data["project"] is None:
             raise ValueError(f"Linear has no project {project!r}")
         page = data["project"]["issues"]
