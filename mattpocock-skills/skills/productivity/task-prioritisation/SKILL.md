@@ -9,9 +9,9 @@ The table holds every open issue in the project's tracker, and every row of the 
 
 The project declares its tracker and sheet in `docs/agents/task-prioritisation.json`. When that file does not exist, read [CONFIG-FORMAT.md](CONFIG-FORMAT.md), propose the file to the user from what the tracker and the sheet hold, and write it once they agree.
 
-1. **Fetch the open issues.** Read every open issue through the project's tracker, as `docs/agents/issue-tracker.md` says, following every page of results. Keep each issue's identifier, title, status, assignee, priority name, milestone name and labels. Done when every page is read.
+1. **Fetch the open issues.** Read every open issue through the project's tracker, as `docs/agents/issue-tracker.md` says, following every page of results. Open means any status except completed, cancelled and duplicate: the config maps only open statuses, so a closed one would stop the build. Ask the tracker for only the fields kept here, so a hundred issue bodies do not fill the context: each issue's identifier, title, status, assignee, priority name, milestone name and labels. Done when every page is read.
 2. **Save them.** Write them as one JSON list to `issues.json` in the config's `output_dir`, each as `{"id", "title", "status", "assignee", "priority", "milestone", "labels"}`, with `null` where the tracker gives no value.
-3. **Build the table.** Copy the feedback workbook with the shell (`cp`) to `sheet.xlsx` in `output_dir`: a shared workbook is often open during a session, and the shell can copy it when Python cannot open it. Ask the user for the workbook's local path when it is not known. Then, from the project root, with a Python that has `openpyxl`, run:
+3. **Build the table.** Copy the feedback workbook with the shell (`cp`) to `sheet.xlsx` in `output_dir`: a shared workbook is often open during a session, and the shell can copy it when Python cannot open it. Take the workbook's location from `docs/agents/issue-tracker.md`, and ask the user only when it is not there. Then, from the project root, with a Python that has `openpyxl`, run:
 
    ```bash
    python <this skill>/scripts/build_table.py docs/agents/task-prioritisation.json <output_dir>/sheet.xlsx <output_dir>/issues.json
