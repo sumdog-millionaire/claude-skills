@@ -20,7 +20,7 @@
   .filters input[type=search], .filters select { font: inherit; font-size: 14px; padding: 5px 8px; border: 1px solid #c4c9cf; border-radius: 6px; background: #fff; color: var(--ink); }
   .filters input[type=search] { width: 240px; }
   .filters label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; padding: 0 4px; cursor: pointer; }
-  .filters button { font: inherit; font-size: 14px; padding: 5px 10px; border: 1px solid #c4c9cf; border-radius: 6px; background: #fff; cursor: pointer; }
+  .filters button, #save { font: inherit; font-size: 14px; padding: 5px 10px; border: 1px solid #c4c9cf; border-radius: 6px; background: #fff; cursor: pointer; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .scroll { flex: 1; overflow: auto; }
   table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
@@ -41,6 +41,10 @@
   td.id { white-space: nowrap; font-variant-numeric: tabular-nums; }
   td.id a { color: var(--accent); }
   .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  td select { font: inherit; font-size: 13px; font-weight: 600; border: 1px solid transparent; border-radius: 999px; padding: 1px 4px; background: transparent; color: var(--ink); max-width: 100%; cursor: pointer; }
+  td select:hover { border-color: #c4c9cf; }
+  td.changed { outline: 2px solid var(--amber-ink); outline-offset: -2px; }
+  #save:not(:disabled) { background: var(--amber-bg); border-color: var(--amber-ink); font-weight: 600; }
   .red { background: var(--red-bg); color: var(--red-ink); }
   .amber { background: var(--amber-bg); color: var(--amber-ink); }
   .green { background: var(--green-bg); color: var(--green-ink); }
@@ -52,6 +56,8 @@
     <h1>Task prioritisation</h1>
     <span class="meta" id="refreshed"></span>
     <span class="meta" id="count" aria-live="polite"></span>
+    <span class="meta" id="changeCount" aria-live="polite"></span>
+    <button type="button" id="save" disabled title="Download your changes as one file for Claude to apply">Save changes</button>
   </div>
   <div class="filters" id="filters">
     <input id="search" type="search" placeholder="e.g. images, ENG-134" aria-label="Search title, feedback or ID" title="Search title, feedback or ID">
@@ -72,7 +78,7 @@ const DATA = /*DATA*/null;
 // Key, heading, starting width in pixels, whether it gets a filter dropdown.
 const COLUMNS = [
   ["kind", "Kind", 90, true], ["id", "ID", 100, false], ["title", "Title or feedback", 520, false],
-  ["owner", "Owner", 110, true], ["status", "Status", 120, true], ["priority", "Priority", 100, true],
+  ["owner", "Owner", 170, true], ["status", "Status", 120, true], ["priority", "Priority", 100, true],
   ["milestone", "Milestone", 200, true], ["queue", "In queue", 90, false], ["rows", "Sheet rows", 100, false],
 ];
 const RANK = { status: ["Open", "In progress", "Complete"], priority: ["High", "Medium", "Low", ""] };
@@ -82,6 +88,7 @@ const WIDTHS_KEY = "taskPrioritisationWidths";
 // One line per open issue, then one per sheet row that no open issue covers.
 const openIds = new Set(DATA.issues.map(issue => issue.id));
 const items = DATA.issues.map(issue => ({
+  key: `issue:${issue.id}`, ref: { kind: "issue", id: issue.id },
   kind: "Issue", id: issue.id, url: issue.url, title: issue.title, response: "",
   owner: issue.owner || "", status: issue.status, priority: issue.priority || "", milestone: issue.milestone || "",
   queue: issue.queue ? "Yes" : "No",
@@ -90,6 +97,7 @@ const items = DATA.issues.map(issue => ({
 for (const row of DATA.rows) {
   if (openIds.has(row.issue)) continue;
   items.push({
+    key: `row:${row.row}`, ref: { kind: "row", row: row.row },
     kind: "Sheet row", id: row.issue || `Row ${row.row}`, url: row.url || "",
     title: row.feedback, response: row.response || "", owner: row.owner || "", status: row.status,
     priority: row.priority || "", milestone: "", queue: "", rows: String(row.row),
@@ -97,6 +105,29 @@ for (const row of DATA.rows) {
 }
 document.getElementById("refreshed").textContent = `Refreshed ${DATA.refreshed}`;
 document.querySelector("#queueLabel span").textContent = `${DATA.queueLabel} only`;
+
+// Every edit made on the page, keyed by line and field, with the value before and after.
+const edits = new Map();
+const original = new Map(items.map(item => [item.key, { priority: item.priority, owner: item.owner, queue: item.queue }]));
+function edit(key, field, value) {
+  const item = items.find(candidate => candidate.key === key);
+  item[field] = value;
+  const before = original.get(key)[field];
+  if (value === before) edits.delete(`${key}|${field}`);
+  else edits.set(`${key}|${field}`, { ...item.ref, field, from: before, to: value });
+  document.getElementById("changeCount").textContent = edits.size ? `${edits.size} unsaved change${edits.size === 1 ? "" : "s"}` : "";
+  document.getElementById("save").disabled = edits.size === 0;
+  render();
+}
+// Saving downloads every change made since the page loaded, for Claude to apply.
+document.getElementById("save").addEventListener("click", () => {
+  const file = new Blob([JSON.stringify({ refreshed: DATA.refreshed, changes: [...edits.values()] }, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(file);
+  link.download = "task-prioritisation-changes.json";
+  link.click();
+  URL.revokeObjectURL(link.href);
+});
 
 // Widths the viewer dragged to last time, or none on a first visit.
 function savedWidths() {
@@ -192,6 +223,12 @@ function sortValue(key, value) {
 function escapeHtml(text) {
   return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
+function choice(item, field, values) {
+  const changed = edits.has(`${item.key}|${field}`) ? "changed" : "";
+  const colour = field === "priority" ? COLOUR[item[field]] || "" : "";
+  const options = ["", ...values].map(value => `<option value="${escapeHtml(value)}"${value === item[field] ? " selected" : ""}>${escapeHtml(value)}</option>`).join("");
+  return `<td class="${changed}"><select class="${colour}" data-key="${item.key}" data-field="${field}" aria-label="${field}">${options}</select></td>`;
+}
 function pill(value) {
   return value ? `<span class="pill ${COLOUR[value]}">${value}</span>` : "";
 }
@@ -216,18 +253,24 @@ function render() {
       <td class="kind">${item.kind}</td>
       <td class="id">${item.url ? `<a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(item.id)}</a>` : escapeHtml(item.id)}</td>
       <td><div class="clamp">${escapeHtml(item.title)}</div>${item.response ? `<div class="response clamp">${escapeHtml(item.response)}</div>` : ""}</td>
-      <td>${escapeHtml(item.owner)}</td>
+      ${choice(item, "owner", DATA.owners)}
       <td>${pill(item.status)}</td>
-      <td>${pill(item.priority)}</td>
+      ${choice(item, "priority", ["High", "Medium", "Low"])}
       <td>${escapeHtml(item.milestone)}</td>
-      <td>${item.queue}</td>
+      <td class="${edits.has(`${item.key}|queue`) ? "changed" : ""}">${item.ref.kind === "issue" ? `<input type="checkbox" data-key="${item.key}" data-field="queue" aria-label="In queue"${item.queue === "Yes" ? " checked" : ""}>` : ""}</td>
       <td>${item.rows}</td>
     </tr>`).join("");
 }
 // Clicking a row shows its full text; clicking a link inside it only follows the link.
 document.getElementById("body").addEventListener("click", event => {
-  if (event.target.closest("a")) return;
+  if (event.target.closest("a, select, input")) return;
   event.target.closest("tr")?.classList.toggle("open");
+});
+// A changed drop-down or tick box records its new value as an edit.
+document.getElementById("body").addEventListener("change", event => {
+  const control = event.target;
+  const value = control.type === "checkbox" ? (control.checked ? "Yes" : "No") : control.value;
+  edit(control.dataset.key, control.dataset.field, value);
 });
 applyWidths();
 render();

@@ -2,7 +2,7 @@
 
 `task-prioritisation` builds one local page that lists every open issue in your tracker beside every row of a stakeholder's feedback sheet that no open issue covers yet. Status reads only Open, In progress or Complete, and priority only High, Medium or Low, each coloured red, amber or green, and the columns sort, filter and resize the way a spreadsheet's do. It is the screen you share on a prioritisation call.
 
-The table is read-only. Nothing you do on the page changes the tracker or the sheet: decisions taken on the call go to the tracker and the sheet in the usual way, and the table is rebuilt from them. That keeps one source for the work and one for the requests, with the table only ever a view of both.
+The table shows the tracker and the sheet exactly as they are, and is only ever rebuilt from them. On the call you change priority, owner and the committed queue on the page and press Save changes, which downloads one changes file. When you say the review is done, the agent applies that file: issue changes to the tracker, changes to uncovered sheet rows to the sheet. Then it rebuilds the table, so the page never drifts from either source.
 
 ## When to reach for it
 
@@ -26,7 +26,7 @@ The page is built for a call: the default view sorts by priority with completed 
 
 - The call starts from the table, not from scrolling the sheet and the tracker in turn.
 - Every red line on screen is one somebody can name an owner for by the end of the call.
-- After the call the table is rebuilt, and the lines you settled show their new status.
+- After you say the review is done, the tracker shows the priorities and owners you set on the call, without anyone retyping them.
 
 ## Where it fits
 

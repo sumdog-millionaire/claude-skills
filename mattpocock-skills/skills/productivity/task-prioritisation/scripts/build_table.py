@@ -56,8 +56,7 @@ def read_issues(config: dict, issues_path: Path) -> list[dict]:
             "title": issue["title"],
             "status": config["issue_status"][issue["status"]],
             "priority": config["issue_priority"][issue["priority"]],
-            # First names keep the owner column narrow.
-            "owner": issue["assignee"].split()[0] if issue["assignee"] else None,
+            "owner": issue["assignee"],
             "milestone": issue["milestone"],
             "queue": config["queue_label"] in issue["labels"],
             "url": config["issue_url_prefix"] + issue["id"],
@@ -73,9 +72,12 @@ def main(config_path: Path, sheet_path: Path, issues_path: Path) -> None:
         raise ValueError(f"{TEMPLATE} has lost its data marker {DATA_MARKER}")
     issues = read_issues(config, issues_path)
     rows = read_sheet_rows(config, sheet_path)
+    # Everyone an item can be given to: every issue's assignee and every owner the sheet names.
+    owners = {issue["owner"] for issue in issues} | set(config["sheet"]["owner"].values())
     data = {
         "refreshed": datetime.now().strftime("%d %b %Y, %H:%M"),
         "queueLabel": config["queue_label"],
+        "owners": sorted(owner for owner in owners if owner),
         "issues": issues,
         "rows": rows,
     }
