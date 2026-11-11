@@ -1,4 +1,4 @@
-"""Fetch every open issue of one Linear project and save them as the issues file the table is built from.
+"""Fetch every issue of one Linear project, open or closed, and save them as the issues file the table is built from.
 
 Run from the project root, whose .env holds LINEAR_API_KEY:
     python fetch_issues.py docs/agents/task-prioritisation.json
@@ -13,17 +13,17 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 API_URL = "https://api.linear.app/graphql"
-CLOSED_STATE_TYPES = ["completed", "canceled", "duplicate"]
 QUERY = """
-query OpenIssues($project: String!, $after: String, $closed: [String!]) {
+query ProjectIssues($project: String!, $after: String) {
   project(id: $project) {
-    issues(first: 100, after: $after, filter: {state: {type: {nin: $closed}}}) {
+    issues(first: 100, after: $after) {
       pageInfo { hasNextPage endCursor }
       nodes {
         identifier
         title
         priorityLabel
-        state { name }
+        completedAt
+        state { name type }
         assignee { name }
         projectMilestone { name }
         labels(first: 100) { pageInfo { hasNextPage } nodes { name } }
@@ -45,12 +45,12 @@ def run_query(api_key: str, variables: dict) -> dict:
     return reply["data"]
 
 
-def fetch_open_issues(api_key: str, project: str) -> list[dict]:
-    """Every issue in the project whose status is not completed, cancelled or duplicate, following every page."""
+def fetch_issues(api_key: str, project: str) -> list[dict]:
+    """Every issue in the project, open or closed, following every page; the build chooses what to show."""
     issues = []
     after = None
     while True:
-        data = run_query(api_key, {"project": project, "after": after, "closed": CLOSED_STATE_TYPES})
+        data = run_query(api_key, {"project": project, "after": after})
         if data["project"] is None:
             raise ValueError(f"Linear has no project {project!r}")
         page = data["project"]["issues"]
@@ -61,6 +61,8 @@ def fetch_open_issues(api_key: str, project: str) -> list[dict]:
                 "id": node["identifier"],
                 "title": node["title"],
                 "status": node["state"]["name"],
+                "status_type": node["state"]["type"],
+                "completed_at": node["completedAt"],
                 # An unassigned issue or one outside every milestone has null there.
                 "assignee": node["assignee"]["name"] if node["assignee"] else None,
                 "priority": node["priorityLabel"],
@@ -73,14 +75,14 @@ def fetch_open_issues(api_key: str, project: str) -> list[dict]:
 
 
 def main(config_path: Path) -> None:
-    """Write the project's open issues to issues.json in the config's output folder."""
+    """Write every issue in the project to issues.json in the config's output folder."""
     config = json.loads(config_path.read_text(encoding="utf-8"))
     load_dotenv(Path(".env"))
-    issues = fetch_open_issues(os.environ["LINEAR_API_KEY"], config["linear_project"])
+    issues = fetch_issues(os.environ["LINEAR_API_KEY"], config["linear_project"])
     output = Path(config["output_dir"]) / "issues.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(issues, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"{len(issues)} open issues written to {output}")
+    print(f"{len(issues)} issues written to {output}")
 
 
 if __name__ == "__main__":
