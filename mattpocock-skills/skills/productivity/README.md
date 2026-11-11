@@ -20,3 +20,4 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[writing-for-agents](./writing-for-agents/SKILL.md)**: Writing documents for agents: skills, AGENTS.md/CLAUDE.md, and any doc an agent reaches by a pointer.
 - **[prepare-rewind](./prepare-rewind/SKILL.md)**: Before rewinding the conversation to save tokens, write `rewind-status.md` with what was built and every decision the rewind would cut.
 - **[carry-on-rewind](./carry-on-rewind/SKILL.md)**: After a context rewind, read the handover `/prepare-rewind` left, line it up against git and the agreed plan, and carry on without re-planning.
+- **[task-prioritisation](./task-prioritisation/SKILL.md)**: Build one local, colour-coded table of every open tracker issue beside a stakeholder's feedback rows, to walk through on a prioritisation call.

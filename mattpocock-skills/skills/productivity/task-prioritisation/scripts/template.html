@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task prioritisation</title>
+<style>
+  :root {
+    --ink: #1c1f23; --muted: #5b6168; --line: #dfe2e6; --panel: #f6f7f8; --stripe: #fafbfc; --hover: #eef3fb; --accent: #1f5fbf;
+    --red-bg: #fde4e2; --red-ink: #8f1d17; --amber-bg: #fdefc8; --amber-ink: #7a4a00; --green-bg: #dcf3e2; --green-ink: #17602e;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #fff; display: flex; flex-direction: column; }
+  header { padding: 12px 16px 8px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  .titlebar { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  h1 { font-size: 20px; margin: 0; }
+  .meta { color: var(--muted); font-size: 14px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .filters input[type=search], .filters select { font: inherit; font-size: 14px; padding: 5px 8px; border: 1px solid #c4c9cf; border-radius: 6px; background: #fff; color: var(--ink); }
+  .filters input[type=search] { width: 240px; }
+  .filters label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; padding: 0 4px; cursor: pointer; }
+  .filters button { font: inherit; font-size: 14px; padding: 5px 10px; border: 1px solid #c4c9cf; border-radius: 6px; background: #fff; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .scroll { flex: 1; overflow: auto; }
+  table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+  th, td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; overflow: hidden; }
+  th { position: sticky; top: 0; z-index: 1; background: var(--panel); font-size: 13px; font-weight: 600; color: var(--muted); user-select: none; white-space: nowrap; }
+  th .sort { all: unset; cursor: pointer; display: block; overflow: hidden; text-overflow: ellipsis; padding-right: 8px; }
+  th[aria-sort=ascending] .sort::after { content: " ▲"; }
+  th[aria-sort=descending] .sort::after { content: " ▼"; }
+  .grip { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 2; }
+  .grip:hover, .grip:focus-visible { background: var(--accent); opacity: 0.4; }
+  tbody tr:nth-child(even) td { background: var(--stripe); }
+  tbody tr:hover td { background: var(--hover); }
+  tbody tr { cursor: pointer; }
+  .clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  tr.open .clamp { display: block; }
+  .response { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .kind { color: var(--muted); font-size: 13px; }
+  td.id { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.id a { color: var(--accent); }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .red { background: var(--red-bg); color: var(--red-ink); }
+  .amber { background: var(--amber-bg); color: var(--amber-ink); }
+  .green { background: var(--green-bg); color: var(--green-ink); }
+</style>
+</head>
+<body>
+<header>
+  <div class="titlebar">
+    <h1>Task prioritisation</h1>
+    <span class="meta" id="refreshed"></span>
+    <span class="meta" id="count" aria-live="polite"></span>
+  </div>
+  <div class="filters" id="filters">
+    <input id="search" type="search" placeholder="e.g. images, ENG-134" aria-label="Search title, feedback or ID" title="Search title, feedback or ID">
+    <label class="check" id="queueLabel" title="Show only issues the team has committed to"><input type="checkbox" id="queueOnly"> <span></span></label>
+    <label class="check" title="Hide lines whose status is Complete"><input type="checkbox" id="hideComplete" checked> Hide complete</label>
+    <button type="button" id="resetWidths" title="Put every column back to its starting width">Reset widths</button>
+  </div>
+</header>
+<div class="scroll">
+  <table id="table">
+    <colgroup id="cols"></colgroup>
+    <thead><tr id="head"></tr></thead>
+    <tbody id="body"></tbody>
+  </table>
+</div>
+<script>
+const DATA = /*DATA*/null;
+// Key, heading, starting width in pixels, whether it gets a filter dropdown.
+const COLUMNS = [
+  ["kind", "Kind", 90, true], ["id", "ID", 100, false], ["title", "Title or feedback", 520, false],
+  ["owner", "Owner", 110, true], ["status", "Status", 120, true], ["priority", "Priority", 100, true],
+  ["milestone", "Milestone", 200, true], ["queue", "In queue", 90, false], ["rows", "Sheet rows", 100, false],
+];
+const RANK = { status: ["Open", "In progress", "Complete"], priority: ["High", "Medium", "Low", ""] };
+const COLOUR = { Open: "red", "In progress": "amber", Complete: "green", High: "red", Medium: "amber", Low: "green" };
+const WIDTHS_KEY = "taskPrioritisationWidths";
+
+// One line per open issue, then one per sheet row that no open issue covers.
+const openIds = new Set(DATA.issues.map(issue => issue.id));
+const items = DATA.issues.map(issue => ({
+  kind: "Issue", id: issue.id, url: issue.url, title: issue.title, response: "",
+  owner: issue.owner || "", status: issue.status, priority: issue.priority || "", milestone: issue.milestone || "",
+  queue: issue.queue ? "Yes" : "No",
+  rows: DATA.rows.filter(row => row.issue === issue.id).map(row => row.row).join(", "),
+}));
+for (const row of DATA.rows) {
+  if (openIds.has(row.issue)) continue;
+  items.push({
+    kind: "Sheet row", id: row.issue || `Row ${row.row}`, url: row.url || "",
+    title: row.feedback, response: row.response || "", owner: row.owner || "", status: row.status,
+    priority: row.priority || "", milestone: "", queue: "", rows: String(row.row),
+  });
+}
+document.getElementById("refreshed").textContent = `Refreshed ${DATA.refreshed}`;
+document.querySelector("#queueLabel span").textContent = `${DATA.queueLabel} only`;
+
+// Widths the viewer dragged to last time, or none on a first visit.
+function savedWidths() {
+  return JSON.parse(localStorage.getItem(WIDTHS_KEY)) || {};
+}
+function saveWidths(widths) {
+  localStorage.setItem(WIDTHS_KEY, JSON.stringify(widths));
+}
+
+const table = document.getElementById("table");
+const cols = document.getElementById("cols");
+const widths = savedWidths();
+function applyWidths() {
+  let total = 0;
+  cols.innerHTML = "";
+  for (const [key, , start] of COLUMNS) {
+    const width = widths[key] || start;
+    total += width;
+    const col = document.createElement("col");
+    col.style.width = `${width}px`;
+    cols.appendChild(col);
+  }
+  table.style.width = `${total}px`;
+}
+function resize(key, width) {
+  widths[key] = Math.max(48, Math.round(width));
+  applyWidths();
+  saveWidths(widths);
+}
+
+let sortKey = "priority";
+let ascending = true;
+const head = document.getElementById("head");
+for (const [key, label, start] of COLUMNS) {
+  const th = document.createElement("th");
+  const sort = document.createElement("button");
+  sort.className = "sort";
+  sort.textContent = label;
+  sort.title = `Sort by ${label.toLowerCase()}`;
+  sort.addEventListener("click", () => { ascending = sortKey === key ? !ascending : true; sortKey = key; render(); });
+  const grip = document.createElement("span");
+  grip.className = "grip";
+  grip.tabIndex = 0;
+  grip.setAttribute("role", "separator");
+  grip.setAttribute("aria-orientation", "vertical");
+  grip.setAttribute("aria-label", `Resize ${label}`);
+  grip.title = "Drag to resize; arrow keys work too";
+  // Dragging the grip changes this column's width by however far the pointer moves.
+  grip.addEventListener("pointerdown", event => {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = widths[key] || start;
+    grip.setPointerCapture(event.pointerId);
+    const move = moveEvent => resize(key, startWidth + moveEvent.clientX - startX);
+    grip.addEventListener("pointermove", move);
+    grip.addEventListener("pointerup", () => grip.removeEventListener("pointermove", move), { once: true });
+  });
+  grip.addEventListener("keydown", event => {
+    const step = { ArrowLeft: -16, ArrowRight: 16 }[event.key];
+    if (step) { event.preventDefault(); resize(key, (widths[key] || start) + step); }
+  });
+  th.append(sort, grip);
+  head.appendChild(th);
+}
+document.getElementById("resetWidths").addEventListener("click", () => {
+  for (const key of Object.keys(widths)) delete widths[key];
+  saveWidths(widths);
+  applyWidths();
+});
+
+const filters = {};
+const filterBar = document.getElementById("filters");
+const firstCheck = filterBar.querySelector("label.check");
+for (const [key, label, , filterable] of COLUMNS) {
+  if (!filterable) continue;
+  const select = document.createElement("select");
+  select.setAttribute("aria-label", label);
+  select.title = `Show one ${label.toLowerCase()} only`;
+  const values = [...new Set(items.map(item => item[key]))].filter(Boolean);
+  values.sort((a, b) => sortValue(key, a).localeCompare(sortValue(key, b), "en", { numeric: true }));
+  select.add(new Option(`${label}: all`, ""));
+  for (const value of values) select.add(new Option(value, value));
+  select.addEventListener("change", render);
+  filterBar.insertBefore(select, firstCheck);
+  filters[key] = select;
+}
+for (const id of ["search", "queueOnly", "hideComplete"]) document.getElementById(id).addEventListener("input", render);
+
+// Status and priority sort in their working order; everything else sorts as text.
+function sortValue(key, value) {
+  return RANK[key] ? String(RANK[key].indexOf(value)) : String(value);
+}
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function pill(value) {
+  return value ? `<span class="pill ${COLOUR[value]}">${value}</span>` : "";
+}
+
+function render() {
+  const search = document.getElementById("search").value.toLowerCase();
+  const queueOnly = document.getElementById("queueOnly").checked;
+  const hideComplete = document.getElementById("hideComplete").checked;
+  // Keep items matching every chosen filter, both checkboxes and the search text.
+  const shown = items.filter(item =>
+    Object.entries(filters).every(([key, select]) => !select.value || item[key] === select.value) &&
+    (!queueOnly || item.queue === "Yes") &&
+    (!hideComplete || item.status !== "Complete") &&
+    `${item.id} ${item.title} ${item.response}`.toLowerCase().includes(search));
+  shown.sort((a, b) => sortValue(sortKey, a[sortKey]).localeCompare(sortValue(sortKey, b[sortKey]), "en", { numeric: true }) * (ascending ? 1 : -1));
+  for (const [index, [key]] of COLUMNS.entries()) {
+    head.children[index].setAttribute("aria-sort", key === sortKey ? (ascending ? "ascending" : "descending") : "none");
+  }
+  document.getElementById("count").textContent = `${shown.length} of ${items.length} shown`;
+  document.getElementById("body").innerHTML = shown.map(item => `
+    <tr>
+      <td class="kind">${item.kind}</td>
+      <td class="id">${item.url ? `<a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(item.id)}</a>` : escapeHtml(item.id)}</td>
+      <td><div class="clamp">${escapeHtml(item.title)}</div>${item.response ? `<div class="response clamp">${escapeHtml(item.response)}</div>` : ""}</td>
+      <td>${escapeHtml(item.owner)}</td>
+      <td>${pill(item.status)}</td>
+      <td>${pill(item.priority)}</td>
+      <td>${escapeHtml(item.milestone)}</td>
+      <td>${item.queue}</td>
+      <td>${item.rows}</td>
+    </tr>`).join("");
+}
+// Clicking a row shows its full text; clicking a link inside it only follows the link.
+document.getElementById("body").addEventListener("click", event => {
+  if (event.target.closest("a")) return;
+  event.target.closest("tr")?.classList.toggle("open");
+});
+applyWidths();
+render();
+</script>
+</body>
+</html>
