@@ -157,8 +157,11 @@ def refresh(root: Path, sync: Path, base: Path, config: dict) -> None:
 def ensure_sync(root: Path, sync: Path) -> None:
     if not sync.exists():
         git(root, "worktree", "add", "--detach", str(sync), "origin/main")
-    if (Path(git(sync, "rev-parse", "--absolute-git-dir")) / "rebase-merge").exists():
+    git_dir = Path(git(sync, "rev-parse", "--absolute-git-dir"))
+    if (git_dir / "rebase-merge").exists():
         raise SyncError(f"an earlier version of this hook left an unfinished rebase in {sync}.")
+    # Only this hook uses the sync checkout and it is force-reset next, so a lock here was left by a killed run.
+    (git_dir / "index.lock").unlink(missing_ok=True)
 
 
 def discard(sync: Path, paths: list[str]) -> None:
