@@ -91,17 +91,23 @@ When a term is resolved, update `GLOSSARY.md` right there. Don't batch these up:
 
 ### Offer ADRs sparingly
 
-Only offer to create an ADR when all three are true:
+An ADR records what the product is and why, or a choice you would pay to undo. Offer one in two cases.
+
+**A decision about the product as a whole**: its purpose, who it is for, what it stands for, a concept
+everything else rests on. This is an ADR however cheaply its words could change, and it never goes in
+the design decision register, which holds rules for how things are built.
+
+**A decision on how to build**, when all three are true:
 
 1. **Hard to reverse**: the cost of changing your mind later is meaningful
 2. **Surprising without context**: a future reader will wonder "why did they do it this way?"
 3. **The result of a real trade-off**: there were genuine alternatives and you picked one for specific reasons
 
-If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
+If a build decision misses any of the three, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
 
 ### Route design rules to DDRs
 
-Most decisions that fail the ADR test are not worthless; they are just small and reversible. A rule
+Most build decisions that fail the ADR test are not worthless; they are just small and reversible. A rule
 an engineer who never heard the conversation would build wrong ("the section heading pins level with
 its sibling", "prompt construction never makes calls", "retries use the stdlib") is lost if it lives
 only in a tracker ticket, which closes and buries it. That rule is a **DDR**, a design decision

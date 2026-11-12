@@ -2,7 +2,7 @@
 
 `design-decision` writes down the choices that fall below the ADR bar. Wherever there were several ways to build something and the project locks one, it becomes a **DDR** (design decision record): one row in `docs/ddr/register.csv`, numbered, dated and given a status, tagged by layer, area, sub-area and project part, and weighted by priority and risk.
 
-The test that separates the two records is cost, not size. **An ADR is a decision you would pay to undo. A DDR is one you would just change.** A narrow choice can be irreversible and want an ADR; a whole visual language can be reversed in an afternoon and want a row. If there was only one sensible way, there is nothing to record.
+The two records differ in what they are about, not in size. **An ADR records what the product is and why, or a choice you would pay to undo. A DDR records how something is built: a rule you would just change.** The product's purpose, its audience or a founding concept is an ADR however cheaply its words could change. Among decisions on how to build, cost decides: a narrow choice can be irreversible and want an ADR; a whole visual language can be reversed in an afternoon and want a row. If there was only one sensible way, there is nothing to record.
 
 The register is a CSV because its value is in being filtered: every unbuilt `must`, every `high` risk row, everything in one area, in one sort. It holds DDRs only. An ADR carries the same tags in its own front matter, so one filter reads both, and a row names the ADRs it relates to in its `adrs` column.
 
@@ -14,6 +14,7 @@ It runs underneath a grilling more often than on its own. [grill-with-docs](http
 | --- | --- |
 | "The section heading pins level with its sibling" was agreed in a call | `design-decision`: a row, written before the edit that builds it |
 | You chose a package, a module boundary or a logging rule | `design-decision`: a row naming the alternatives that lost |
+| The decision is about the product as a whole: its purpose, its audience, a founding concept | [domain-modeling](https://aihero.dev/skills-domain-modeling): an ADR in `docs/adr/`, and no row |
 | The choice would cost real money or time to undo | [domain-modeling](https://aihero.dev/skills-domain-modeling): an ADR in `docs/adr/`, tagged in its front matter, and no row |
 | A new word settled | [domain-modeling](https://aihero.dev/skills-domain-modeling): the glossary |
 | An action, an experiment or a check | The issue tracker, not a record |

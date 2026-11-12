@@ -6,13 +6,17 @@ and the project is locking one**: how something acts, a coding style, a package.
 sensible way, there is nothing to record.
 
 A DDR and an ADR record the same kind of thing and carry the same tags, so there is one vocabulary to
-learn. They differ in one test, and it is not breadth:
+learn. They differ in what they are about, and breadth is not the test:
 
-> **An ADR is a decision you would pay to undo. A DDR is one you would just change.**
+> **An ADR records what the product is and why, or a choice you would pay to undo. A DDR records how
+> something is built: a rule you would just change.**
 
-A narrow choice can be irreversible and belongs in an ADR ("shared documents are reached by a public
-unguessable link"). A decision as wide as a whole visual language can be reversed in an afternoon and
-belongs in a row. Route on the cost of undoing it.
+A decision about the product as a whole is an ADR, however cheaply its words could change: its
+purpose, who it is for, what it stands for, a concept everything else rests on ("the product exists to
+get small shops paid on time"). A rule for building one part is a row ("a customer can pay from the
+email alone"). Among decisions on how to build, route on the cost of undoing: a narrow choice can be
+irreversible and belongs in an ADR ("shared documents are reached by a public unguessable link"), and
+a decision as wide as a whole visual language can be reversed in an afternoon and belongs in a row.
 
 The register is one file because its value is in being filtered: every decision in one area, every
 unbuilt `must`, everything waiting on one tracker issue, in one sort. Nothing about a DDR lives

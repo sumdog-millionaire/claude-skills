@@ -36,13 +36,13 @@ The glossary, the ADR and the DDR have different bars. Most of the trouble with 
 | | `GLOSSARY.md` | `docs/adr/NNNN-slug.md` | A DDR row in `docs/ddr/register.csv` |
 | --- | --- | --- | --- |
 | Holds | Terms. What a thing **is**, in one or two sentences, with rejected synonyms under `_Avoid_` | One decision, in one to three sentences: context, choice, reason | One design rule, with the alternatives that lost |
-| Bar to write | A vague term became canonical | **All three**: hard to reverse, surprising without context, the result of a real trade-off | There were several ways, and the project locked one: one you would just change |
+| Bar to write | A vague term became canonical | It is about the product as a whole (its purpose, its audience, a founding concept), or it is a build decision that passes **all three**: hard to reverse, surprising without context, the result of a real trade-off | There were several ways to build something, and the project locked one: one you would just change |
 | Written | Inline, the moment the term is settled | Offered, not assumed | By [design-decision](https://aihero.dev/skills-design-decision), before the edit that builds it |
 | Never holds | Implementation details, a [spec](https://www.aihero.dev/ai-coding-dictionary/spec), a scratch pad, general programming concepts | A diary of every choice made this session | A choice nobody had to make |
 
 An ADR and a DDR carry the same tags, the ADR in its front matter and the DDR in its row, so one filter reads both. The register holds DDRs only; a row names the ADRs it relates to in its `adrs` column.
 
-Miss any one of the ADR's three tests and there is no ADR. An easily-reversed decision will just get reversed; an unsurprising one is nobody's question; one with no real alternative records that you did the obvious thing.
+A decision about what the product is and why is always an ADR and never a DDR row, because the register holds rules for how things are built. For a build decision, miss any one of the ADR's three tests and there is no ADR. An easily-reversed decision will just get reversed; an unsurprising one is nobody's question; one with no real alternative records that you did the obvious thing.
 
 The `GLOSSARY.md` rule matters most, because it is the one that breaks in practice. **It is a glossary and nothing else.** Left unchecked, models treat "write to `GLOSSARY.md`" as permission to persist every answer you give, and the file turns into a running spec. This is the most-reported problem with the skill, across several models.
 

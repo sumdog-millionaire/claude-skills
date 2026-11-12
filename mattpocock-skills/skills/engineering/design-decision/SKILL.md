@@ -13,10 +13,20 @@ Losing one means the production build quietly differs from what was agreed. So e
 the project's **design decision register**, a CSV. A row is a DDR, a design decision record, with a
 `D99` identifier. If there was only one sensible way, there is no decision to record.
 
-> **An ADR is a decision you would pay to undo. A DDR is one you would just change.**
+> **An ADR records what the product is and why, or a choice you would pay to undo. A DDR records how
+> something is built: a rule you would just change.**
 
-Breadth is not the test. A narrow choice can be irreversible and wants an ADR; a decision as wide as
-a whole visual language can be reversed in an afternoon and wants a row.
+Ask two questions, in this order, before writing a row:
+
+1. **Is it about the product as a whole: its purpose, who it is for, what it stands for, a concept
+   everything else rests on?** Then it is an ADR, however cheaply its words could change. "The product
+   exists to get small shops paid on time" is an ADR. "A customer can pay from the email alone" is a
+   rule for building one part, so it is a row.
+2. **Would you pay to undo it?** Then it is an ADR.
+
+Only a decision that answers no to both is a DDR: a rule for how one part is built or behaves. Breadth
+is not the test. A narrow choice can be irreversible and wants an ADR; a decision as wide as a whole
+visual language can be reversed in an afternoon and wants a row.
 
 The register is a CSV because its value is in being filtered: every unbuilt `must`, every `high` risk
 row, everything in one area, in one sort. Accepted rules apply to both prototype and production unless
@@ -72,8 +82,8 @@ Decide where the thing belongs before writing anything. One place per thing; the
 
 | It is | Home |
 |---|---|
-| A decision: several approaches, one locked | A row in the register |
-| A decision you would pay to undo | An ADR in `docs/adr/`, via `domain-modeling`, with its tags in the front matter and no row |
+| A decision on how a part is built or behaves: several approaches, one locked | A row in the register |
+| A decision about the product as a whole (its purpose, its audience, a founding concept), or one you would pay to undo | An ADR in `docs/adr/`, via `domain-modeling`, with its tags in the front matter and no row |
 | A term | The glossary, via `domain-modeling` |
 | A change to the design rulebook | The values file, and only when the user has set out to change that rulebook |
 | An action, an experiment, a verification, a question for someone | The tracker |

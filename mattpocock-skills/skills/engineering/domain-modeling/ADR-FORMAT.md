@@ -37,7 +37,11 @@ Scan `docs/adr/` for the highest existing number and increment by one.
 
 ## When to offer an ADR
 
-All three of these must be true:
+An ADR records what the product is and why, or a choice you would pay to undo. That gives two cases.
+
+**A decision about the product as a whole** is always an ADR, however cheaply its words could change: its purpose, who it is for, what it stands for, a concept everything else rests on. It never goes in the design decision register, which holds rules for how things are built.
+
+**A decision on how to build** is an ADR when all three of these are true:
 
 1. **Hard to reverse**: the cost of changing your mind later is meaningful
 2. **Surprising without context**: a future reader will look at the code and wonder "why on earth did they do it this way?"
@@ -45,10 +49,11 @@ All three of these must be true:
 
 If a decision is easy to reverse, skip it: you'll just reverse it. If it's not surprising, nobody will wonder why. If there was no real alternative, there's nothing to record beyond "we did the obvious thing."
 
-A decision that fails this test but is still a rule someone would build wrong without it is a DDR: hand it to `design-decision` ([DDR-FORMAT.md](./DDR-FORMAT.md)). The register holds DDRs only. An ADR stays in `docs/adr/` with its tags in its front matter, so a filter reads both, and a DDR row may name related ADRs in its `adrs` column.
+A build decision that fails this test but is still a rule someone would build wrong without it is a DDR: hand it to `design-decision` ([DDR-FORMAT.md](./DDR-FORMAT.md)). The register holds DDRs only. An ADR stays in `docs/adr/` with its tags in its front matter, so a filter reads both, and a DDR row may name related ADRs in its `adrs` column.
 
 ### What qualifies
 
+- **Purpose and founding concepts.** "The product exists to get small shops paid on time." "We serve the shop owner, not their accountant." What the product is, who it is for and why, even when no code depends on the wording.
 - **Architectural shape.** "We're using a monorepo." "The write model is event-sourced, the read model is projected into Postgres."
 - **Integration patterns between contexts.** "Ordering and Billing communicate via domain events, not synchronous HTTP."
 - **Technology choices that carry lock-in.** Database, message bus, auth provider, deployment target. Not every library: just the ones that would take a quarter to swap out.
