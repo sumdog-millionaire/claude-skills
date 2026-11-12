@@ -5,7 +5,7 @@ Run from the project root, whose .env holds LINEAR_API_KEY:
 
 --dry-run checks every lookup and prints each row and the issues it would create, creating and writing nothing; it can read a copy of the workbook.
 --groups names a JSON file {"new": [[row, ...], ...], "existing": {"ENG-134": [row, ...]}}: each "new" list is one issue, each
-"existing" entry links its rows to that issue, and a row in neither is an issue of its own.
+"existing" entry links its rows to that issue (or, when it is in progress, to a new issue related to it), and a row in neither is an issue of its own.
 """
 
 import argparse
@@ -25,9 +25,10 @@ NO_PRIORITY = 0
 TITLE_LENGTH = 80
 PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } } }"
 LABEL_QUERY = "query Label($name: String!) { issueLabels(filter: {name: {eq: $name}}) { nodes { id team { id } } } }"
-ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { identifier } }"
+ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } } }"
+RELATE_MUTATION = "mutation Relate($input: IssueRelationCreateInput!) { issueRelationCreate(input: $input) { success } }"
 USER_QUERY ="query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
-CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { identifier } } }"
+CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier } } }"
 
 
 def cell_text(value: object) -> str:
@@ -125,14 +126,19 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     rows = read_rows(sheet, sheet_config)
     for row in rows.values():
         print(f"row {row['row']}: {row['owner']}, {row['priority'] or 'no priority'}: {short_title(row['feedback'])}")
-    issues, existing = group_rows(rows, groups)
+    new, existing = group_rows(rows, groups)
+    issues = [(issue_rows, None) for issue_rows in new]
 
     addresses = []
     for identifier, issue_rows in existing.items():
         # Linear accepts an identifier as the id and raises when no issue has it.
-        found = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]["identifier"]
-        addresses.append((issue_rows, config["issue_url_prefix"] + found))
-        print(f"rows {[row['row'] for row in issue_rows]} -> existing issue {found}")
+        found = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]
+        # Work already under way is not widened: its rows get a new issue related to it.
+        if found["state"]["type"] == "started":
+            issues.append((issue_rows, found))
+            continue
+        addresses.append((issue_rows, config["issue_url_prefix"] + found["identifier"]))
+        print(f"rows {[row['row'] for row in issue_rows]} -> existing issue {found['identifier']}")
 
     project = run_query(api_key, PROJECT_QUERY, {"id": config["linear_project"]})["project"]
     team_id = single(project["teams"]["nodes"], "the project's team")["id"]
@@ -141,11 +147,14 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     label_id = single([label for label in labels if label["team"] is None or label["team"]["id"] == team_id], f"label {config['queue_label']!r}")["id"]
     user_ids = {}
 
-    for issue_rows in issues:
+    for issue_rows, related in issues:
         issue = plan_issue(issue_rows, config)
+        if related is not None:
+            issue["description"] += f"\n\nRelated to {related['identifier']}, which was already in progress when these rows were graduated."
         if issue["owner"] not in user_ids:
             user_ids[issue["owner"]] = single(run_query(api_key, USER_QUERY, {"name": issue["owner"]})["users"]["nodes"], f"user {issue['owner']!r}")["id"]
-        print(f"rows {[row['row'] for row in issue_rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}")
+        relation = f", related to in-progress {related['identifier']}" if related is not None else ""
+        print(f"rows {[row['row'] for row in issue_rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}{relation}")
         if dry_run:
             continue
         created = run_query(api_key, CREATE_MUTATION, {"input": {
@@ -154,13 +163,17 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
         }})["issueCreate"]
         if not created["success"]:
             raise RuntimeError(f"Linear did not create the issue for rows {[row['row'] for row in issue_rows]}")
+        if related is not None:
+            relation_made = run_query(api_key, RELATE_MUTATION, {"input": {"issueId": created["issue"]["id"], "relatedIssueId": related["id"], "type": "related"}})
+            if not relation_made["issueRelationCreate"]["success"]:
+                raise RuntimeError(f"Linear did not relate {created['issue']['identifier']} to {related['identifier']}")
         address = config["issue_url_prefix"] + created["issue"]["identifier"]
         addresses.append((issue_rows, address))
         # Printed as made, so a failed save below still leaves every address on screen.
         print(f"   created {address}")
 
     if dry_run or not addresses:
-        print(f"{len(issues)} issue(s) to create and {len(existing)} existing issue(s) to link, from {len(rows)} row(s); nothing written")
+        print(f"{len(issues)} issue(s) to create and {len(addresses)} existing issue(s) to link, from {len(rows)} row(s); nothing written")
         return
     issue_column = sheet_config["columns"]["issue"]
     for issue_rows, address in addresses:
