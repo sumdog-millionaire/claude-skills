@@ -4,7 +4,7 @@
 
 The table shows the tracker exactly as it is, and is only ever rebuilt from it. On the call you change priority, owner and the committed queue on the page and press Save changes, which downloads one changes file. When you say the review is done, the agent applies that file to the tracker and rebuilds the table, so the page never drifts from it.
 
-Graduate turns every open row of your stakeholder's feedback sheet that has an owner and no issue yet into one, assigned to that owner, and writes each issue's link back into its rows. The agent matches rows to issues that already cover them, proposes groups of rows that share a theme and belong in one issue, shows you the plan, and creates nothing until you agree. Whether a row is a data problem or a fix to build is settled when its issue is investigated. The skill also checks that your project's `CLAUDE.md` tells every agent to build only queued issues, and proposes that section if it is missing.
+Graduate turns every open row of your stakeholder's feedback sheet that has an owner and no issue yet into one, assigned to that owner, and writes each issue's link back into its rows. The agent matches rows to issues that already cover them, buckets the rest by milestone topic so each issue can be worked on one branch, shows you the plan, and creates nothing until you agree. Whether a row is a data problem or a fix to build is settled when its issue is investigated. The skill also checks that your project's `CLAUDE.md` tells every agent to build only queued issues, and proposes that section if it is missing.
 
 ## When to reach for it
 

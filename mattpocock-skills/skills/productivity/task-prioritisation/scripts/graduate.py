@@ -4,7 +4,7 @@ Run from the project root, whose .env holds LINEAR_API_KEY:
     python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--groups <groups.json>] [--dry-run]
 
 --dry-run checks every lookup and prints each row and the issues it would create, creating and writing nothing; it can read a copy of the workbook.
---groups names a JSON file {"new": [[row, ...], ...], "existing": {"ENG-134": [row, ...]}}: each "new" list is one issue, each
+--groups names a JSON file {"new": [{"title": "...", "milestone": "<name or null>", "rows": [row, ...]}, ...], "existing": {"ENG-134": [row, ...]}}: each "new" group is one issue, each
 "existing" entry links its rows to that issue (or, when it is in progress, to a new issue related to it), and a row in neither is an issue of its own.
 """
 
@@ -23,11 +23,11 @@ from linear import run_query
 LINEAR_PRIORITY = {"Urgent": 1, "High": 2, "Medium": 3, "Low": 4}
 NO_PRIORITY = 0
 TITLE_LENGTH = 80
-PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } } }"
+PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } projectMilestones { nodes { id name } } } }"
 LABEL_QUERY = "query Label($name: String!) { issueLabels(filter: {name: {eq: $name}}) { nodes { id team { id } } } }"
-ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } } }"
+ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } projectMilestone { name } } }"
 RELATE_MUTATION = "mutation Relate($input: IssueRelationCreateInput!) { issueRelationCreate(input: $input) { success } }"
-USER_QUERY ="query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
+USER_QUERY = "query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
 CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier } } }"
 
 
@@ -65,15 +65,16 @@ def read_rows(sheet: object, sheet_config: dict) -> dict[int, dict]:
     return rows
 
 
-def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[list[dict]], dict[str, list[dict]]]:
-    """Rows for new issues (the agreed groups, then every row no group names, alone) and rows joining existing issues."""
-    grouped = [number for group in groups["new"] for number in group] + [number for group in groups["existing"].values() for number in group]
+def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[tuple[list[dict], str | None, str]], dict[str, list[dict]]]:
+    """New issues as rows, milestone name and title (the agreed groups, then every row no group names, alone) and rows joining existing issues."""
+    grouped = [number for group in groups["new"] for number in group["rows"]] + [number for group in groups["existing"].values() for number in group]
     for number in grouped:
         if number not in rows:
             raise ValueError(f"Row {number} is in a group but is not an open, assigned row without an issue")
     if len(grouped) != len(set(grouped)):
         raise ValueError(f"A row is in more than one group: {groups}")
-    new = [[rows[number] for number in group] for group in groups["new"]] + [[row] for number, row in rows.items() if number not in grouped]
+    new = [([rows[number] for number in group["rows"]], group["milestone"], group["title"]) for group in groups["new"]]
+    new += [([row], None, short_title(row["feedback"])) for number, row in rows.items() if number not in grouped]
     existing = {identifier: [rows[number] for number in group] for identifier, group in groups["existing"].items()}
     return new, existing
 
@@ -99,14 +100,13 @@ def single(nodes: list[dict], what: str) -> dict:
     return nodes[0]
 
 
-def plan_issue(rows: list[dict], config: dict) -> dict:
-    """The new issue's title, body, priority and owner, refusing a group whose rows name different owners."""
+def plan_issue(rows: list[dict], title: str, config: dict) -> dict:
+    """The new issue's body, priority and owner beside its title, refusing a group whose rows name different owners."""
     owners = {row["owner"] for row in rows}
     if len(owners) != 1:
         raise ValueError(f"Rows {[row['row'] for row in rows]} name different owners: {sorted(owners)}")
     # The group takes its most urgent row's priority; Linear numbers urgency from 1 and 0 is none.
     priorities = [LINEAR_PRIORITY[config["tracker_priority"][row["priority"]]] for row in rows if row["priority"] is not None]
-    title = short_title(rows[0]["feedback"]) + (f" (+{len(rows) - 1} similar)" if len(rows) > 1 else "")
     return {"title": title, "description": describe(rows), "priority": min(priorities, default=NO_PRIORITY), "owner": owners.pop()}
 
 
@@ -127,15 +127,16 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     for row in rows.values():
         print(f"row {row['row']}: {row['owner']}, {row['priority'] or 'no priority'}: {short_title(row['feedback'])}")
     new, existing = group_rows(rows, groups)
-    issues = [(issue_rows, None) for issue_rows in new]
+    issues = [(issue_rows, None, milestone, title) for issue_rows, milestone, title in new]
 
     addresses = []
     for identifier, issue_rows in existing.items():
         # Linear accepts an identifier as the id and raises when no issue has it.
         found = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]
-        # Work already under way is not widened: its rows get a new issue related to it.
+        # Work already under way is not widened: its rows get a new issue related to it, in its milestone.
         if found["state"]["type"] == "started":
-            issues.append((issue_rows, found))
+            milestone = found["projectMilestone"]["name"] if found["projectMilestone"] else None
+            issues.append((issue_rows, found, milestone, short_title(issue_rows[0]["feedback"])))
             continue
         addresses.append((issue_rows, config["issue_url_prefix"] + found["identifier"]))
         print(f"rows {[row['row'] for row in issue_rows]} -> existing issue {found['identifier']}")
@@ -145,21 +146,24 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     labels = run_query(api_key, LABEL_QUERY, {"name": config["queue_label"]})["issueLabels"]["nodes"]
     # The queue label is the team's own or a workspace label with no team.
     label_id = single([label for label in labels if label["team"] is None or label["team"]["id"] == team_id], f"label {config['queue_label']!r}")["id"]
+    milestone_ids = {milestone["name"]: milestone["id"] for milestone in project["projectMilestones"]["nodes"]}
     user_ids = {}
 
-    for issue_rows, related in issues:
-        issue = plan_issue(issue_rows, config)
+    for issue_rows, related, milestone, title in issues:
+        issue = plan_issue(issue_rows, title, config)
+        # A name the project has no milestone for raises here, before anything is created.
+        milestone_id = milestone_ids[milestone] if milestone is not None else None
         if related is not None:
             issue["description"] += f"\n\nRelated to {related['identifier']}, which was already in progress when these rows were graduated."
         if issue["owner"] not in user_ids:
             user_ids[issue["owner"]] = single(run_query(api_key, USER_QUERY, {"name": issue["owner"]})["users"]["nodes"], f"user {issue['owner']!r}")["id"]
         relation = f", related to in-progress {related['identifier']}" if related is not None else ""
-        print(f"rows {[row['row'] for row in issue_rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}{relation}")
+        print(f"rows {[row['row'] for row in issue_rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}, milestone {milestone}{relation}")
         if dry_run:
             continue
         created = run_query(api_key, CREATE_MUTATION, {"input": {
-            "teamId": team_id, "projectId": project["id"], "title": issue["title"], "description": issue["description"],
-            "priority": issue["priority"], "assigneeId": user_ids[issue["owner"]], "labelIds": [label_id],
+            "teamId": team_id, "projectId": project["id"], "projectMilestoneId": milestone_id, "title": issue["title"],
+            "description": issue["description"], "priority": issue["priority"], "assigneeId": user_ids[issue["owner"]], "labelIds": [label_id],
         }})["issueCreate"]
         if not created["success"]:
             raise RuntimeError(f"Linear did not create the issue for rows {[row['row'] for row in issue_rows]}")
