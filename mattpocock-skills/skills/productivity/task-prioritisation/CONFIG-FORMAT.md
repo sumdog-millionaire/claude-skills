@@ -14,10 +14,10 @@
   "sheet": {
     "tab": "Feedback",
     "first_row": 2,
-    "columns": {"feedback": 3, "priority": 6, "owner": 7, "issue": 8, "decision": 9, "group": 10},
+    "columns": {"feedback": 3, "status": 4, "priority": 6, "owner": 7, "issue": 8},
     "details": {"Date": 1, "Reported by": 2},
-    "build": "Build",
-    "priority": {"1": "High", "2": "Medium", "3": "Low"},
+    "closed": ["Closed"],
+    "priority": {"": null, "1": "High", "2": "Medium", "3": "Low"},
     "owner": {"AB": "Alex Brown", "SC": "Sam Clarke"}
   }
 }
@@ -33,9 +33,9 @@
 | `issue_priority` | Every tracker priority, mapped to `High`, `Medium`, `Low` or `null` for none. |
 | `tracker_priority` | The tracker priority to set when the user picks `High`, `Medium` or `Low` on the page. |
 | `sheet.tab`, `sheet.first_row` | The worksheet holding the feedback rows, and the first row below its headings. A row with an empty feedback cell is skipped. |
-| `sheet.columns` | The 1-based column of each field `graduate.py` reads: the feedback text, its priority, its owner, the linked issue's address (which it writes), the decision, and the group that joins rows into one issue. |
+| `sheet.columns` | The 1-based column of each field `graduate.py` reads: the feedback text, its status, its priority, its owner, and the linked issue's address (which it writes). |
 | `sheet.details` | Columns copied into a new issue's body beside each row's feedback, as heading and column number. |
-| `sheet.build` | The decision value that sends a row to the tracker. |
-| `sheet.priority`, `sheet.owner` | Each value those cells hold, as text (`"1"` for the number 1), mapped to the table's priority word and to the owner's full name in the tracker. A row to build whose value is missing from a map, an empty cell included, stops the run. |
+| `sheet.closed` | The status values that keep a row out of the tracker. Every other status, an empty cell included, counts as open. |
+| `sheet.priority`, `sheet.owner` | Each value those cells hold, as text (`"1"` for the number 1), mapped to the table's priority word and to the owner's full name in the tracker. In the priority map, `""` maps an empty cell, usually to `null` for no priority. A row with an empty owner cell is skipped, so the owner map needs no `""`. An open, assigned row whose value is missing from a map stops the run. |
 
 A value missing from either status or priority map stops the build with a `KeyError` naming it, so a new status is agreed and added rather than shown wrongly.

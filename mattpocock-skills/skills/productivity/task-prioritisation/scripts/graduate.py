@@ -1,14 +1,15 @@
-"""Turn the feedback rows marked for building into Linear issues and write each issue's link back into its rows.
+"""Turn every open, assigned feedback row with no linked issue into a Linear issue and write each issue's link back into its rows.
 
 Run from the project root, whose .env holds LINEAR_API_KEY:
-    python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--dry-run]
+    python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--groups <groups.json>] [--dry-run]
 
---dry-run checks every lookup and prints the issues it would create, creating and writing nothing; it can read a copy of the workbook.
+--dry-run checks every lookup and prints each row and the issues it would create, creating and writing nothing; it can read a copy of the workbook.
+--groups names a JSON list of row-number lists, each list one issue; a row in no list is an issue of its own.
 """
 
+import argparse
 import json
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -19,6 +20,7 @@ from dotenv import load_dotenv
 from linear import run_query
 
 LINEAR_PRIORITY = {"Urgent": 1, "High": 2, "Medium": 3, "Low": 4}
+NO_PRIORITY = 0
 TITLE_LENGTH = 80
 PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } } }"
 LABEL_QUERY = "query Label($name: String!) { issueLabels(filter: {name: {eq: $name}}) { nodes { id team { id } } } }"
@@ -28,7 +30,7 @@ CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(inpu
 
 def cell_text(value: object) -> str:
     """A cell's value as the config's maps write it: an empty cell is the empty string."""
-    return "" if value is None else str(value)
+    return "" if value is None else str(value).strip()
 
 
 def short_title(text: str) -> str:
@@ -39,39 +41,41 @@ def short_title(text: str) -> str:
     return line[:TITLE_LENGTH].rsplit(" ", 1)[0] + "…"
 
 
-def read_groups(sheet: object, sheet_config: dict) -> tuple[dict, dict]:
-    """Rows to graduate, grouped, and the issue address each group already has from rows graduated before."""
+def read_rows(sheet: object, sheet_config: dict) -> dict[int, dict]:
+    """Every row with feedback, an owner, no linked issue and a status the config does not call closed, keyed by row number."""
     columns = sheet_config["columns"]
-    groups = {}
-    existing = {}
+    rows = {}
     for number in range(sheet_config["first_row"], sheet.max_row + 1):
         feedback = sheet.cell(number, columns["feedback"]).value
-        if feedback is None:
+        owner = cell_text(sheet.cell(number, columns["owner"]).value)
+        if feedback is None or not owner or sheet.cell(number, columns["issue"]).value:
             continue
-        group = cell_text(sheet.cell(number, columns["group"]).value).strip()
-        address = sheet.cell(number, columns["issue"]).value
-        if group and address:
-            # One group must point at one issue; two addresses mean the sheet needs fixing by hand.
-            if existing.setdefault(group, address) != address:
-                raise ValueError(f"Group {group!r} links to both {existing[group]} and {address}")
-        if address or cell_text(sheet.cell(number, columns["decision"]).value) != sheet_config["build"]:
+        if cell_text(sheet.cell(number, columns["status"]).value) in sheet_config["closed"]:
             continue
-        details = {name: sheet.cell(number, column).value for name, column in sheet_config["details"].items()}
-        row = {
+        rows[number] = {
             "row": number,
             "feedback": str(feedback),
             "priority": sheet_config["priority"][cell_text(sheet.cell(number, columns["priority"]).value)],
-            "owner": sheet_config["owner"][cell_text(sheet.cell(number, columns["owner"]).value)],
-            "details": details,
+            "owner": sheet_config["owner"][owner],
+            "details": {name: sheet.cell(number, column).value for name, column in sheet_config["details"].items()},
         }
-        # An ungrouped row is a group of one, keyed so it cannot meet a typed group name.
-        groups.setdefault(group or f"row {number}", []).append(row)
-    return groups, existing
+    return rows
 
 
-def describe(group: str, rows: list[dict]) -> str:
+def group_rows(rows: dict[int, dict], groups: list[list[int]]) -> list[list[dict]]:
+    """The agreed groups, then every row no group names as a group of its own."""
+    grouped = [number for group in groups for number in group]
+    for number in grouped:
+        if number not in rows:
+            raise ValueError(f"Row {number} is in a group but is not an open row without an issue")
+    if len(grouped) != len(set(grouped)):
+        raise ValueError(f"A row is in more than one group: {groups}")
+    return [[rows[number] for number in group] for group in groups] + [[row] for number, row in rows.items() if number not in grouped]
+
+
+def describe(rows: list[dict]) -> str:
     """The issue body: every row's feedback and details, so the owner can work from the issue alone."""
-    parts = [f"From the feedback sheet, {'group ' + repr(group) if len(rows) > 1 else group}."]
+    parts = [f"From the feedback sheet, row{'s' if len(rows) > 1 else ''} {', '.join(str(row['row']) for row in rows)}."]
     for row in rows:
         quoted = "\n".join(f"> {line}" for line in row["feedback"].splitlines())
         # One tight list per row; an empty detail cell has nothing to say, so it is left out.
@@ -90,21 +94,22 @@ def single(nodes: list[dict], what: str) -> dict:
     return nodes[0]
 
 
-def plan_issue(group: str, rows: list[dict], config: dict) -> dict:
+def plan_issue(rows: list[dict], config: dict) -> dict:
     """The new issue's title, body, priority and owner, refusing a group whose rows name different owners."""
     owners = {row["owner"] for row in rows}
     if len(owners) != 1:
-        raise ValueError(f"Rows {[row['row'] for row in rows]} in {group!r} name different owners: {sorted(owners)}")
-    # The group takes its most urgent row's priority; Linear numbers urgency from 1.
-    priority = min(LINEAR_PRIORITY[config["tracker_priority"][row["priority"]]] for row in rows)
+        raise ValueError(f"Rows {[row['row'] for row in rows]} name different owners: {sorted(owners)}")
+    # The group takes its most urgent row's priority; Linear numbers urgency from 1 and 0 is none.
+    priorities = [LINEAR_PRIORITY[config["tracker_priority"][row["priority"]]] for row in rows if row["priority"] is not None]
     title = short_title(rows[0]["feedback"]) + (f" (+{len(rows) - 1} similar)" if len(rows) > 1 else "")
-    return {"title": title, "description": describe(group, rows), "priority": priority, "owner": owners.pop()}
+    return {"title": title, "description": describe(rows), "priority": min(priorities, default=NO_PRIORITY), "owner": owners.pop()}
 
 
-def main(config_path: Path, workbook_path: Path, dry_run: bool) -> None:
-    """Create one issue per group of rows marked for building, then write each issue's address into its rows."""
+def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_run: bool) -> None:
+    """Create one issue per group of open rows without an issue, then write each issue's address into its rows."""
     config = json.loads(config_path.read_text(encoding="utf-8"))
     sheet_config = config["sheet"]
+    groups = json.loads(groups_path.read_text(encoding="utf-8")) if groups_path else []
     load_dotenv(Path(".env"))
     api_key = os.environ["LINEAR_API_KEY"]
     if not dry_run:
@@ -113,7 +118,10 @@ def main(config_path: Path, workbook_path: Path, dry_run: bool) -> None:
             pass
     workbook = openpyxl.load_workbook(workbook_path)
     sheet = workbook[sheet_config["tab"]]
-    groups, existing = read_groups(sheet, sheet_config)
+    rows = read_rows(sheet, sheet_config)
+    for row in rows.values():
+        print(f"row {row['row']}: {row['owner']}, {row['priority'] or 'no priority'}: {short_title(row['feedback'])}")
+    issues = group_rows(rows, groups)
 
     project = run_query(api_key, PROJECT_QUERY, {"id": config["linear_project"]})["project"]
     team_id = single(project["teams"]["nodes"], "the project's team")["id"]
@@ -122,16 +130,12 @@ def main(config_path: Path, workbook_path: Path, dry_run: bool) -> None:
     label_id = single([label for label in labels if label["team"] is None or label["team"]["id"] == team_id], f"label {config['queue_label']!r}")["id"]
     user_ids = {}
 
-    addresses = {}
-    for group, rows in groups.items():
-        if group in existing:
-            addresses[group] = existing[group]
-            print(f"{group}: rows {[row['row'] for row in rows]} join {existing[group]}")
-            continue
-        issue = plan_issue(group, rows, config)
+    addresses = []
+    for issue_rows in issues:
+        issue = plan_issue(issue_rows, config)
         if issue["owner"] not in user_ids:
             user_ids[issue["owner"]] = single(run_query(api_key, USER_QUERY, {"name": issue["owner"]})["users"]["nodes"], f"user {issue['owner']!r}")["id"]
-        print(f"{group}: rows {[row['row'] for row in rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}")
+        print(f"rows {[row['row'] for row in issue_rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}")
         if dry_run:
             continue
         created = run_query(api_key, CREATE_MUTATION, {"input": {
@@ -139,24 +143,31 @@ def main(config_path: Path, workbook_path: Path, dry_run: bool) -> None:
             "priority": issue["priority"], "assigneeId": user_ids[issue["owner"]], "labelIds": [label_id],
         }})["issueCreate"]
         if not created["success"]:
-            raise RuntimeError(f"Linear did not create the issue for {group!r}")
-        addresses[group] = config["issue_url_prefix"] + created["issue"]["identifier"]
+            raise RuntimeError(f"Linear did not create the issue for rows {[row['row'] for row in issue_rows]}")
+        address = config["issue_url_prefix"] + created["issue"]["identifier"]
+        addresses.append((issue_rows, address))
         # Printed as made, so a failed save below still leaves every address on screen.
-        print(f"   created {addresses[group]}")
+        print(f"   created {address}")
 
     if dry_run or not addresses:
-        print(f"{len(groups)} group(s) to graduate; nothing written")
+        print(f"{len(issues)} issue(s) to create from {len(rows)} row(s); nothing written")
         return
     issue_column = sheet_config["columns"]["issue"]
-    for group, rows in groups.items():
-        for row in rows:
-            sheet.cell(row["row"], issue_column).value = addresses[group]
+    for issue_rows, address in addresses:
+        for row in issue_rows:
+            sheet.cell(row["row"], issue_column).value = address
     workbook.save(workbook_path)
     check = openpyxl.load_workbook(workbook_path)[sheet_config["tab"]]
-    for group, rows in groups.items():
-        for row in rows:
+    for issue_rows, _ in addresses:
+        for row in issue_rows:
             print(f"row {row['row']} column {issue_column}: {check.cell(row['row'], issue_column).value}")
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3:] == ["--dry-run"])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("config", type=Path)
+    parser.add_argument("workbook", type=Path)
+    parser.add_argument("--groups", type=Path)
+    parser.add_argument("--dry-run", action="store_true")
+    arguments = parser.parse_args()
+    main(arguments.config, arguments.workbook, arguments.groups, arguments.dry_run)
