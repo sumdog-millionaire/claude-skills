@@ -4,7 +4,8 @@ Run from the project root, whose .env holds LINEAR_API_KEY:
     python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--groups <groups.json>] [--dry-run]
 
 --dry-run checks every lookup and prints each row and the issues it would create, creating and writing nothing; it can read a copy of the workbook.
---groups names a JSON list of row-number lists, each list one issue; a row in no list is an issue of its own.
+--groups names a JSON file {"new": [[row, ...], ...], "existing": {"ENG-134": [row, ...]}}: each "new" list is one issue, each
+"existing" entry links its rows to that issue, and a row in neither is an issue of its own.
 """
 
 import argparse
@@ -24,7 +25,8 @@ NO_PRIORITY = 0
 TITLE_LENGTH = 80
 PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } } }"
 LABEL_QUERY = "query Label($name: String!) { issueLabels(filter: {name: {eq: $name}}) { nodes { id team { id } } } }"
-USER_QUERY = "query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
+ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { identifier } }"
+USER_QUERY ="query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
 CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { identifier } } }"
 
 
@@ -62,15 +64,17 @@ def read_rows(sheet: object, sheet_config: dict) -> dict[int, dict]:
     return rows
 
 
-def group_rows(rows: dict[int, dict], groups: list[list[int]]) -> list[list[dict]]:
-    """The agreed groups, then every row no group names as a group of its own."""
-    grouped = [number for group in groups for number in group]
+def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[list[dict]], dict[str, list[dict]]]:
+    """Rows for new issues (the agreed groups, then every row no group names, alone) and rows joining existing issues."""
+    grouped = [number for group in groups["new"] for number in group] + [number for group in groups["existing"].values() for number in group]
     for number in grouped:
         if number not in rows:
-            raise ValueError(f"Row {number} is in a group but is not an open row without an issue")
+            raise ValueError(f"Row {number} is in a group but is not an open, assigned row without an issue")
     if len(grouped) != len(set(grouped)):
         raise ValueError(f"A row is in more than one group: {groups}")
-    return [[rows[number] for number in group] for group in groups] + [[row] for number, row in rows.items() if number not in grouped]
+    new = [[rows[number] for number in group] for group in groups["new"]] + [[row] for number, row in rows.items() if number not in grouped]
+    existing = {identifier: [rows[number] for number in group] for identifier, group in groups["existing"].items()}
+    return new, existing
 
 
 def describe(rows: list[dict]) -> str:
@@ -109,7 +113,7 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     """Create one issue per group of open rows without an issue, then write each issue's address into its rows."""
     config = json.loads(config_path.read_text(encoding="utf-8"))
     sheet_config = config["sheet"]
-    groups = json.loads(groups_path.read_text(encoding="utf-8")) if groups_path else []
+    groups = json.loads(groups_path.read_text(encoding="utf-8")) if groups_path else {"new": [], "existing": {}}
     load_dotenv(Path(".env"))
     api_key = os.environ["LINEAR_API_KEY"]
     if not dry_run:
@@ -121,7 +125,14 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     rows = read_rows(sheet, sheet_config)
     for row in rows.values():
         print(f"row {row['row']}: {row['owner']}, {row['priority'] or 'no priority'}: {short_title(row['feedback'])}")
-    issues = group_rows(rows, groups)
+    issues, existing = group_rows(rows, groups)
+
+    addresses = []
+    for identifier, issue_rows in existing.items():
+        # Linear accepts an identifier as the id and raises when no issue has it.
+        found = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]["identifier"]
+        addresses.append((issue_rows, config["issue_url_prefix"] + found))
+        print(f"rows {[row['row'] for row in issue_rows]} -> existing issue {found}")
 
     project = run_query(api_key, PROJECT_QUERY, {"id": config["linear_project"]})["project"]
     team_id = single(project["teams"]["nodes"], "the project's team")["id"]
@@ -130,7 +141,6 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     label_id = single([label for label in labels if label["team"] is None or label["team"]["id"] == team_id], f"label {config['queue_label']!r}")["id"]
     user_ids = {}
 
-    addresses = []
     for issue_rows in issues:
         issue = plan_issue(issue_rows, config)
         if issue["owner"] not in user_ids:
@@ -150,7 +160,7 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
         print(f"   created {address}")
 
     if dry_run or not addresses:
-        print(f"{len(issues)} issue(s) to create from {len(rows)} row(s); nothing written")
+        print(f"{len(issues)} issue(s) to create and {len(existing)} existing issue(s) to link, from {len(rows)} row(s); nothing written")
         return
     issue_column = sheet_config["columns"]["issue"]
     for issue_rows, address in addresses:
