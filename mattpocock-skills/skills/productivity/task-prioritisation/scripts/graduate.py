@@ -4,8 +4,8 @@ Run from the project root, whose .env holds LINEAR_API_KEY:
     python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--groups <groups.json>] [--dry-run]
 
 --dry-run checks every lookup and prints each row and the issues it would create, creating and writing nothing; it can read a copy of the workbook.
---groups names a JSON file {"new": [{"title": "...", "milestone": "<name or null>", "rows": [row, ...]}, ...], "existing": {"ENG-134": [row, ...]}}: each "new" group is one issue, each
-"existing" entry links its rows to that issue (or, when it is in progress, to a new issue related to it), and a row in neither is an issue of its own.
+--groups names a JSON file {"new": [{"title": "...", "milestone": "<name or null>", "rows": [row, ...]}, ...], "existing": {"ENG-134": {"milestone": "<name or null>", "rows": [row, ...]}}}: each "new" group is one issue, each "existing" entry
+links its rows to that issue (or, when it is in progress, to a new issue in that milestone related to it), and a row in neither is an issue of its own.
 """
 
 import argparse
@@ -25,7 +25,7 @@ NO_PRIORITY = 0
 TITLE_LENGTH = 80
 PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } projectMilestones { nodes { id name } } } }"
 LABEL_QUERY = "query Label($name: String!) { issueLabels(filter: {name: {eq: $name}}) { nodes { id team { id } } } }"
-ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } projectMilestone { name } } }"
+ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } } }"
 RELATE_MUTATION = "mutation Relate($input: IssueRelationCreateInput!) { issueRelationCreate(input: $input) { success } }"
 USER_QUERY = "query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
 CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier } } }"
@@ -65,9 +65,9 @@ def read_rows(sheet: object, sheet_config: dict) -> dict[int, dict]:
     return rows
 
 
-def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[tuple[list[dict], str | None, str]], dict[str, list[dict]]]:
+def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[tuple[list[dict], str | None, str]], dict[str, tuple[list[dict], str | None]]]:
     """New issues as rows, milestone name and title (the agreed groups, then every row no group names, alone) and rows joining existing issues."""
-    grouped = [number for group in groups["new"] for number in group["rows"]] + [number for group in groups["existing"].values() for number in group]
+    grouped = [number for group in [*groups["new"], *groups["existing"].values()] for number in group["rows"]]
     for number in grouped:
         if number not in rows:
             raise ValueError(f"Row {number} is in a group but is not an open, assigned row without an issue")
@@ -75,7 +75,7 @@ def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[tuple[list[dic
         raise ValueError(f"A row is in more than one group: {groups}")
     new = [([rows[number] for number in group["rows"]], group["milestone"], group["title"]) for group in groups["new"]]
     new += [([row], None, short_title(row["feedback"])) for number, row in rows.items() if number not in grouped]
-    existing = {identifier: [rows[number] for number in group] for identifier, group in groups["existing"].items()}
+    existing = {identifier: ([rows[number] for number in group["rows"]], group["milestone"]) for identifier, group in groups["existing"].items()}
     return new, existing
 
 
@@ -130,12 +130,11 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     issues = [(issue_rows, None, milestone, title) for issue_rows, milestone, title in new]
 
     addresses = []
-    for identifier, issue_rows in existing.items():
+    for identifier, (issue_rows, milestone) in existing.items():
         # Linear accepts an identifier as the id and raises when no issue has it.
         found = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]
-        # Work already under way is not widened: its rows get a new issue related to it, in its milestone.
+        # Work already under way is not widened: its rows get a new issue in the planned milestone, related to it.
         if found["state"]["type"] == "started":
-            milestone = found["projectMilestone"]["name"] if found["projectMilestone"] else None
             issues.append((issue_rows, found, milestone, short_title(issue_rows[0]["feedback"])))
             continue
         addresses.append((issue_rows, config["issue_url_prefix"] + found["identifier"]))
