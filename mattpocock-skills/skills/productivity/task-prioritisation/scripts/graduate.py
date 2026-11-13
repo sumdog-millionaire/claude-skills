@@ -1,9 +1,11 @@
 """Turn every open, assigned feedback row with no linked issue into a Linear issue and write each issue's link back into its rows.
 
+It also reassigns: an open, assigned row already linked to an issue whose Linear assignee differs from the row's owner moves that issue to the owner.
+
 Run from the project root, whose .env holds LINEAR_API_KEY:
     python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--groups <groups.json>] [--dry-run]
 
---dry-run checks every lookup and prints each row and the issues it would create, creating and writing nothing; it can read a copy of the workbook.
+--dry-run checks every lookup and prints each row, the issues it would create and the issues it would reassign, creating, changing and writing nothing; it can read a copy of the workbook.
 --groups names a JSON file {"new": [{"title": "...", "milestone": "<name or null>", "rows": [row, ...]}, ...], "existing": {"ENG-134": {"milestone": "<name or null>", "rows": [row, ...]}}}: each "new" group is one issue, each "existing" entry
 links its rows to that issue (or, when it is in progress, to a new issue in that milestone related to it), and a row in neither is an issue of its own.
 """
@@ -25,7 +27,8 @@ NO_PRIORITY = 0
 TITLE_LENGTH = 80
 PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } projectMilestones { nodes { id name } } } }"
 LABEL_QUERY = "query Label($name: String!) { issueLabels(filter: {name: {eq: $name}}) { nodes { id team { id } } } }"
-ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } } }"
+ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } assignee { id name } } }"
+ASSIGN_MUTATION = "mutation Assign($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }"
 RELATE_MUTATION = "mutation Relate($input: IssueRelationCreateInput!) { issueRelationCreate(input: $input) { success } }"
 USER_QUERY = "query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
 CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier } } }"
@@ -63,6 +66,25 @@ def read_rows(sheet: object, sheet_config: dict) -> dict[int, dict]:
             "details": {name: sheet.cell(number, column).value for name, column in sheet_config["details"].items()},
         }
     return rows
+
+
+def read_linked_owners(sheet: object, sheet_config: dict, prefix: str) -> dict[str, tuple[str, list[int]]]:
+    """The owner and row numbers of every issue that open, assigned rows link to; rows sharing an issue must name one owner."""
+    columns = sheet_config["columns"]
+    found: dict[str, dict[str, list[int]]] = {}
+    for number in range(sheet_config["first_row"], sheet.max_row + 1):
+        link = cell_text(sheet.cell(number, columns["issue"]).value)
+        owner = cell_text(sheet.cell(number, columns["owner"]).value)
+        if not link or not owner or cell_text(sheet.cell(number, columns["status"]).value) in sheet_config["closed"]:
+            continue
+        if not link.startswith(prefix):
+            raise ValueError(f"Row {number} links {link!r}, which does not start with the config's issue_url_prefix {prefix!r}")
+        # A pasted Linear address may carry a title slug after the identifier.
+        found.setdefault(link.removeprefix(prefix).split("/")[0], {}).setdefault(sheet_config["owner"][owner], []).append(number)
+    for identifier, owners in found.items():
+        if len(owners) != 1:
+            raise ValueError(f"Rows linked to {identifier} name different owners: {owners}")
+    return {identifier: next(iter(owners.items())) for identifier, owners in found.items()}
 
 
 def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[tuple[list[dict], str | None, str]], dict[str, tuple[list[dict], str | None]]]:
@@ -148,6 +170,21 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
     milestone_ids = {milestone["name"]: milestone["id"] for milestone in project["projectMilestones"]["nodes"]}
     user_ids = {}
 
+    reassigned = 0
+    for identifier, (owner, row_numbers) in read_linked_owners(sheet, sheet_config, config["issue_url_prefix"]).items():
+        linked = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]
+        current = linked["assignee"]["name"] if linked["assignee"] else None
+        if current == owner:
+            continue
+        if owner not in user_ids:
+            user_ids[owner] = single(run_query(api_key, USER_QUERY, {"name": owner})["users"]["nodes"], f"user {owner!r}")["id"]
+        print(f"rows {row_numbers} -> reassign {identifier} from {current or 'nobody'} to {owner}")
+        reassigned += 1
+        if dry_run:
+            continue
+        if not run_query(api_key, ASSIGN_MUTATION, {"id": linked["id"], "input": {"assigneeId": user_ids[owner]}})["issueUpdate"]["success"]:
+            raise RuntimeError(f"Linear did not reassign {identifier} to {owner}")
+
     for issue_rows, related, milestone, title in issues:
         issue = plan_issue(issue_rows, title, config)
         # A name the project has no milestone for raises here, before anything is created.
@@ -176,7 +213,7 @@ def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_r
         print(f"   created {address}")
 
     if dry_run or not addresses:
-        print(f"{len(issues)} issue(s) to create and {len(addresses)} existing issue(s) to link, from {len(rows)} row(s); nothing written")
+        print(f"{len(issues)} issue(s) to create, {len(addresses)} existing issue(s) to link and {reassigned} issue(s) reassigned (only listed, in a dry run), from {len(rows)} row(s); nothing written to the sheet")
         return
     issue_column = sheet_config["columns"]["issue"]
     for issue_rows, address in addresses:

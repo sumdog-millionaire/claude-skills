@@ -14,7 +14,7 @@
   "sheet": {
     "tab": "Feedback",
     "first_row": 2,
-    "columns": {"feedback": 3, "status": 4, "priority": 6, "owner": 7, "issue": 8},
+    "columns": {"feedback": 3, "status": 4, "priority": 6, "owner": 7, "issue": 8, "response": 5},
     "details": {"Date": 1, "Reported by": 2},
     "closed": ["Closed"],
     "priority": {"": null, "1": "High", "2": "Medium", "3": "Low"},
@@ -33,7 +33,7 @@
 | `issue_priority` | Every tracker priority, mapped to `High`, `Medium`, `Low` or `null` for none. |
 | `tracker_priority` | The tracker priority to set when the user picks `High`, `Medium` or `Low` on the page. |
 | `sheet.tab`, `sheet.first_row` | The worksheet holding the feedback rows, and the first row below its headings. A row with an empty feedback cell is skipped. |
-| `sheet.columns` | The 1-based column of each field `graduate.py` reads: the feedback text, its status, its priority, its owner, and the linked issue's address (which it writes). |
+| `sheet.columns` | The 1-based column of each field `graduate.py` reads: the feedback text, its status, its priority, its owner, and the linked issue's address (which it writes). `response` is the column where the team answers each row, which `respond.py` reads and adds to; `graduate.py` does not use it. |
 | `sheet.details` | Columns copied into a new issue's body beside each row's feedback, as heading and column number. |
 | `sheet.closed` | The status values that keep a row out of the tracker. Every other status, an empty cell included, counts as open. |
 | `sheet.priority`, `sheet.owner` | Each value those cells hold, as text (`"1"` for the number 1), mapped to the table's priority word and to the owner's full name in the tracker. In the priority map, `""` maps an empty cell, usually to `null` for no priority. A row with an empty owner cell is skipped, so the owner map needs no `""`. An open, assigned row whose value is missing from a map stops the run. |
