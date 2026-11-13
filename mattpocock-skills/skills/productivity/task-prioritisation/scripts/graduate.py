@@ -1,14 +1,18 @@
-"""Turn the feedback rows marked for building into Linear issues and write each issue's link back into its rows.
+"""Turn every open, assigned feedback row with no linked issue into a Linear issue and write each issue's link back into its rows.
+
+It also reassigns: an open, assigned row already linked to an issue whose Linear assignee differs from the row's owner moves that issue to the owner.
 
 Run from the project root, whose .env holds LINEAR_API_KEY:
-    python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--dry-run]
+    python graduate.py docs/agents/task-prioritisation.json "<feedback workbook>" [--groups <groups.json>] [--dry-run]
 
---dry-run checks every lookup and prints the issues it would create, creating and writing nothing; it can read a copy of the workbook.
+--dry-run checks every lookup and prints each row, the issues it would create and the issues it would reassign, creating, changing and writing nothing; it can read a copy of the workbook.
+--groups names a JSON file {"new": [{"title": "...", "milestone": "<name or null>", "rows": [row, ...]}, ...], "existing": {"ENG-134": {"milestone": "<name or null>", "rows": [row, ...]}}}: each "new" group is one issue, each "existing" entry
+links its rows to that issue (or, when it is in progress, to a new issue in that milestone related to it), and a row in neither is an issue of its own.
 """
 
+import argparse
 import json
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -19,16 +23,20 @@ from dotenv import load_dotenv
 from linear import run_query
 
 LINEAR_PRIORITY = {"Urgent": 1, "High": 2, "Medium": 3, "Low": 4}
+NO_PRIORITY = 0
 TITLE_LENGTH = 80
-PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } } }"
+PROJECT_QUERY = "query Project($id: String!) { project(id: $id) { id teams { nodes { id } } projectMilestones { nodes { id name } } } }"
 LABEL_QUERY = "query Label($name: String!) { issueLabels(filter: {name: {eq: $name}}) { nodes { id team { id } } } }"
+ISSUE_QUERY = "query Issue($id: String!) { issue(id: $id) { id identifier state { type } assignee { id name } } }"
+ASSIGN_MUTATION = "mutation Assign($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }"
+RELATE_MUTATION = "mutation Relate($input: IssueRelationCreateInput!) { issueRelationCreate(input: $input) { success } }"
 USER_QUERY = "query User($name: String!) { users(filter: {name: {eq: $name}}) { nodes { id } } }"
-CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { identifier } } }"
+CREATE_MUTATION = "mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier } } }"
 
 
 def cell_text(value: object) -> str:
     """A cell's value as the config's maps write it: an empty cell is the empty string."""
-    return "" if value is None else str(value)
+    return "" if value is None else str(value).strip()
 
 
 def short_title(text: str) -> str:
@@ -39,39 +47,63 @@ def short_title(text: str) -> str:
     return line[:TITLE_LENGTH].rsplit(" ", 1)[0] + "…"
 
 
-def read_groups(sheet: object, sheet_config: dict) -> tuple[dict, dict]:
-    """Rows to graduate, grouped, and the issue address each group already has from rows graduated before."""
+def read_rows(sheet: object, sheet_config: dict) -> dict[int, dict]:
+    """Every row with feedback, an owner, no linked issue and a status the config does not call closed, keyed by row number."""
     columns = sheet_config["columns"]
-    groups = {}
-    existing = {}
+    rows = {}
     for number in range(sheet_config["first_row"], sheet.max_row + 1):
         feedback = sheet.cell(number, columns["feedback"]).value
-        if feedback is None:
+        owner = cell_text(sheet.cell(number, columns["owner"]).value)
+        if feedback is None or not owner or sheet.cell(number, columns["issue"]).value:
             continue
-        group = cell_text(sheet.cell(number, columns["group"]).value).strip()
-        address = sheet.cell(number, columns["issue"]).value
-        if group and address:
-            # One group must point at one issue; two addresses mean the sheet needs fixing by hand.
-            if existing.setdefault(group, address) != address:
-                raise ValueError(f"Group {group!r} links to both {existing[group]} and {address}")
-        if address or cell_text(sheet.cell(number, columns["decision"]).value) != sheet_config["build"]:
+        if cell_text(sheet.cell(number, columns["status"]).value) in sheet_config["closed"]:
             continue
-        details = {name: sheet.cell(number, column).value for name, column in sheet_config["details"].items()}
-        row = {
+        rows[number] = {
             "row": number,
             "feedback": str(feedback),
             "priority": sheet_config["priority"][cell_text(sheet.cell(number, columns["priority"]).value)],
-            "owner": sheet_config["owner"][cell_text(sheet.cell(number, columns["owner"]).value)],
-            "details": details,
+            "owner": sheet_config["owner"][owner],
+            "details": {name: sheet.cell(number, column).value for name, column in sheet_config["details"].items()},
         }
-        # An ungrouped row is a group of one, keyed so it cannot meet a typed group name.
-        groups.setdefault(group or f"row {number}", []).append(row)
-    return groups, existing
+    return rows
 
 
-def describe(group: str, rows: list[dict]) -> str:
+def read_linked_owners(sheet: object, sheet_config: dict, prefix: str) -> dict[str, tuple[str, list[int]]]:
+    """The owner and row numbers of every issue that open, assigned rows link to; rows sharing an issue must name one owner."""
+    columns = sheet_config["columns"]
+    found: dict[str, dict[str, list[int]]] = {}
+    for number in range(sheet_config["first_row"], sheet.max_row + 1):
+        link = cell_text(sheet.cell(number, columns["issue"]).value)
+        owner = cell_text(sheet.cell(number, columns["owner"]).value)
+        if not link or not owner or cell_text(sheet.cell(number, columns["status"]).value) in sheet_config["closed"]:
+            continue
+        if not link.startswith(prefix):
+            raise ValueError(f"Row {number} links {link!r}, which does not start with the config's issue_url_prefix {prefix!r}")
+        # A pasted Linear address may carry a title slug after the identifier.
+        found.setdefault(link.removeprefix(prefix).split("/")[0], {}).setdefault(sheet_config["owner"][owner], []).append(number)
+    for identifier, owners in found.items():
+        if len(owners) != 1:
+            raise ValueError(f"Rows linked to {identifier} name different owners: {owners}")
+    return {identifier: next(iter(owners.items())) for identifier, owners in found.items()}
+
+
+def group_rows(rows: dict[int, dict], groups: dict) -> tuple[list[tuple[list[dict], str | None, str]], dict[str, tuple[list[dict], str | None]]]:
+    """New issues as rows, milestone name and title (the agreed groups, then every row no group names, alone) and rows joining existing issues."""
+    grouped = [number for group in [*groups["new"], *groups["existing"].values()] for number in group["rows"]]
+    for number in grouped:
+        if number not in rows:
+            raise ValueError(f"Row {number} is in a group but is not an open, assigned row without an issue")
+    if len(grouped) != len(set(grouped)):
+        raise ValueError(f"A row is in more than one group: {groups}")
+    new = [([rows[number] for number in group["rows"]], group["milestone"], group["title"]) for group in groups["new"]]
+    new += [([row], None, short_title(row["feedback"])) for number, row in rows.items() if number not in grouped]
+    existing = {identifier: ([rows[number] for number in group["rows"]], group["milestone"]) for identifier, group in groups["existing"].items()}
+    return new, existing
+
+
+def describe(rows: list[dict]) -> str:
     """The issue body: every row's feedback and details, so the owner can work from the issue alone."""
-    parts = [f"From the feedback sheet, {'group ' + repr(group) if len(rows) > 1 else group}."]
+    parts = [f"From the feedback sheet, row{'s' if len(rows) > 1 else ''} {', '.join(str(row['row']) for row in rows)}."]
     for row in rows:
         quoted = "\n".join(f"> {line}" for line in row["feedback"].splitlines())
         # One tight list per row; an empty detail cell has nothing to say, so it is left out.
@@ -90,21 +122,21 @@ def single(nodes: list[dict], what: str) -> dict:
     return nodes[0]
 
 
-def plan_issue(group: str, rows: list[dict], config: dict) -> dict:
-    """The new issue's title, body, priority and owner, refusing a group whose rows name different owners."""
+def plan_issue(rows: list[dict], title: str, config: dict) -> dict:
+    """The new issue's body, priority and owner beside its title, refusing a group whose rows name different owners."""
     owners = {row["owner"] for row in rows}
     if len(owners) != 1:
-        raise ValueError(f"Rows {[row['row'] for row in rows]} in {group!r} name different owners: {sorted(owners)}")
-    # The group takes its most urgent row's priority; Linear numbers urgency from 1.
-    priority = min(LINEAR_PRIORITY[config["tracker_priority"][row["priority"]]] for row in rows)
-    title = short_title(rows[0]["feedback"]) + (f" (+{len(rows) - 1} similar)" if len(rows) > 1 else "")
-    return {"title": title, "description": describe(group, rows), "priority": priority, "owner": owners.pop()}
+        raise ValueError(f"Rows {[row['row'] for row in rows]} name different owners: {sorted(owners)}")
+    # The group takes its most urgent row's priority; Linear numbers urgency from 1 and 0 is none.
+    priorities = [LINEAR_PRIORITY[config["tracker_priority"][row["priority"]]] for row in rows if row["priority"] is not None]
+    return {"title": title, "description": describe(rows), "priority": min(priorities, default=NO_PRIORITY), "owner": owners.pop()}
 
 
-def main(config_path: Path, workbook_path: Path, dry_run: bool) -> None:
-    """Create one issue per group of rows marked for building, then write each issue's address into its rows."""
+def main(config_path: Path, workbook_path: Path, groups_path: Path | None, dry_run: bool) -> None:
+    """Create one issue per group of open rows without an issue, then write each issue's address into its rows."""
     config = json.loads(config_path.read_text(encoding="utf-8"))
     sheet_config = config["sheet"]
+    groups = json.loads(groups_path.read_text(encoding="utf-8")) if groups_path else {"new": [], "existing": {}}
     load_dotenv(Path(".env"))
     api_key = os.environ["LINEAR_API_KEY"]
     if not dry_run:
@@ -113,50 +145,92 @@ def main(config_path: Path, workbook_path: Path, dry_run: bool) -> None:
             pass
     workbook = openpyxl.load_workbook(workbook_path)
     sheet = workbook[sheet_config["tab"]]
-    groups, existing = read_groups(sheet, sheet_config)
+    rows = read_rows(sheet, sheet_config)
+    for row in rows.values():
+        print(f"row {row['row']}: {row['owner']}, {row['priority'] or 'no priority'}: {short_title(row['feedback'])}")
+    new, existing = group_rows(rows, groups)
+    issues = [(issue_rows, None, milestone, title) for issue_rows, milestone, title in new]
+
+    addresses = []
+    for identifier, (issue_rows, milestone) in existing.items():
+        # Linear accepts an identifier as the id and raises when no issue has it.
+        found = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]
+        # Work already under way is not widened: its rows get a new issue in the planned milestone, related to it.
+        if found["state"]["type"] == "started":
+            issues.append((issue_rows, found, milestone, short_title(issue_rows[0]["feedback"])))
+            continue
+        addresses.append((issue_rows, config["issue_url_prefix"] + found["identifier"]))
+        print(f"rows {[row['row'] for row in issue_rows]} -> existing issue {found['identifier']}")
 
     project = run_query(api_key, PROJECT_QUERY, {"id": config["linear_project"]})["project"]
     team_id = single(project["teams"]["nodes"], "the project's team")["id"]
     labels = run_query(api_key, LABEL_QUERY, {"name": config["queue_label"]})["issueLabels"]["nodes"]
     # The queue label is the team's own or a workspace label with no team.
     label_id = single([label for label in labels if label["team"] is None or label["team"]["id"] == team_id], f"label {config['queue_label']!r}")["id"]
+    milestone_ids = {milestone["name"]: milestone["id"] for milestone in project["projectMilestones"]["nodes"]}
     user_ids = {}
 
-    addresses = {}
-    for group, rows in groups.items():
-        if group in existing:
-            addresses[group] = existing[group]
-            print(f"{group}: rows {[row['row'] for row in rows]} join {existing[group]}")
+    reassigned = 0
+    for identifier, (owner, row_numbers) in read_linked_owners(sheet, sheet_config, config["issue_url_prefix"]).items():
+        linked = run_query(api_key, ISSUE_QUERY, {"id": identifier})["issue"]
+        current = linked["assignee"]["name"] if linked["assignee"] else None
+        if current == owner:
             continue
-        issue = plan_issue(group, rows, config)
+        if owner not in user_ids:
+            user_ids[owner] = single(run_query(api_key, USER_QUERY, {"name": owner})["users"]["nodes"], f"user {owner!r}")["id"]
+        print(f"rows {row_numbers} -> reassign {identifier} from {current or 'nobody'} to {owner}")
+        reassigned += 1
+        if dry_run:
+            continue
+        if not run_query(api_key, ASSIGN_MUTATION, {"id": linked["id"], "input": {"assigneeId": user_ids[owner]}})["issueUpdate"]["success"]:
+            raise RuntimeError(f"Linear did not reassign {identifier} to {owner}")
+
+    for issue_rows, related, milestone, title in issues:
+        issue = plan_issue(issue_rows, title, config)
+        # A name the project has no milestone for raises here, before anything is created.
+        milestone_id = milestone_ids[milestone] if milestone is not None else None
+        if related is not None:
+            issue["description"] += f"\n\nRelated to {related['identifier']}, which was already in progress when these rows were graduated."
         if issue["owner"] not in user_ids:
             user_ids[issue["owner"]] = single(run_query(api_key, USER_QUERY, {"name": issue["owner"]})["users"]["nodes"], f"user {issue['owner']!r}")["id"]
-        print(f"{group}: rows {[row['row'] for row in rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}")
+        relation = f", related to in-progress {related['identifier']}" if related is not None else ""
+        print(f"rows {[row['row'] for row in issue_rows]} -> new issue {issue['title']!r}, {issue['owner']}, priority {issue['priority']}, milestone {milestone}{relation}")
         if dry_run:
             continue
         created = run_query(api_key, CREATE_MUTATION, {"input": {
-            "teamId": team_id, "projectId": project["id"], "title": issue["title"], "description": issue["description"],
-            "priority": issue["priority"], "assigneeId": user_ids[issue["owner"]], "labelIds": [label_id],
+            "teamId": team_id, "projectId": project["id"], "projectMilestoneId": milestone_id, "title": issue["title"],
+            "description": issue["description"], "priority": issue["priority"], "assigneeId": user_ids[issue["owner"]], "labelIds": [label_id],
         }})["issueCreate"]
         if not created["success"]:
-            raise RuntimeError(f"Linear did not create the issue for {group!r}")
-        addresses[group] = config["issue_url_prefix"] + created["issue"]["identifier"]
+            raise RuntimeError(f"Linear did not create the issue for rows {[row['row'] for row in issue_rows]}")
+        if related is not None:
+            relation_made = run_query(api_key, RELATE_MUTATION, {"input": {"issueId": created["issue"]["id"], "relatedIssueId": related["id"], "type": "related"}})
+            if not relation_made["issueRelationCreate"]["success"]:
+                raise RuntimeError(f"Linear did not relate {created['issue']['identifier']} to {related['identifier']}")
+        address = config["issue_url_prefix"] + created["issue"]["identifier"]
+        addresses.append((issue_rows, address))
         # Printed as made, so a failed save below still leaves every address on screen.
-        print(f"   created {addresses[group]}")
+        print(f"   created {address}")
 
     if dry_run or not addresses:
-        print(f"{len(groups)} group(s) to graduate; nothing written")
+        print(f"{len(issues)} issue(s) to create, {len(addresses)} existing issue(s) to link and {reassigned} issue(s) reassigned (only listed, in a dry run), from {len(rows)} row(s); nothing written to the sheet")
         return
     issue_column = sheet_config["columns"]["issue"]
-    for group, rows in groups.items():
-        for row in rows:
-            sheet.cell(row["row"], issue_column).value = addresses[group]
+    for issue_rows, address in addresses:
+        for row in issue_rows:
+            sheet.cell(row["row"], issue_column).value = address
     workbook.save(workbook_path)
     check = openpyxl.load_workbook(workbook_path)[sheet_config["tab"]]
-    for group, rows in groups.items():
-        for row in rows:
+    for issue_rows, _ in addresses:
+        for row in issue_rows:
             print(f"row {row['row']} column {issue_column}: {check.cell(row['row'], issue_column).value}")
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3:] == ["--dry-run"])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("config", type=Path)
+    parser.add_argument("workbook", type=Path)
+    parser.add_argument("--groups", type=Path)
+    parser.add_argument("--dry-run", action="store_true")
+    arguments = parser.parse_args()
+    main(arguments.config, arguments.workbook, arguments.groups, arguments.dry_run)
