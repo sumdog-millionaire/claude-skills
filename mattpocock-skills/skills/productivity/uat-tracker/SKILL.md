@@ -88,7 +88,7 @@ Done when every group has an issue and `rows` shows each of the group's rows lin
 
 Each later session takes the next group from the worklist in the `rewind-durable` file. Once few rows remain or their causes are plain, offer to take several groups in one session.
 
-1. **Say what the group is about, first.** Your first message on the group, before any tool call that searches, reads code, queries data, opens the group's issue or starts a subagent, tells the user in plain words what each row reports and what goes wrong for the tester, from the worklist alone. A user told what the task is only after the searching cannot steer it. The depth comes later, at step 4.
+1. **Say what the group is about, first.** Your first message on the group, before any tool call that searches, reads code, queries data, opens the group's issue or starts a subagent, tells the user in plain words what each tester asked for, from the worklist and the row's own text alone: what they tried, what happened, and what they want instead, in their terms rather than the code's. A user told what the task is only after the searching cannot steer it. The depth comes later, at step 4.
 2. **Flip.** Set the group's rows to the in-progress status.
 3. **Investigate.** Read the code, the saved data and how the old system behaved, saying what each step found as it lands. Measure a subagent's inference before recommending on it.
 4. **Say the cause.** Explain what happened and why, in depth and in plain words. Before answering a row as cannot-reproduce, check it against the old behaviour yourself. A data problem goes back to the client through the row's response, with no code.
