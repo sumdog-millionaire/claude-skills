@@ -88,9 +88,9 @@ Done when every group has an issue and `rows` shows each of the group's rows lin
 
 Each later session takes the next group from the worklist in the `rewind-durable` file. Once few rows remain or their causes are plain, offer to take several groups in one session.
 
-1. **Flip.** Set the group's rows to the in-progress status.
-2. **Say the problem.** In plain words, what each row reports, before any evidence.
-3. **Investigate.** Read the code, the saved data and how the old system behaved. Measure a subagent's inference before recommending on it.
+1. **Say what the group is about, first.** Your first message on the group, before any tool call that searches, reads code, queries data, opens the group's issue or starts a subagent, tells the user in plain words what each row reports and what goes wrong for the tester, from the worklist alone. A user told what the task is only after the searching cannot steer it. The depth comes later, at step 4.
+2. **Flip.** Set the group's rows to the in-progress status.
+3. **Investigate.** Read the code, the saved data and how the old system behaved, saying what each step found as it lands. Measure a subagent's inference before recommending on it.
 4. **Say the cause.** Explain what happened and why, in depth and in plain words. Before answering a row as cannot-reproduce, check it against the old behaviour yourself. A data problem goes back to the client through the row's response, with no code.
 5. **Build.** When the group needs code, call the Skill tool with "implement", handing it the group's issue and the cause from step 4. It explains the fix, grills whatever is still open, records each decision, builds test-first, reviews and commits. The worklist's rewind point stands for the series, so `implement` keeps it and builds the group in one part. A group whose rows are all data problems or answered questions has nothing to build and goes on to step 7.
 6. **Ship** as the project's `CLAUDE.md` says: merge, deploy. Report every test failure found, whoever caused it.
