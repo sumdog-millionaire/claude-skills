@@ -4,6 +4,8 @@
 
 The sheet stays the client's. Other people edit it while you work, so the skill reads it fresh every time and writes to it only through a bundled script. The script changes cells through the Excel open on your machine, so its edits merge with the testers' as a person's typing does, instead of saving over the file and losing theirs. It backs the sheet up, prints every cell it will set, adds responses newest first without touching earlier ones, and reads each cell back. Planning is kept deliberately light, because everything read before the rewind point is carried into every later session's [context window](https://www.aihero.dev/ai-coding-dictionary/context-window).
 
+Once testing starts, agents should work only on what the testers raised, not drift onto other open issues in a tracker that was never cleaned up after the build. Every issue the skill raises or joins carries the project's queue label, and the plan session checks that your project's `CLAUDE.md` tells every agent to build only issues with that label, proposing the section for your yes if it is missing.
+
 ## When to reach for it
 
 You invoke this by typing `/uat-tracker`, and the agent won't reach for it on its own. Reach for it when testing has produced a feedback sheet and you want to work through the rows that are yours.

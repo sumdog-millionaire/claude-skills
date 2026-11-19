@@ -7,9 +7,7 @@ description: Build the task prioritisation table, one local page listing every o
 
 In the **team review** the team walks the table: every open issue and every issue completed in the last seven days, status reading Open, In progress or Complete and priority High, Medium or Low, each red, amber or green. The user edits priority, owner and the queue on the page and presses Save changes, which downloads one changes file, and **apply** writes it to the tracker.
 
-The project declares its tracker in `docs/agents/task-prioritisation.json`. When that file does not exist, read [CONFIG-FORMAT.md](CONFIG-FORMAT.md), propose the file to the user from what the tracker holds, and write it once they agree. The scripts need a Python with `python-dotenv`, and run from the project root with `LINEAR_API_KEY` in the project's `.env`. A client's feedback sheet and the issues raised from it belong to `/uat-tracker`.
-
-**On every run, check the queue rule.** If the project's `CLAUDE.md` does not name the config's `queue_label`, read [QUEUED-WORK.md](QUEUED-WORK.md), fill its section for this project, show it to the user and add it to `CLAUDE.md` only on their yes: the file is shared with the team, so it never changes unseen.
+The project declares its tracker in `docs/agents/task-prioritisation.json`. When that file does not exist, read [CONFIG-FORMAT.md](CONFIG-FORMAT.md), propose the file to the user from what the tracker holds, and write it once they agree. The scripts need a Python with `python-dotenv`, and run from the project root with `LINEAR_API_KEY` in the project's `.env`. A client's feedback sheet and the issues raised from it belong to `/uat-tracker`, which also sets the rule that during UAT only its issues are built.
 
 ## Refresh and apply
 

@@ -4,7 +4,7 @@
 
 The table shows the tracker exactly as it is, and is only ever rebuilt from it. On the call you change priority, owner and the committed queue on the page and press Save changes, which downloads one changes file. When you say the review is done, the agent applies that file to the tracker and rebuilds the table, so the page never drifts from it.
 
-The skill also checks that your project's `CLAUDE.md` tells every agent to build only queued issues, and proposes that section if it is missing.
+It is for planning the build. Once user-acceptance testing starts, the testers' feedback sheet drives the work through [uat-tracker](https://aihero.dev/skills-uat-tracker), which also adds the rule that only UAT issues are built.
 
 ## When to reach for it
 

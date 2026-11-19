@@ -65,6 +65,8 @@ Sheet protection is the wrong tool here, because Excel will not sort a protected
 
 ## Plan
 
+**First, check the UAT rule.** If the project's `CLAUDE.md` does not name the config's `tracker.queue_label`, read [UAT-ONLY.md](UAT-ONLY.md), fill its section for this project, show it to the user and add it to `CLAUDE.md` only on their yes: the file is shared with the team, so it never changes unseen.
+
 1. **Who and where.** Ask which owner the user is and where the workbook sits on this machine, unless the stream's `rewind-durable` file already records both, and record the answers there. That file sits at the repository root, beside `rewind-status`, named for the stream as `prepare-rewind` describes; create it when it is missing.
 2. **Read fresh.** Run `ids` (with `--dry-run` first), then `rows --open`.
 3. **Take the user's rows.** A row is open unless its status is the config's closed word, so a blank status is open. The worklist holds the open rows owned by the user's code, plus unowned rows that fit the user's layer as the config describes it, and keeps three lists beside it:
