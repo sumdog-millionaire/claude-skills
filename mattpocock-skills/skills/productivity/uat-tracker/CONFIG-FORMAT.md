@@ -11,6 +11,8 @@ The project's description of its UAT feedback sheet. It is committed and shared 
     "tab": "Feedback Log",
     "columns": {
       "id": "UID",
+      "date": "Date",
+      "tester": "Tester",
       "feedback": "Feedback",
       "status": "Status",
       "response": "Response",
@@ -26,8 +28,8 @@ The project's description of its UAT feedback sheet. It is committed and shared 
     "3": "A minor imperfection, such as alignment slightly off or a slow page load"
   },
   "owners": {
-    "A": { "name": "Alex Example", "initials": "AE", "layer": "front end: pages, layout, styling" },
-    "B": { "name": "Sam Example", "initials": "SE", "layer": "back end: data, rules, everything not front end" }
+    "AE": { "name": "Alex Example", "layer": "front end: pages, layout, styling" },
+    "SE": { "name": "Sam Example", "layer": "back end: data, rules, everything not front end" }
   },
   "tracker": { "project": "Checkout rebuild", "queue_label": "uat-queue" }
 }
@@ -42,5 +44,5 @@ The project's description of its UAT feedback sheet. It is committed and shared 
 | `sheet.columns` | Each column's header text, exactly as the header row reads, trailing spaces included. The script finds the header row as the first row holding all of them, so columns may move. |
 | `statuses` | The words the sheet's Status column uses for open, in progress, built and closed. Built means the fix is merged but not yet live where the testers test; closed means live there, or no further action. A blank status counts as open. |
 | `priorities` | Each value the Priority column uses, most urgent first, as text, with what it means for this project. A level is set by how much the problem hurts what the product is for, so the same kind of problem can sit at different levels in different projects; the user agrees the meanings at set up. Compare a cell's value as text, since a typed 1 reads back as a number. |
-| `owners` | Each owner code the sheet uses: a person's name, the initials that sign their responses, and their layer in words, which decides the unowned rows that fall to them. |
+| `owners` | Each owner, keyed by their first and last initials, which are also their code in the sheet and sign their responses, with their name and their layer in words, which decides the unowned rows that fall to them. A team that is not one person gets a short code, such as `SD`. A row with several owners holds their codes comma-separated in alphabetical order, such as `AS, BS`. |
 | `tracker` | The project issues are raised in, and the label that marks them as queued work. |

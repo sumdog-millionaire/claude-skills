@@ -5,7 +5,7 @@ Run from the project root, on Windows with Excel desktop open:
   rows  <config> <workbook> [--open]   print every row with feedback as one JSON line; --open leaves out closed rows
   ids   <config> <workbook> [--dry-run]   give each row with feedback and no UID the prefix and the next number
   add   <config> <workbook> --type TYPE --feedback TEXT [--feedback TEXT ...] [--dry-run]   add rows after the last one, dated today, and give them UIDs
-  write <config> <workbook> --id UID [--id UID ...] [--status S] [--priority P] [--owner CODE] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]
+  write <config> <workbook> --id UID [--id UID ...] [--status S] [--priority P] [--owner CODE[,CODE]] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]
 Every change goes cell by cell through Excel, so it merges with people editing the sheet at the same time.
 A change prints every cell it sets, backs the workbook up, saves, and reads each cell back; --dry-run only prints.
 new writes a file nobody has open yet, so it builds it directly with openpyxl.
@@ -13,6 +13,7 @@ new writes a file nobody has open yet, so it builds it directly with openpyxl.
 
 import argparse
 import json
+import sys
 from datetime import date, datetime
 from pathlib import Path
 
@@ -132,8 +133,14 @@ def write_rows(table: dict[int, dict[int, object]], config: dict, args: argparse
         raise SystemExit(f"Status {args.status!r} is not one of {list(config['statuses'].values())}.")
     if args.priority and args.priority not in config["priorities"]:
         raise SystemExit(f"Priority {args.priority!r} is not one of {list(config['priorities'])}.")
-    if args.owner and args.owner not in config["owners"]:
-        raise SystemExit(f"Owner {args.owner!r} is not one of {list(config['owners'])}.")
+    owner = None
+    if args.owner:
+        # Joint owners share one cell, comma-separated and in alphabetical order, such as "AS, BS"
+        codes = sorted({code.strip() for code in args.owner.split(",")})
+        unknown = [code for code in codes if code not in config["owners"]]
+        if unknown:
+            raise SystemExit(f"Owner {unknown} is not one of {list(config['owners'])}.")
+        owner = ", ".join(codes)
     if args.response and not args.by:
         raise SystemExit("A response needs --by with the writer's initials.")
     columns, rows = read_rows(table, config)
@@ -147,8 +154,8 @@ def write_rows(table: dict[int, dict[int, object]], config: dict, args: argparse
         if args.priority:
             # A priority column usually takes whole numbers, so a digits-only level is written as a number
             changes.append((number, columns["priority"], int(args.priority) if args.priority.isdigit() else args.priority))
-        if args.owner:
-            changes.append((number, columns["owner"], args.owner))
+        if owner:
+            changes.append((number, columns["owner"], owner))
         if args.response:
             line = f"- {today.day} {today:%b}, {args.by} - {args.response}"
             # Earlier entries stay below the new line, read from the sheet as it is now
@@ -164,8 +171,8 @@ def write_rows(table: dict[int, dict[int, object]], config: dict, args: argparse
 
 def add_rows(table: dict[int, dict[int, object]], config: dict, args: argparse.Namespace) -> tuple[list[Change], list[str]]:
     """Write each feedback text with today's date and the type into the rows after the last row with feedback, then give them UIDs."""
-    # Date and Type are found by the headers new gives them, so a sheet without them stops here
-    header_row, columns = header(table, {**config["sheet"]["columns"], "date": "Date", "type": "Type"})
+    # Type is found by the header new gives it, so a sheet without it stops here
+    header_row, columns = header(table, {**config["sheet"]["columns"], "type": "Type"})
     _columns, rows = read_rows(table, config)
     number = max((row["row"] for row in rows), default=header_row) + 1
     # Excel takes a date as a datetime at midnight
@@ -204,7 +211,7 @@ def new_workbook(config: dict, path: Path, legacy: bool) -> None:
     statuses = config["statuses"]
     legacy_header = "Same issue in legacy?"
     headers = [
-        columns["id"], "Date", "Tester", "Type", "Reference", columns["feedback"], *([legacy_header] if legacy else []), "Links",
+        columns["id"], columns["date"], columns["tester"], "Type", "Reference", columns["feedback"], *([legacy_header] if legacy else []), "Links",
         columns["status"], columns["response"], columns["priority"], columns["owner"], columns["issue"],
     ]
     # Each header's column letter, such as {"Status": "H"}
@@ -237,11 +244,12 @@ def new_workbook(config: dict, path: Path, legacy: bool) -> None:
     )
     rules = {
         columns["id"]: lock,
-        "Tester": DataValidation(type="list", formula1="Testers"),
+        columns["tester"]: DataValidation(type="list", formula1="Testers"),
         "Type": DataValidation(type="list", formula1='"Bug,Feature request,Question"'),
         columns["status"]: DataValidation(type="list", formula1=f'"{",".join(statuses.values())}"'),
         columns["priority"]: DataValidation(type="list", formula1=f'"{",".join(config["priorities"])}"'),
-        columns["owner"]: DataValidation(type="list", formula1=f'"{",".join(config["owners"])}"'),
+        # A warning, not a stop, so joint owners such as "AS, BS" can be typed beside the single codes listed
+        columns["owner"]: DataValidation(type="list", formula1=f'"{",".join(config["owners"])}"', errorStyle="warning"),
     }
     if legacy:
         rules[legacy_header] = DataValidation(type="list", formula1='"Yes,No,Not applicable"')
@@ -260,7 +268,7 @@ def new_workbook(config: dict, path: Path, legacy: bool) -> None:
     lines = [
         ("Where to write", f"Use the next empty row in {sheet.title}. Add one bug, request or question per row."),
         (columns["id"], "Filled in automatically. Quote it when you refer to a row; Excel refuses anything typed there."),
-        ("Date, Tester, Type", "Enter the date and choose your name and the type from the dropdowns."),
+        (f"{columns['date']}, {columns['tester']}, Type", "Enter the date and choose your name and the type from the dropdowns."),
         ("Reference", "The record the feedback is about, such as an order or booking number, when there is one."),
         (columns["feedback"], "For a bug, say what you did, what happened and what you expected. For a request, say what you would change."),
         ("Links", "A sharing link to screenshots or further information. Make sure the reviewing team can open it."),
@@ -292,7 +300,9 @@ def new_workbook(config: dict, path: Path, legacy: bool) -> None:
 
 def main() -> None:
     """Parse the command line and run one command."""
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    # Windows writes to the console in its own code page, so rows printed with a curly quote would not read back as UTF-8
+    sys.stdout.reconfigure(encoding="utf-8")
+    parser =argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("new", "rows", "ids", "add", "write"):
         command = commands.add_parser(name)
@@ -312,7 +322,7 @@ def main() -> None:
     write.add_argument("--id", action="append", required=True, help="a row's UID as the sheet shows it; repeat for several rows")
     write.add_argument("--status")
     write.add_argument("--priority", help="one of the config's priorities")
-    write.add_argument("--owner", help="one of the config's owner codes")
+    write.add_argument("--owner", help="one of the config's owner codes, or several comma-separated, written in alphabetical order")
     write.add_argument("--response")
     write.add_argument("--by", help="the writer's initials, signed on the response")
     write.add_argument("--issue", help="the tracker issue's address")
