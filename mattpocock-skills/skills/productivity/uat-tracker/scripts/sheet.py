@@ -1,11 +1,13 @@
 """Read and write a UAT feedback sheet described by a project's uat-tracker.json, through the Excel running on this machine.
 
 Run from the project root, on Windows with Excel desktop open:
-  new   <config> <workbook> [--legacy] build an empty feedback sheet from the config, refusing if the file exists
+  new   <config> <workbook>   build an empty feedback sheet from the config, refusing if the file exists
   rows  <config> <workbook> [--open]   print every row with feedback as one JSON line; --open leaves out closed rows
   ids   <config> <workbook> [--dry-run]   give each row with feedback and no UID the prefix and the next number
-  add   <config> <workbook> --type TYPE --feedback TEXT [--feedback TEXT ...] [--dry-run]   add rows after the last one, dated today, and give them UIDs
-  write <config> <workbook> --id UID [--id UID ...] [--status S] [--priority P] [--owner CODE[,CODE]] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]
+  add   <config> <workbook> --tester NAME --type TYPE --status S --priority P --owner CODE[,CODE] [--legacy ANSWER] --feedback TEXT [--feedback TEXT ...]
+        [--reference REF] [--links TEXT] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]   add complete rows after the last one, dated today, and give them UIDs
+  write <config> <workbook> --id UID [--id UID ...] [--tester NAME] [--status S] [--priority P] [--owner CODE[,CODE]] [--legacy ANSWER] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]
+--legacy is required on add when the config names a legacy column, and refused when it does not.
 Every change goes cell by cell through Excel, so it merges with people editing the sheet at the same time.
 A change prints every cell it sets, backs the workbook up, saves, and reads each cell back; --dry-run only prints.
 new writes a file nobody has open yet, so it builds it directly with openpyxl.
@@ -33,6 +35,10 @@ LAST_ROW = 300
 
 # One cell to set: sheet row number, column number, value
 Change = tuple[int, int, object]
+
+# The Type and legacy dropdowns' choices, shared by new's dropdowns and the add and write flags
+TYPES = ["Bug", "Feature request", "Question"]
+LEGACY_ANSWERS = ["Yes", "No", "Not applicable"]
 
 
 def open_in_excel(path: Path) -> tuple[CDispatch, bool]:
@@ -125,39 +131,58 @@ def find_row(rows: list[dict], uid: str) -> dict:
     return matches[0]
 
 
-def write_rows(table: dict[int, dict[int, object]], config: dict, args: argparse.Namespace) -> tuple[list[Change], list[str]]:
-    """Set status, priority and owner, add a dated response line on top, and link an issue, on each row named by ID."""
-    if not (args.status or args.priority or args.owner or args.response or args.issue):
-        raise SystemExit("Give --status, --priority, --owner, --response or --issue.")
-    if args.status and args.status not in config["statuses"].values():
-        raise SystemExit(f"Status {args.status!r} is not one of {list(config['statuses'].values())}.")
-    if args.priority and args.priority not in config["priorities"]:
-        raise SystemExit(f"Priority {args.priority!r} is not one of {list(config['priorities'])}.")
-    owner = None
+def row_values(config: dict, args: argparse.Namespace) -> dict[str, object]:
+    """Check the tester, status, priority, owner and legacy answer given on the command line against the config.
+
+    Returns each given value keyed by its column key, ready to write; responses and issues are written per row by the caller.
+    """
+    values: dict[str, object] = {}
+    if args.tester:
+        values["tester"] = args.tester
+    if args.status:
+        if args.status not in config["statuses"].values():
+            raise SystemExit(f"Status {args.status!r} is not one of {list(config['statuses'].values())}.")
+        values["status"] = args.status
+    if args.priority:
+        if args.priority not in config["priorities"]:
+            raise SystemExit(f"Priority {args.priority!r} is not one of {list(config['priorities'])}.")
+        # A priority column usually takes whole numbers, so a digits-only level is written as a number
+        values["priority"] = int(args.priority) if args.priority.isdigit() else args.priority
     if args.owner:
         # Joint owners share one cell, comma-separated and in alphabetical order, such as "AS, BS"
         codes = sorted({code.strip() for code in args.owner.split(",")})
         unknown = [code for code in codes if code not in config["owners"]]
         if unknown:
             raise SystemExit(f"Owner {unknown} is not one of {list(config['owners'])}.")
-        owner = ", ".join(codes)
+        values["owner"] = ", ".join(codes)
+    if args.legacy:
+        if "legacy" not in config["sheet"]["columns"]:
+            raise SystemExit("The config names no legacy column, so --legacy has nowhere to go. Nothing saved.")
+        values["legacy"] = args.legacy
     if args.response and not args.by:
         raise SystemExit("A response needs --by with the writer's initials.")
-    columns, rows = read_rows(table, config)
+    return values
+
+
+def response_line(args: argparse.Namespace) -> str:
+    """Return the response as one dated, signed line, such as "- 16 Nov, AB - text"."""
     today = date.today()
+    return f"- {today.day} {today:%b}, {args.by} - {args.response}"
+
+
+def write_rows(table: dict[int, dict[int, object]], config: dict, args: argparse.Namespace) -> tuple[list[Change], list[str]]:
+    """Set the given values, add a dated response line on top, and link an issue, on each row named by ID."""
+    if not (args.tester or args.status or args.priority or args.owner or args.legacy or args.response or args.issue):
+        raise SystemExit("Give --tester, --status, --priority, --owner, --legacy, --response or --issue.")
+    values = row_values(config, args)
+    columns, rows = read_rows(table, config)
     changes, messages = [], []
     for uid in args.id:
         row = find_row(rows, uid)
         number = row["row"]
-        if args.status:
-            changes.append((number, columns["status"], args.status))
-        if args.priority:
-            # A priority column usually takes whole numbers, so a digits-only level is written as a number
-            changes.append((number, columns["priority"], int(args.priority) if args.priority.isdigit() else args.priority))
-        if owner:
-            changes.append((number, columns["owner"], owner))
+        changes += [(number, columns[key], value) for key, value in values.items()]
         if args.response:
-            line = f"- {today.day} {today:%b}, {args.by} - {args.response}"
+            line = response_line(args)
             # Earlier entries stay below the new line, read from the sheet as it is now
             earlier = str(row["response"]).strip() if row["response"] is not None else ""
             changes.append((number, columns["response"], f"{line}\n{earlier}" if earlier else line))
@@ -170,16 +195,33 @@ def write_rows(table: dict[int, dict[int, object]], config: dict, args: argparse
 
 
 def add_rows(table: dict[int, dict[int, object]], config: dict, args: argparse.Namespace) -> tuple[list[Change], list[str]]:
-    """Write each feedback text with today's date and the type into the rows after the last row with feedback, then give them UIDs."""
-    # Type is found by the header new gives it, so a sheet without it stops here
-    header_row, columns = header(table, {**config["sheet"]["columns"], "type": "Type"})
+    """Write one complete row per feedback text after the last row with feedback, dated today, then give them UIDs.
+
+    Every row gets the tester, type, status, priority and owner, and the legacy answer when the sheet has that column;
+    the reference, links, response and issue are written only when given.
+    """
+    if "legacy" in config["sheet"]["columns"] and not args.legacy:
+        raise SystemExit("This sheet has a legacy column, so give --legacy. Nothing saved.")
+    values = row_values(config, args)
+    values["type"] = args.type
+    if args.reference:
+        # Excel reads a digits-only reference as a number, so it is written as one and reads back the same
+        values["reference"] = int(args.reference) if args.reference.isdigit() else args.reference
+    if args.links:
+        values["links"] = args.links
+    if args.response:
+        values["response"] = response_line(args)
+    if args.issue:
+        values["issue"] = args.issue
+    header_row, columns = header(table, config["sheet"]["columns"])
     _columns, rows = read_rows(table, config)
     number = max((row["row"] for row in rows), default=header_row) + 1
     # Excel takes a date as a datetime at midnight
-    today = datetime.combine(date.today(), datetime.min.time())
+    values["date"] = datetime.combine(date.today(), datetime.min.time())
     changes, added = [], []
     for text in args.feedback:
-        changes += [(number, columns["feedback"], text), (number, columns["date"], today), (number, columns["type"], args.type)]
+        changes.append((number, columns["feedback"], text))
+        changes += [(number, columns[key], value) for key, value in values.items()]
         added.append({"row": number, "id": None})
         number += 1
     id_changes, messages = assign_ids(rows + added, columns, config["id_prefix"])
@@ -203,15 +245,16 @@ def apply(book: CDispatch, sheet: CDispatch, changes: list[Change], output_dir: 
         raise SystemExit(f"Excel holds a different value from the one written in {wrong}; check them in the sheet.")
 
 
-def new_workbook(config: dict, path: Path, legacy: bool) -> None:
-    """Build an empty feedback sheet from the config: UID first and locked, dropdowns from the config, a guide tab and a names tab; legacy adds a column comparing with the system being replaced."""
+def new_workbook(config: dict, path: Path) -> None:
+    """Build an empty feedback sheet from the config: UID first and locked, dropdowns from the config, a guide tab and a names tab; a configured legacy column compares each bug with the system being replaced."""
     if path.exists():
         raise SystemExit(f"{path} already exists. Nothing saved.")
     columns = config["sheet"]["columns"]
     statuses = config["statuses"]
-    legacy_header = "Same issue in legacy?"
+    legacy = "legacy" in columns
     headers = [
-        columns["id"], columns["date"], columns["tester"], "Type", "Reference", columns["feedback"], *([legacy_header] if legacy else []), "Links",
+        columns["id"], columns["date"], columns["tester"], columns["type"], columns["reference"], columns["feedback"],
+        *([columns["legacy"]] if legacy else []), columns["links"],
         columns["status"], columns["response"], columns["priority"], columns["owner"], columns["issue"],
     ]
     # Each header's column letter, such as {"Status": "H"}
@@ -245,14 +288,14 @@ def new_workbook(config: dict, path: Path, legacy: bool) -> None:
     rules = {
         columns["id"]: lock,
         columns["tester"]: DataValidation(type="list", formula1="Testers"),
-        "Type": DataValidation(type="list", formula1='"Bug,Feature request,Question"'),
+        columns["type"]: DataValidation(type="list", formula1=f'"{",".join(TYPES)}"'),
         columns["status"]: DataValidation(type="list", formula1=f'"{",".join(statuses.values())}"'),
         columns["priority"]: DataValidation(type="list", formula1=f'"{",".join(config["priorities"])}"'),
         # A warning, not a stop, so joint owners such as "AS, BS" can be typed beside the single codes listed
         columns["owner"]: DataValidation(type="list", formula1=f'"{",".join(config["owners"])}"', errorStyle="warning"),
     }
     if legacy:
-        rules[legacy_header] = DataValidation(type="list", formula1='"Yes,No,Not applicable"')
+        rules[columns["legacy"]] = DataValidation(type="list", formula1=f'"{",".join(LEGACY_ANSWERS)}"')
     for text, rule in rules.items():
         rule.showErrorMessage = True
         sheet.add_data_validation(rule)
@@ -268,17 +311,17 @@ def new_workbook(config: dict, path: Path, legacy: bool) -> None:
     lines = [
         ("Where to write", f"Use the next empty row in {sheet.title}. Add one bug, request or question per row."),
         (columns["id"], "Filled in automatically. Quote it when you refer to a row; Excel refuses anything typed there."),
-        (f"{columns['date']}, {columns['tester']}, Type", "Enter the date and choose your name and the type from the dropdowns."),
-        ("Reference", "The record the feedback is about, such as an order or booking number, when there is one."),
+        (f"{columns['date']}, {columns['tester']}, {columns['type']}", "Enter the date and choose your name and the type from the dropdowns."),
+        (columns["reference"], "The record the feedback is about, such as an order or booking number, when there is one."),
         (columns["feedback"], "For a bug, say what you did, what happened and what you expected. For a request, say what you would change."),
-        ("Links", "A sharing link to screenshots or further information. Make sure the reviewing team can open it."),
+        (columns["links"], "A sharing link to screenshots or further information. Make sure the reviewing team can open it."),
         (columns["status"], f"{statuses['open']} (red): not yet being worked on. {statuses['in_progress']} (amber): work is under way. {statuses['built']} (blue): the fix is built and waits to go live where you test. {statuses['closed']} (green): live where you test, or no further action, and the response says why."),
         ("Reviewing team", f"{columns['status']}, {columns['response']}, {columns['priority']}, {columns['owner']} and {columns['issue']} are filled in by the reviewing team. Testers can leave them blank."),
         (columns["priority"], " ".join(f"{level}: {meaning}." for level, meaning in config["priorities"].items()) + " A request or question takes the priority of the problem it solves."),
         ("Names", "Add testers on the Names tab, directly below the list without gaps."),
     ]
     if legacy:
-        lines.insert(5, (legacy_header, "For a bug, try the same thing in the old system and choose Yes or No. Choose Not applicable if it has no equivalent, or for a request or question."))
+        lines.insert(5, (columns["legacy"], "For a bug, try the same thing in the old system and choose Yes or No. Choose Not applicable if it has no equivalent, or for a request or question."))
     for number, (label, text) in enumerate(lines, start=3):
         guide.cell(number, 1, label).font = Font(bold=True)
         guide.cell(number, 2, text).alignment = Alignment(wrap_text=True, vertical="top")
@@ -309,28 +352,35 @@ def main() -> None:
         command.add_argument("config", type=Path)
         command.add_argument("workbook", type=Path)
         if name == "new":
-            command.add_argument("--legacy", action="store_true", help="add a column comparing each bug with the system being replaced")
             continue
         if name == "rows":
             command.add_argument("--open", action="store_true", help="leave out rows whose status is the closed word")
         else:
             command.add_argument("--dry-run", action="store_true", help="print the cells this would set and set none")
+    for name in ("add", "write"):
+        command = commands.choices[name]
+        # A new row must be complete; write changes only what it is given
+        required = name == "add"
+        command.add_argument("--tester", required=required, help="who raised the row, as the tester dropdown names them; whoever originated it")
+        command.add_argument("--status", required=required, help="one of the config's status words")
+        command.add_argument("--priority", required=required, help="one of the config's priorities, as agreed with the user")
+        command.add_argument("--owner", required=required, help="one of the config's owner codes, or several comma-separated, written in alphabetical order")
+        command.add_argument("--legacy", choices=LEGACY_ANSWERS, help="the legacy column's answer; required on add when the config names that column")
+        command.add_argument("--response")
+        command.add_argument("--by", help="the writer's initials, signed on the response")
+        command.add_argument("--issue", help="the tracker issue's address")
     add = commands.choices["add"]
-    add.add_argument("--type", required=True, choices=["Bug", "Feature request", "Question"], help="the Type column's value for every row added")
+    add.add_argument("--type", required=True, choices=TYPES, help="the type column's value for every row added")
     add.add_argument("--feedback", action="append", required=True, help="one row's feedback; repeat for several rows")
+    add.add_argument("--reference", help="the record the feedback is about, such as a booking or order number")
+    add.add_argument("--links", help="links to screenshots or further information")
     write = commands.choices["write"]
     write.add_argument("--id", action="append", required=True, help="a row's UID as the sheet shows it; repeat for several rows")
-    write.add_argument("--status")
-    write.add_argument("--priority", help="one of the config's priorities")
-    write.add_argument("--owner", help="one of the config's owner codes, or several comma-separated, written in alphabetical order")
-    write.add_argument("--response")
-    write.add_argument("--by", help="the writer's initials, signed on the response")
-    write.add_argument("--issue", help="the tracker issue's address")
     args = parser.parse_args()
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     if args.command == "new":
-        new_workbook(config, args.workbook, args.legacy)
+        new_workbook(config, args.workbook)
         return
     book, opened = open_in_excel(args.workbook)
     try:

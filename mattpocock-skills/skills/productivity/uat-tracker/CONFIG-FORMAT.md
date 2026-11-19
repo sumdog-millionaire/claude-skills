@@ -13,7 +13,11 @@ The project's description of its UAT feedback sheet. It is committed and shared 
       "id": "UID",
       "date": "Date",
       "tester": "Tester",
+      "type": "Type",
+      "reference": "Reference",
       "feedback": "Feedback",
+      "legacy": "Same issue in legacy?",
+      "links": "Links",
       "status": "Status",
       "response": "Response",
       "priority": "Priority",
@@ -41,7 +45,7 @@ The project's description of its UAT feedback sheet. It is committed and shared 
 | `output_dir` | A folder in the project for backups and copies. Add it to `.gitignore`: it holds copies of the client's sheet. |
 | `id_prefix` | The text before each row's number in its UID cell, so `"ID_"` gives `ID_1`, `ID_2`. An empty string gives bare numbers. A UID cell without it stops the script. |
 | `sheet.tab` | The worksheet holding the rows. |
-| `sheet.columns` | Each column's header text, exactly as the header row reads, trailing spaces included. The script finds the header row as the first row holding all of them, so columns may move. |
+| `sheet.columns` | Each column's header text, exactly as the header row reads, trailing spaces included. The script finds the header row as the first row holding all of them, so columns may move. `reference` holds the record a row is about, such as a booking or order number, and `links` holds links to screenshots. `legacy` is present only for a project replacing an old system: then `new` builds the column and `add` requires its answer. |
 | `statuses` | The words the sheet's Status column uses for open, in progress, built and closed. Built means the fix is merged but not yet live where the testers test; closed means live there, or no further action. A blank status counts as open. |
 | `priorities` | Each value the Priority column uses, most urgent first, as text, with what it means for this project. A level is set by how much the problem hurts what the product is for, so the same kind of problem can sit at different levels in different projects; the user agrees the meanings at set up. Compare a cell's value as text, since a typed 1 reads back as a number. |
 | `owners` | Each owner, keyed by their first and last initials, which are also their code in the sheet and sign their responses, with their name and their layer in words, which decides the unowned rows that fall to them. A team that is not one person gets a short code, such as `SD`. A row with several owners holds their codes comma-separated in alphabetical order, such as `AS, BS`. |
