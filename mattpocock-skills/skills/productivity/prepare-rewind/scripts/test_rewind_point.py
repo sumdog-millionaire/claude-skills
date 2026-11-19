@@ -46,5 +46,6 @@ def test_reads_typed_messages_in_either_shape() -> None:
     assert [turn.context_tokens for turn in session.turns] == [0, 105, 105], session.turns
 
 
-test_reads_typed_messages_in_either_shape()
-print("ok")
+if __name__ == "__main__":
+    test_reads_typed_messages_in_either_shape()
+    print("ok")
