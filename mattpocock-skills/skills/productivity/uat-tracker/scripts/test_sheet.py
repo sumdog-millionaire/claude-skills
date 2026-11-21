@@ -30,7 +30,10 @@ CONFIG = {
     "release_notes": RELEASE_NOTES,
     "statuses": {"open": "Open", "in_progress": "In progress", "closed": "Closed"},
     "priorities": {"1": "Wrong or broken", "2": "Seriously harms the experience", "3": "A minor imperfection"},
-    "owners": {"B": {"name": "Sam Example", "initials": "SE", "layer": "back end"}},
+    "owners": {
+        "B": {"name": "Sam Example", "initials": "SE", "layer": "back end"},
+        "F": {"name": "Alex Example", "initials": "AE", "layer": "front end"},
+    },
     "tracker": {"project": "Example", "queue_label": "uat-queue"},
 }
 # new builds every column the script knows, so its config names them all
@@ -182,10 +185,10 @@ def main() -> None:
             [released, "Drafts finish faster", None, "B"],
         ], rows
 
-        # A later release goes below the last one
-        second = notes(folder, "second.json", [{"change": "Map shows both airports", "uids": ["ID_6"], "by": "B"}])
+        # A later release goes below the last one, and joint owners are written comma-separated in alphabetical order
+        second = notes(folder, "second.json", [{"change": "Map shows both airports", "uids": ["ID_6"], "by": "F, B"}])
         assert run(folder, "release", *base, "--released", "2026-11-28T09:05", "--notes", second).returncode == 0
-        assert [cell(workbook, f"{column}4", "Release notes") for column in "BC"] == ["Map shows both airports", "ID_6"]
+        assert [cell(workbook, f"{column}4", "Release notes") for column in "BCD"] == ["Map shows both airports", "ID_6", "B, F"]
 
         # new builds a sheet the other commands read, with the UID column locked and a release notes tab, and never overwrites one
         fresh = folder / "new.xlsx"

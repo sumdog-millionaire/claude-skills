@@ -132,6 +132,16 @@ def find_row(rows: list[dict], uid: str) -> dict:
     return matches[0]
 
 
+def owner_codes(text: str, config: dict) -> str:
+    """One owner code or several comma-separated, checked against the config and returned in one cell's form, such as "AS, BS"."""
+    # Joint owners share one cell, comma-separated and in alphabetical order
+    codes = sorted({code.strip() for code in text.split(",")})
+    unknown = [code for code in codes if code not in config["owners"]]
+    if unknown:
+        raise SystemExit(f"Owner {', '.join(map(repr, unknown))} is not one of {list(config['owners'])}. Nothing saved.")
+    return ", ".join(codes)
+
+
 def row_values(config: dict, args: argparse.Namespace) -> dict[str, object]:
     """Check the tester, status, priority, owner and legacy answer given on the command line against the config.
 
@@ -150,12 +160,7 @@ def row_values(config: dict, args: argparse.Namespace) -> dict[str, object]:
         # A priority column usually takes whole numbers, so a digits-only level is written as a number
         values["priority"] = int(args.priority) if args.priority.isdigit() else args.priority
     if args.owner:
-        # Joint owners share one cell, comma-separated and in alphabetical order, such as "AS, BS"
-        codes = sorted({code.strip() for code in args.owner.split(",")})
-        unknown = [code for code in codes if code not in config["owners"]]
-        if unknown:
-            raise SystemExit(f"Owner {unknown} is not one of {list(config['owners'])}.")
-        values["owner"] = ", ".join(codes)
+        values["owner"] = owner_codes(args.owner, config)
     if args.legacy:
         if "legacy" not in config["sheet"]["columns"]:
             raise SystemExit("The config names no legacy column, so --legacy has nowhere to go. Nothing saved.")
@@ -234,15 +239,14 @@ def release_changes(
 ) -> list[Change]:
     """Write one row per change in the notes file after the release tab's last change, each stamped with the release's date and time.
 
-    The notes file is a JSON list of {"change": text, "uids": [UID, ...], "by": owner code}; every owner code must be in the
-    config and every UID on the feedback tab, or nothing is written.
+    The notes file is a JSON list of {"change": text, "uids": [UID, ...], "by": owner code or several comma-separated}; every
+    owner code must be in the config and every UID on the feedback tab, or nothing is written.
     """
     notes = json.loads(args.notes.read_text(encoding="utf-8"))
     _columns, rows = read_rows(feedback, config)
     known = {str(row["id"]) for row in rows}
     for note in notes:
-        if note["by"] not in config["owners"]:
-            raise SystemExit(f"Owner {note['by']!r} is not one of {list(config['owners'])}. Nothing saved.")
+        note["by"] = owner_codes(note["by"], config)
         unknown = [uid for uid in note["uids"] if uid not in known]
         if unknown:
             raise SystemExit(f"{unknown} is not a UID on the feedback tab. Nothing saved.")
@@ -423,7 +427,7 @@ def main() -> None:
     write.add_argument("--id", action="append", required=True, help="a row's UID as the sheet shows it; repeat for several rows")
     release = commands.choices["release"]
     release.add_argument("--released", required=True, type=datetime.fromisoformat, help="when the release went live, such as 2026-03-16T18:30")
-    release.add_argument("--notes", required=True, type=Path, help='a JSON list of {"change": text, "uids": [UID, ...], "by": owner code}')
+    release.add_argument("--notes", required=True, type=Path, help='a JSON list of {"change": text, "uids": [UID, ...], "by": owner code, or several comma-separated}')
     args = parser.parse_args()
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
