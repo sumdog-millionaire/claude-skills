@@ -10,7 +10,6 @@ Reachable only when you type them (Claude Code: `disable-model-invocation: true`
 - **[handoff](./handoff/SKILL.md)**: Compact the current conversation into a handoff document so another agent can continue the work.
 - **[teach](./teach/SKILL.md)**: Teach the user a new skill or concept over multiple sessions, using the current directory as a stateful teaching workspace.
 - **[to-questionnaire](./to-questionnaire/SKILL.md)**: Turn a decision you can't answer alone into a Markdown questionnaire for the one person who can (filled in async, or together over a meeting).
-- **[uat-tracker](./uat-tracker/SKILL.md)**: Work your share of a client's UAT feedback sheet: plan your rows into groups, raise an issue per group, fix one group per rewind and write each row's status and response back.
 - **[wait-what](./wait-what/SKILL.md)**: Fire this the moment a message doesn't land. The agent re-pitches it with the context you're missing, in plain English, using your `GLOSSARY.md` vocabulary.
 
 ## Model-invoked
@@ -22,3 +21,4 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[prepare-rewind](./prepare-rewind/SKILL.md)**: Before rewinding the conversation to save tokens, write `rewind-status.md` with what was built and every decision the rewind would cut.
 - **[carry-on-rewind](./carry-on-rewind/SKILL.md)**: After a context rewind, read the handover `/prepare-rewind` left, line it up against git and the agreed plan, and carry on without re-planning.
 - **[task-prioritisation](./task-prioritisation/SKILL.md)**: Build one local, colour-coded table of every open tracker issue and the last week's finished ones, to walk through on a prioritisation call.
+- **[uat-tracker](./uat-tracker/SKILL.md)**: Work your share of a client's UAT feedback sheet: plan your rows into groups, raise an issue per group, fix one group per rewind and write each row's status and response back. During UAT it also writes the release note after every production deploy.

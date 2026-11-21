@@ -7,6 +7,7 @@ Run from the project root, on Windows with Excel desktop open:
   add   <config> <workbook> --tester NAME --type TYPE --status S --priority P --owner CODE[,CODE] [--legacy ANSWER] --feedback TEXT [--feedback TEXT ...]
         [--reference REF] [--links TEXT] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]   add complete rows after the last one, dated today, and give them UIDs
   write <config> <workbook> --id UID [--id UID ...] [--tester NAME] [--status S] [--priority P] [--owner CODE[,CODE]] [--legacy ANSWER] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]
+  release <config> <workbook> --released DATETIME --notes FILE [--dry-run]   add one row per change in FILE to the release notes tab, adding the tab when it is missing
 --legacy is required on add when the config names a legacy column, and refused when it does not.
 Every change goes cell by cell through Excel, so it merges with people editing the sheet at the same time.
 A change prints every cell it sets, backs the workbook up, saves, and reads each cell back; --dry-run only prints.
@@ -228,6 +229,45 @@ def add_rows(table: dict[int, dict[int, object]], config: dict, args: argparse.N
     return changes + id_changes, messages
 
 
+def release_changes(
+    feedback: dict[int, dict[int, object]], release: dict[int, dict[int, object]], config: dict, args: argparse.Namespace
+) -> list[Change]:
+    """Write one row per change in the notes file after the release tab's last change, each stamped with the release's date and time.
+
+    The notes file is a JSON list of {"change": text, "uids": [UID, ...], "by": owner code}; every owner code must be in the
+    config and every UID on the feedback tab, or nothing is written.
+    """
+    notes = json.loads(args.notes.read_text(encoding="utf-8"))
+    _columns, rows = read_rows(feedback, config)
+    known = {str(row["id"]) for row in rows}
+    for note in notes:
+        if note["by"] not in config["owners"]:
+            raise SystemExit(f"Owner {note['by']!r} is not one of {list(config['owners'])}. Nothing saved.")
+        unknown = [uid for uid in note["uids"] if uid not in known]
+        if unknown:
+            raise SystemExit(f"{unknown} is not a UID on the feedback tab. Nothing saved.")
+    header_row, columns = header(release, config["release_notes"]["columns"])
+    filled = [number for number, row in release.items() if number > header_row and row.get(columns["change"]) not in (None, "")]
+    number = max(filled, default=header_row) + 1
+    changes = []
+    for note in notes:
+        values = {"released": args.released, "change": note["change"], "uids": ", ".join(note["uids"]), "by": note["by"]}
+        # A change with no UID leaves its cell empty, since Excel reads an empty string back as nothing
+        changes += [(number, columns[key], value) for key, value in values.items() if value != ""]
+        number += 1
+    return changes
+
+
+def add_release_tab(book: CDispatch, config: dict) -> CDispatch:
+    """Add the release notes tab after the last tab, with its headers in bold in the first row, and return it."""
+    sheet = book.Worksheets.Add(After=book.Worksheets(book.Worksheets.Count))
+    sheet.Name = config["release_notes"]["tab"]
+    for number, text in enumerate(config["release_notes"]["columns"].values(), start=1):
+        sheet.Cells(1, number).Value = text
+        sheet.Cells(1, number).Font.Bold = True
+    return sheet
+
+
 def apply(book: CDispatch, sheet: CDispatch, changes: list[Change], output_dir: Path) -> None:
     """Back the workbook up, set each cell through Excel, save so co-authors get the change at once, then read each cell back."""
     # A cloud workbook merges with co-authors only while AutoSave is on; a local file has no co-authors
@@ -337,6 +377,11 @@ def new_workbook(config: dict, path: Path) -> None:
         names.cell(number, 4, owner["name"])
     # The dropdown grows with the list: from A4 down as many cells as hold a name, never fewer than one
     book.defined_names["Testers"] = DefinedName("Testers", attr_text="OFFSET(Names!$A$4,0,0,MAX(1,COUNTA(Names!$A$4:$A$1000)),1)")
+
+    releases = book.create_sheet(config["release_notes"]["tab"])
+    for number, text in enumerate(config["release_notes"]["columns"].values(), start=1):
+        releases.cell(1, number, text).font = Font(bold=True)
+        releases.column_dimensions[get_column_letter(number)].width = 60 if text == config["release_notes"]["columns"]["change"] else 18
     book.save(path)
     print(f"workbook: {path}")
 
@@ -347,7 +392,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     parser =argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("new", "rows", "ids", "add", "write"):
+    for name in ("new", "rows", "ids", "add", "write", "release"):
         command = commands.add_parser(name)
         command.add_argument("config", type=Path)
         command.add_argument("workbook", type=Path)
@@ -376,6 +421,9 @@ def main() -> None:
     add.add_argument("--links", help="links to screenshots or further information")
     write = commands.choices["write"]
     write.add_argument("--id", action="append", required=True, help="a row's UID as the sheet shows it; repeat for several rows")
+    release = commands.choices["release"]
+    release.add_argument("--released", required=True, type=datetime.fromisoformat, help="when the release went live, such as 2026-03-16T18:30")
+    release.add_argument("--notes", required=True, type=Path, help='a JSON list of {"change": text, "uids": [UID, ...], "by": owner code}')
     args = parser.parse_args()
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
@@ -399,8 +447,16 @@ def main() -> None:
             changes, messages = assign_ids(rows, columns, config["id_prefix"])
         elif args.command == "add":
             changes, messages = add_rows(table, config, args)
-        else:
+        elif args.command == "write":
             changes, messages = write_rows(table, config, args)
+        else:
+            notes_tab = config["release_notes"]
+            tab_exists = notes_tab["tab"] in [tab.Name for tab in book.Worksheets]
+            # A missing tab reads as its header row alone, which this run adds once every check has passed
+            feedback = table
+            table = read_table(book.Worksheets(notes_tab["tab"])) if tab_exists else {1: dict(enumerate(notes_tab["columns"].values(), start=1))}
+            changes = release_changes(feedback, table, config, args)
+            messages = [] if tab_exists else [f"Adds the {notes_tab['tab']} tab with its headers"]
         for line in messages:
             print(line)
         for number, column, value in changes:
@@ -409,6 +465,8 @@ def main() -> None:
             print(f"{get_column_letter(column)}{number}: {before!r} -> {value!r}")
         if args.dry_run or not changes:
             return
+        if args.command == "release":
+            sheet = book.Worksheets(notes_tab["tab"]) if tab_exists else add_release_tab(book, config)
         apply(book, sheet, changes, Path(config["output_dir"]))
     finally:
         # A workbook this run opened is closed again; one the user had open stays open

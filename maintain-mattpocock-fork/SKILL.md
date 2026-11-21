@@ -132,7 +132,7 @@ drift:
   model-invoked.
 - **`task-prioritisation` and `uat-tracker`** in `skills/productivity/`: the team's table of tracker
   issues (model-invoked), and one owner's work through a client's UAT feedback sheet with its
-  guarded `scripts/sheet.py` (user-invoked).
+  guarded `scripts/sheet.py` and its release notes after each production deploy (model-invoked).
 - **`grill-with-docs` is model-invoked**, where upstream makes it user-invoked.
 - **Holdouts in `tdd`**: tests the builder never sees, written by the `tester` agent and run by the
   `validator` agent (both in `agents/`), hidden by `tdd/scripts/guard_holdouts.py` through

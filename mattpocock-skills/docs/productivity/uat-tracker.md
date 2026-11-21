@@ -8,7 +8,7 @@ Once testing starts, agents should work only on what the testers raised, not dri
 
 ## When to reach for it
 
-You invoke this by typing `/uat-tracker`, and the agent won't reach for it on its own. Reach for it when testing has produced a feedback sheet and you want to work through the rows that are yours.
+You can type `/uat-tracker` yourself, and the agent also reaches for it when a production deploy has just passed its checks during UAT, to write the release note. Reach for it when testing has produced a feedback sheet and you want to work through the rows that are yours.
 
 | The situation | Reach for |
 | --- | --- |
@@ -19,6 +19,10 @@ You invoke this by typing `/uat-tracker`, and the agent won't reach for it on it
 ## Prerequisites
 
 The project describes its sheet in `docs/agents/uat-tracker.json`: the tab, each column's header, the status words, each priority value and what it means for the project, every owner's code, name, initials and layer, and the tracker project and queue label. When it is missing, the agent proposes one, from the sheet's header row when the sheet exists, and writes it once you agree. A new project can start from the script's `new` command, which builds an empty sheet from that file with every column the script reads. The sheet needs an ID column first, frozen and locked against typing; `new` builds it that way, and an existing sheet gets it by hand once. The script numbers new rows itself. A row the agent adds is complete: the tester, who is whoever originated it, its type, status, owner, the priority you agreed, and the legacy answer when the config names a legacy column for a project replacing an old system; only the reference, links, response and issue may be left empty. The skill is Windows only: the script needs Excel desktop open and Python with `openpyxl` and `pywin32`, and its output folder, which holds backups of the sheet, must be ignored by git.
+
+## Release notes
+
+During UAT, every production deploy that passes its checks ends with a release note. The agent reads the range from the newest `release-note-<date>` git tag to the commit production now runs, names any deploy since that went out without a note, and writes one row per change to the sheet's Release notes tab: when it went live, the change in plain words, the sheet UIDs it answers and who built it. It then drafts the same table for you to paste into the team chat, and asks whether you have posted it. Only on your yes does it tag the commit, so a tag means a note really went out, and a deploy nobody wrote up is still covered by the next note.
 
 ## The worklist and the rewind point
 

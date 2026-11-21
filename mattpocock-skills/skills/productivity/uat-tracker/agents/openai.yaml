@@ -1,5 +1,3 @@
 interface:
   display_name: "UAT Tracker"
-  short_description: "Work your rows of a client's UAT feedback sheet, one group per rewind"
-policy:
-  allow_implicit_invocation: false
+  short_description: "Work your rows of a client's UAT feedback sheet, and write each release note"

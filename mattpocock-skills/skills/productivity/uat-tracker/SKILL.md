@@ -1,7 +1,6 @@
 ---
 name: uat-tracker
-description: Work your share of a client's UAT feedback sheet. Plan your open rows into investigation groups, raise a tracker issue per group, then fix one group per rewind and write each row's status and response back to the sheet.
-disable-model-invocation: true
+description: Work your share of a client's UAT feedback sheet. Plan your open rows into investigation groups, raise a tracker issue per group, then fix one group per rewind and write each row's status and response back to the sheet. During UAT, also write the release note after every successful production deploy. Use it when the user wants to work their UAT rows, or when a production deploy has just passed its checks while the project is in UAT.
 ---
 
 # UAT tracker
@@ -20,6 +19,16 @@ The work is a series of sessions around one **rewind point**, set at the end of 
 
 Everything read before the rewind point stays in context for every later session, so planning stays light and the deep research happens inside each group's own session. A session ends by calling the Skill tool with "prepare-rewind"; the user rewinds to the rewind point and resumes with carry-on-rewind.
 
+## Release notes, after every production deploy
+
+This rule comes before everything else in the skill. While the project is in UAT, every production deploy that has passed its checks ends with a release note, so the testers and the team know what reached production. A failed deploy gets no note; its changes go into the next one.
+
+1. **Find the range.** The note starts at the newest git tag named `release-note-<date>` and ends at the commit production now runs, read from the hosting platform as the project's `CLAUDE.md` says. The first note starts where the user says.
+2. **Name deploys without a note.** From the platform's deploy history, list every production deploy since that tag. This note covers them all; tell the user which went out without a note of their own, when, and on which commit.
+3. **Write the rows.** One row per change a tester would notice or a teammate needs to know, in plain words: what changed, not how. Give each the sheet UIDs it answers (none for a change from outside the sheet) and the owner code of whoever built it. Put them in a JSON file and run `release` with `--dry-run`, check the cells, then run it without. It adds the release notes tab when the sheet has none.
+4. **Draft the chat message.** Give the user the same rows as a table under one line: "There is a new release. The changes are below, and in the Release notes tab of the UAT sheet."
+5. **Tag once posted.** Ask the user whether they have posted it. Only on their yes, tag the deployed commit `release-note-<date>` with an annotated tag whose message is the note, and push the tag. Never tag at deploy time: the tag records that a note went out.
+
 ## The sheet script
 
 `scripts/sheet.py` reads and writes the sheet. The skill is Windows only: run the script from the project root with Excel desktop open and a Python that has `openpyxl` and `pywin32`:
@@ -31,6 +40,7 @@ Everything read before the rewind point stays in context for every later session
 | `ids <config> <workbook> [--dry-run]` | Gives each row that has feedback and no UID the next one: the config's prefix and one more than the largest number in the column, such as `ID_148`, never reused |
 | `add <config> <workbook> --tester NAME --type TYPE --status S --priority P --owner CODE[,CODE] [--legacy ANSWER] --feedback TEXT [--feedback TEXT] [--reference REF] [--links TEXT] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]` | Adds one complete row per feedback text after the last row, dated today, and gives each its UID. Tester, type (Bug, Feature request or Question), status, priority and owner are required, and so is `--legacy` (Yes, No or Not applicable) when the config names a legacy column; the reference, links, response and issue are optional. The tester is whoever originated the row: the user when they raised it, the teammate it came from otherwise. The priority is the one the user agreed; never choose it alone. For rows the user agreed in a grilling; testers add their own in Excel |
 | `write <config> <workbook> --id UID [--id UID] [--tester NAME] [--status S] [--priority P] [--owner CODE[,CODE]] [--legacy ANSWER] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]` | Sets tester, status, priority, owner and the legacy answer, adds a response line, links an issue, on each row named by its UID. Priority and each owner code must be values the config lists; joint owners are written comma-separated in alphabetical order |
+| `release <config> <workbook> --released DATETIME --notes FILE [--dry-run]` | Adds one row per change to the config's release notes tab, after its last change, each stamped with when the release went live, such as `2026-03-16T18:30`. The file is a JSON list of `{"change": text, "uids": [UID, ...], "by": owner code}`; an owner code the config lacks or a UID the feedback tab lacks refuses the whole run. Adds the tab with its headers when the sheet has none. `new` builds the tab too |
 
 Name rows by UID everywhere: the `row` number moves whenever someone sorts the sheet, and the UID never does.
 
