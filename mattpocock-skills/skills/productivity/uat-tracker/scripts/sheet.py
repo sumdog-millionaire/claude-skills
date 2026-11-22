@@ -7,7 +7,7 @@ Run from the project root, on Windows with Excel desktop open:
   add   <config> <workbook> --tester NAME --type TYPE --status S --priority P --owner CODE[,CODE] [--legacy ANSWER] --feedback TEXT [--feedback TEXT ...]
         [--reference REF] [--links TEXT] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]   add complete rows after the last one, dated today, and give them UIDs
   write <config> <workbook> --id UID [--id UID ...] [--tester NAME] [--status S] [--priority P] [--owner CODE[,CODE]] [--legacy ANSWER] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]
-  release <config> <workbook> --released DATETIME --notes FILE [--dry-run]   add one row per change in FILE to the release notes tab, adding the tab when it is missing
+  release <config> <workbook> --released DATETIME --notes FILE [--dry-run]   add one row per change in FILE to the change log tab, adding the tab when it is missing
 --legacy is required on add when the config names a legacy column, and refused when it does not.
 Every change goes cell by cell through Excel, so it merges with people editing the sheet at the same time.
 A change prints every cell it sets, backs the workbook up, saves, and reads each cell back; --dry-run only prints.
@@ -40,6 +40,8 @@ Change = tuple[int, int, object]
 # The Type and legacy dropdowns' choices, shared by new's dropdowns and the add and write flags
 TYPES = ["Bug", "Feature request", "Question"]
 LEGACY_ANSWERS = ["Yes", "No", "Not applicable"]
+# Each change log row is one of these, and the tab opens filtered to the first
+LEVELS = ["Major", "Minor"]
 
 
 def open_in_excel(path: Path) -> tuple[CDispatch, bool]:
@@ -239,14 +241,15 @@ def release_changes(
 ) -> list[Change]:
     """Write one row per change in the notes file after the release tab's last change, each stamped with the release's date and time.
 
-    The notes file is a JSON list of {"change": text, "uids": [UID, ...], "by": owner code or several comma-separated}; every
-    owner code must be in the config and every UID on the feedback tab, or nothing is written.
+    The notes file is a JSON list of {"change": text, "uids": [UID, ...], "level": "Major" or "Minor"}; every level must be
+    one of those and every UID on the feedback tab, or nothing is written.
     """
     notes = json.loads(args.notes.read_text(encoding="utf-8"))
     _columns, rows = read_rows(feedback, config)
     known = {str(row["id"]) for row in rows}
     for note in notes:
-        note["by"] = owner_codes(note["by"], config)
+        if note["level"] not in LEVELS:
+            raise SystemExit(f"Level {note['level']!r} is not one of {LEVELS}. Nothing saved.")
         unknown = [uid for uid in note["uids"] if uid not in known]
         if unknown:
             raise SystemExit(f"{unknown} is not a UID on the feedback tab. Nothing saved.")
@@ -255,7 +258,7 @@ def release_changes(
     number = max(filled, default=header_row) + 1
     changes = []
     for note in notes:
-        values = {"released": args.released, "change": note["change"], "uids": ", ".join(note["uids"]), "by": note["by"]}
+        values = {"released": args.released, "level": note["level"], "change": note["change"], "uids": ", ".join(note["uids"])}
         # A change with no UID leaves its cell empty, since Excel reads an empty string back as nothing
         changes += [(number, columns[key], value) for key, value in values.items() if value != ""]
         number += 1
@@ -263,13 +266,38 @@ def release_changes(
 
 
 def add_release_tab(book: CDispatch, config: dict) -> CDispatch:
-    """Add the release notes tab after the last tab, with its headers in bold in the first row, and return it."""
+    """Add the change log tab after the last tab, with its headers in the first row, and return it; style_change_log styles it."""
     sheet = book.Worksheets.Add(After=book.Worksheets(book.Worksheets.Count))
     sheet.Name = config["release_notes"]["tab"]
     for number, text in enumerate(config["release_notes"]["columns"].values(), start=1):
         sheet.Cells(1, number).Value = text
         sheet.Cells(1, number).Font.Bold = True
     return sheet
+
+
+def style_change_log(sheet: CDispatch, config: dict) -> None:
+    """Make the change log one easy-to-read Excel table over every row, filtered to Major so everyone opens on the major changes."""
+    keys = list(config["release_notes"]["columns"])
+    change_column = keys.index("change") + 1
+    # The last change is found from the bottom of its column, since the filter may hide rows; -4162 is Excel's xlUp
+    last_row = sheet.Cells(sheet.Rows.Count, change_column).End(-4162).Row
+    whole = sheet.Range(sheet.Cells(1, 1), sheet.Cells(last_row, len(keys)))
+    # The first release makes the table; each later one grows it over the rows just added
+    if sheet.ListObjects.Count == 0:
+        # 1 and 1 are Excel's xlSrcRange and xlYes: a table over cells whose first row is its headers
+        table = sheet.ListObjects.Add(1, whole, None, 1)
+        table.TableStyle = "TableStyleMedium2"
+    else:
+        table = sheet.ListObjects(1)
+        table.Resize(whole)
+    for key, width in {"released": 20, "level": 16, "change": 100, "uids": 24}.items():
+        sheet.Columns(keys.index(key) + 1).ColumnWidth = width
+    # -4160 is Excel's xlTop, so a short cell lines up with the first line of a long change beside it
+    whole.VerticalAlignment = -4160
+    whole.WrapText = True
+    sheet.Range(sheet.Cells(2, keys.index("released") + 1), sheet.Cells(last_row, keys.index("released") + 1)).NumberFormat = "d mmm yyyy, hh:mm"
+    whole.Rows.AutoFit()
+    table.Range.AutoFilter(keys.index("level") + 1, LEVELS[0])
 
 
 def apply(book: CDispatch, sheet: CDispatch, changes: list[Change], output_dir: Path) -> None:
@@ -381,11 +409,6 @@ def new_workbook(config: dict, path: Path) -> None:
         names.cell(number, 4, owner["name"])
     # The dropdown grows with the list: from A4 down as many cells as hold a name, never fewer than one
     book.defined_names["Testers"] = DefinedName("Testers", attr_text="OFFSET(Names!$A$4,0,0,MAX(1,COUNTA(Names!$A$4:$A$1000)),1)")
-
-    releases = book.create_sheet(config["release_notes"]["tab"])
-    for number, text in enumerate(config["release_notes"]["columns"].values(), start=1):
-        releases.cell(1, number, text).font = Font(bold=True)
-        releases.column_dimensions[get_column_letter(number)].width = 60 if text == config["release_notes"]["columns"]["change"] else 18
     book.save(path)
     print(f"workbook: {path}")
 
@@ -427,7 +450,7 @@ def main() -> None:
     write.add_argument("--id", action="append", required=True, help="a row's UID as the sheet shows it; repeat for several rows")
     release = commands.choices["release"]
     release.add_argument("--released", required=True, type=datetime.fromisoformat, help="when the release went live, such as 2026-03-16T18:30")
-    release.add_argument("--notes", required=True, type=Path, help='a JSON list of {"change": text, "uids": [UID, ...], "by": owner code, or several comma-separated}')
+    release.add_argument("--notes", required=True, type=Path, help='a JSON list of {"change": text, "uids": [UID, ...], "level": "Major" or "Minor"}')
     args = parser.parse_args()
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
@@ -472,6 +495,9 @@ def main() -> None:
         if args.command == "release":
             sheet = book.Worksheets(notes_tab["tab"]) if tab_exists else add_release_tab(book, config)
         apply(book, sheet, changes, Path(config["output_dir"]))
+        if args.command == "release":
+            style_change_log(sheet, config)
+            book.Save()
     finally:
         # A workbook this run opened is closed again; one the user had open stays open
         if opened:

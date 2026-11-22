@@ -15,7 +15,10 @@ from openpyxl.styles import PatternFill
 from openpyxl.worksheet.datavalidation import DataValidation
 
 SCRIPT = Path(__file__).with_name("sheet.py")
-RELEASE_NOTES = {"tab": "Release notes", "columns": {"released": "Released", "change": "Change", "uids": "Sheet UID", "by": "By"}}
+RELEASE_NOTES = {
+    "tab": "Change log",
+    "columns": {"released": "Released", "level": "Major or minor", "change": "Change", "uids": "Feedback UID"},
+}
 CONFIG = {
     "workbook": "test",
     "output_dir": "out",
@@ -30,10 +33,7 @@ CONFIG = {
     "release_notes": RELEASE_NOTES,
     "statuses": {"open": "Open", "in_progress": "In progress", "closed": "Closed"},
     "priorities": {"1": "Wrong or broken", "2": "Seriously harms the experience", "3": "A minor imperfection"},
-    "owners": {
-        "B": {"name": "Sam Example", "initials": "SE", "layer": "back end"},
-        "F": {"name": "Alex Example", "initials": "AE", "layer": "front end"},
-    },
+    "owners": {"B": {"name": "Sam Example", "initials": "SE", "layer": "back end"}},
     "tracker": {"project": "Example", "queue_label": "uat-queue"},
 }
 # new builds every column the script knows, so its config names them all
@@ -156,48 +156,57 @@ def main() -> None:
         sheet = openpyxl.load_workbook(workbook)["Feedback Log"]
         assert len(sheet.data_validations.dataValidation) == 1 and len(sheet.conditional_formatting) == 1
 
-        # A release naming a UID the sheet lacks, or an unknown owner, is refused and writes nothing, not even the tab
-        unknown_uid = notes(folder, "unknown_uid.json", [{"change": "Prices add up", "uids": ["ID_99"], "by": "B"}])
+        # A release naming a UID the sheet lacks, or a level other than Major or Minor, is refused and writes nothing, not even the tab
+        unknown_uid = notes(folder, "unknown_uid.json", [{"change": "Prices add up", "uids": ["ID_99"], "level": "Major"}])
         result = run(folder, "release", *base, "--released", "2026-11-21T18:30", "--notes", unknown_uid)
         assert "ID_99" in result.stderr, result.stderr
-        unknown_owner = notes(folder, "unknown_owner.json", [{"change": "Prices add up", "uids": [], "by": "Z"}])
-        result = run(folder, "release", *base, "--released", "2026-11-21T18:30", "--notes", unknown_owner)
-        assert "Owner 'Z'" in result.stderr, result.stderr
-        assert "Release notes" not in openpyxl.load_workbook(workbook).sheetnames
+        unknown_level = notes(folder, "unknown_level.json", [{"change": "Prices add up", "uids": [], "level": "Huge"}])
+        result = run(folder, "release", *base, "--released", "2026-11-21T18:30", "--notes", unknown_level)
+        assert "Level 'Huge'" in result.stderr, result.stderr
+        assert "Change log" not in openpyxl.load_workbook(workbook).sheetnames
 
         # A dry run says it would add the tab and adds nothing
         first = notes(folder, "first.json", [
-            {"change": "Prices add up", "uids": ["ID_4", "ID_5"], "by": "B"},
-            {"change": "Drafts finish faster", "uids": [], "by": "B"},
+            {"change": "Prices add up", "uids": ["ID_4", "ID_5"], "level": "Major"},
+            {"change": "Drafts finish faster", "uids": [], "level": "Minor"},
         ])
         result = run(folder, "release", *base, "--released", "2026-11-21T18:30", "--notes", first, "--dry-run")
-        assert result.returncode == 0 and "Adds the Release notes tab" in result.stdout, result.stderr
-        assert "Release notes" not in openpyxl.load_workbook(workbook).sheetnames
+        assert result.returncode == 0 and "Adds the Change log tab" in result.stdout, result.stderr
+        assert "Change log" not in openpyxl.load_workbook(workbook).sheetnames
 
-        # A release adds the tab with its headers and one row per change, each stamped with the release's date and time
+        # A release adds the tab and one row per change, each stamped with the release's date and time
         result = run(folder, "release", *base, "--released", "2026-11-21T18:30", "--notes", first)
         assert result.returncode == 0, result.stderr
         released = datetime(2026, 11, 21, 18, 30)
-        rows = [[cell(workbook, f"{column}{row}", "Release notes") for column in "ABCD"] for row in (1, 2, 3)]
+        rows = [[cell(workbook, f"{column}{row}", "Change log") for column in "ABCD"] for row in (1, 2, 3)]
         assert rows == [
-            ["Released", "Change", "Sheet UID", "By"],
-            [released, "Prices add up", "ID_4, ID_5", "B"],
-            [released, "Drafts finish faster", None, "B"],
+            ["Released", "Major or minor", "Change", "Feedback UID"],
+            [released, "Major", "Prices add up", "ID_4, ID_5"],
+            [released, "Minor", "Drafts finish faster", None],
         ], rows
 
-        # A later release goes below the last one, and joint owners are written comma-separated in alphabetical order
-        second = notes(folder, "second.json", [{"change": "Map shows both airports", "uids": ["ID_6"], "by": "F, B"}])
-        assert run(folder, "release", *base, "--released", "2026-11-28T09:05", "--notes", second).returncode == 0
-        assert [cell(workbook, f"{column}4", "Release notes") for column in "BCD"] == ["Map shows both airports", "ID_6", "B, F"]
+        # The tab is an Excel table that opens filtered to Major, with the change wrapping and a readable date
+        log = openpyxl.load_workbook(workbook)["Change log"]
+        table = next(iter(log.tables.values()))
+        assert table.ref == "A1:D3", table.ref
+        assert [(column.colId, column.filters.filter) for column in table.autoFilter.filterColumn] == [(1, ["Major"])]
+        # Excel stores the date format with its spaces and comma escaped by backslashes
+        assert log["C2"].alignment.wrap_text and log["A2"].number_format.replace("\\", "") == "d mmm yyyy, hh:mm", log["A2"].number_format
 
-        # new builds a sheet the other commands read, with the UID column locked and a release notes tab, and never overwrites one
+        # A later release goes below the last one, and the table grows to hold it
+        second = notes(folder, "second.json", [{"change": "Map shows both airports", "uids": ["ID_6"], "level": "Major"}])
+        assert run(folder, "release", *base, "--released", "2026-11-28T09:05", "--notes", second).returncode == 0
+        assert [cell(workbook, f"{column}4", "Change log") for column in "BCD"] == ["Major", "Map shows both airports", "ID_6"]
+        assert next(iter(openpyxl.load_workbook(workbook)["Change log"].tables.values())).ref == "A1:D4"
+
+        # new builds a sheet the other commands read, with the UID column locked, leaves the change log tab to release, and never overwrites one
         fresh = folder / "new.xlsx"
         assert run(folder, "new", "full_config.json", "new.xlsx").returncode == 0
         assert "already exists" in run(folder, "new", "full_config.json", "new.xlsx").stderr
         book = openpyxl.load_workbook(fresh)
         lock = next(rule for rule in book["Feedback Log"].data_validations.dataValidation if "A4" in rule.sqref)
         assert (lock.type, lock.formula1) == ("custom", "FALSE")
-        assert [book["Release notes"].cell(1, column).value for column in range(1, 5)] == ["Released", "Change", "Sheet UID", "By"]
+        assert "Change log" not in book.sheetnames
         dropdowns = len(book["Feedback Log"].data_validations.dataValidation)
         book["Feedback Log"]["F4"] = "Total wrong"
         book.save(fresh)
