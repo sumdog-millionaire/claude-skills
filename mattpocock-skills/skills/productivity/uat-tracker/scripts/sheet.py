@@ -42,6 +42,14 @@ TYPES = ["Bug", "Feature request", "Question"]
 LEGACY_ANSWERS = ["Yes", "No", "Not applicable"]
 # Each change log row is one of these, and the tab opens filtered to the first
 LEVELS = ["Major", "Minor"]
+# The change log is laid out like the feedback tab: a title in row 1, a spacer row, then its headers
+CHANGE_LOG_HEADER_ROW = 3
+
+
+def excel_colour(hex_rgb: str) -> int:
+    """A colour written as RGB hex, such as "E9EEEB", as the number Excel's automation takes, which orders it blue, green, red."""
+    red, green, blue = bytes.fromhex(hex_rgb)
+    return red + green * 256 + blue * 65536
 
 
 def open_in_excel(path: Path) -> tuple[CDispatch, bool]:
@@ -273,37 +281,55 @@ def release_changes(
 
 
 def add_release_tab(book: CDispatch, config: dict) -> CDispatch:
-    """Add the change log tab after the last tab, with its headers in the first row, and return it; style_change_log styles it."""
+    """Add the change log tab after the last tab, its name as the title and its headers in the header row, and return it.
+
+    style_change_log styles it.
+    """
     sheet = book.Worksheets.Add(After=book.Worksheets(book.Worksheets.Count))
     sheet.Name = config["release_notes"]["tab"]
+    sheet.Cells(1, 1).Value = config["release_notes"]["tab"]
     for number, text in enumerate(config["release_notes"]["columns"].values(), start=1):
-        sheet.Cells(1, number).Value = text
-        sheet.Cells(1, number).Font.Bold = True
+        sheet.Cells(CHANGE_LOG_HEADER_ROW, number).Value = text
     return sheet
 
 
 def style_change_log(sheet: CDispatch, config: dict) -> None:
-    """Make the change log one easy-to-read Excel table over every row, filtered to Major so everyone opens on the major changes."""
+    """Style the change log like the feedback tab, as one Excel table over every row, filtered to Major so everyone opens on the majors."""
     keys = list(config["release_notes"]["columns"])
-    change_column = keys.index("change") + 1
+    header_row, _columns = header(read_table(sheet), config["release_notes"]["columns"])
     # The last change is found from the bottom of its column, since the filter may hide rows; -4162 is Excel's xlUp
-    last_row = sheet.Cells(sheet.Rows.Count, change_column).End(-4162).Row
-    whole = sheet.Range(sheet.Cells(1, 1), sheet.Cells(last_row, len(keys)))
+    last_row = sheet.Cells(sheet.Rows.Count, keys.index("change") + 1).End(-4162).Row
+    whole = sheet.Range(sheet.Cells(header_row, 1), sheet.Cells(last_row, len(keys)))
+    headers = sheet.Range(sheet.Cells(header_row, 1), sheet.Cells(header_row, len(keys)))
     # The first release makes the table; each later one grows it over the rows just added
     if sheet.ListObjects.Count == 0:
         # 1 and 1 are Excel's xlSrcRange and xlYes: a table over cells whose first row is its headers
         table = sheet.ListObjects.Add(1, whole, None, 1)
-        table.TableStyle = "TableStyleMedium2"
+        # No built-in table style, so the colours below are the feedback tab's own
+        table.TableStyle = ""
     else:
         table = sheet.ListObjects(1)
         table.Resize(whole)
+    # The title, as on the feedback tab
+    title = sheet.Cells(1, 1)
+    title.Font.Size, title.Font.Bold, title.Font.Color = 14, True, excel_colour("00402E")
+    sheet.Rows(1).RowHeight = 28
+    # Every cell: the feedback tab's text colour on white, wrapped and set to the top, with a thin pale line under each row
+    whole.Font.Name, whole.Font.Size, whole.Font.Color = "Calibri", 11, excel_colour("27342F")
+    whole.Interior.Color = excel_colour("FFFFFF")
+    # -4160 is Excel's xlTop, so a short cell lines up with the first line of a long change beside it
+    whole.VerticalAlignment, whole.WrapText = -4160, True
+    # 12 and 9 are Excel's lines between rows and under the last row; 1 is a continuous line and 2 a thin one
+    for edge in (12, 9):
+        whole.Borders(edge).LineStyle, whole.Borders(edge).Weight, whole.Borders(edge).Color = 1, 2, excel_colour("E9EDEA")
+    # The headers, bold on the feedback tab's pale grey-green and centred top to bottom; -4108 is Excel's xlCenter
+    headers.Font.Bold, headers.Interior.Color, headers.VerticalAlignment = True, excel_colour("E9EEEB"), -4108
     for key, width in {"released": 20, "level": 16, "change": 100, "requester": 24, "uids": 24}.items():
         sheet.Columns(keys.index(key) + 1).ColumnWidth = width
-    # -4160 is Excel's xlTop, so a short cell lines up with the first line of a long change beside it
-    whole.VerticalAlignment = -4160
-    whole.WrapText = True
-    sheet.Range(sheet.Cells(2, keys.index("released") + 1), sheet.Cells(last_row, keys.index("released") + 1)).NumberFormat = "d mmm yyyy, hh:mm"
+    released = keys.index("released") + 1
+    sheet.Range(sheet.Cells(header_row + 1, released), sheet.Cells(last_row, released)).NumberFormat = "d mmm yyyy, hh:mm"
     whole.Rows.AutoFit()
+    sheet.Rows(header_row).RowHeight = 30
     table.Range.AutoFilter(keys.index("level") + 1, LEVELS[0])
 
 
@@ -486,9 +512,10 @@ def main() -> None:
         else:
             notes_tab = config["release_notes"]
             tab_exists = notes_tab["tab"] in [tab.Name for tab in book.Worksheets]
-            # A missing tab reads as its header row alone, which this run adds once every check has passed
+            # A missing tab reads as its title and header row alone, which this run adds once every check has passed
             feedback = table
-            table = read_table(book.Worksheets(notes_tab["tab"])) if tab_exists else {1: dict(enumerate(notes_tab["columns"].values(), start=1))}
+            missing = {1: {1: notes_tab["tab"]}, CHANGE_LOG_HEADER_ROW: dict(enumerate(notes_tab["columns"].values(), start=1))}
+            table = read_table(book.Worksheets(notes_tab["tab"])) if tab_exists else missing
             changes = release_changes(feedback, table, config, args)
             messages = [] if tab_exists else [f"Adds the {notes_tab['tab']} tab with its headers"]
         for line in messages:

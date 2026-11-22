@@ -178,27 +178,31 @@ def main() -> None:
         result = run(folder, "release", *base, "--released", "2026-11-21T18:30", "--notes", first)
         assert result.returncode == 0, result.stderr
         released = datetime(2026, 11, 21, 18, 30)
+        # The tab is laid out like the feedback tab: a title, a spacer row, headers in row 3, then one row per change
         # Each change names who asked for it, from the Tester cell of each row it answers, once each
-        rows = [[cell(workbook, f"{column}{row}", "Change log") for column in "ABCDE"] for row in (1, 2, 3)]
+        assert cell(workbook, "A1", "Change log") == "Change log"
+        rows = [[cell(workbook, f"{column}{row}", "Change log") for column in "ABCDE"] for row in (3, 4, 5)]
         assert rows == [
             ["Released", "Major or minor", "Change", "Requested by", "Feedback UID"],
             [released, "Major", "Prices add up", "Eli Example, Ella Example", "ID_4, ID_5"],
             [released, "Minor", "Drafts finish faster", None, None],
         ], rows
 
-        # The tab is an Excel table that opens filtered to Major, with the change wrapping and a readable date
+        # The tab is an Excel table that opens filtered to Major, styled like the feedback tab, with a readable date
         log = openpyxl.load_workbook(workbook)["Change log"]
         table = next(iter(log.tables.values()))
-        assert table.ref == "A1:E3", table.ref
+        assert table.ref == "A3:E5", table.ref
         assert [(column.colId, column.filters.filter) for column in table.autoFilter.filterColumn] == [(1, ["Major"])]
+        assert (log["A3"].font.b, log["A3"].fill.fgColor.rgb, log["A3"].font.color.rgb) == (True, "FFE9EEEB", "FF27342F")
+        assert log["C4"].alignment.wrap_text and log["C4"].border.bottom.style == "thin"
         # Excel stores the date format with its spaces and comma escaped by backslashes
-        assert log["C2"].alignment.wrap_text and log["A2"].number_format.replace("\\", "") == "d mmm yyyy, hh:mm", log["A2"].number_format
+        assert log["A4"].number_format.replace("\\", "") == "d mmm yyyy, hh:mm", log["A4"].number_format
 
         # A later release goes below the last one, and the table grows to hold it
         second = notes(folder, "second.json", [{"change": "Map shows both airports", "uids": ["ID_6"], "level": "Major"}])
         assert run(folder, "release", *base, "--released", "2026-11-28T09:05", "--notes", second).returncode == 0
-        assert [cell(workbook, f"{column}4", "Change log") for column in "BCDE"] == ["Major", "Map shows both airports", "Eli Example", "ID_6"]
-        assert next(iter(openpyxl.load_workbook(workbook)["Change log"].tables.values())).ref == "A1:E4"
+        assert [cell(workbook, f"{column}6", "Change log") for column in "BCDE"] == ["Major", "Map shows both airports", "Eli Example", "ID_6"]
+        assert next(iter(openpyxl.load_workbook(workbook)["Change log"].tables.values())).ref == "A3:E6"
 
         # new builds a sheet the other commands read, with the UID column locked, leaves the change log tab to release, and never overwrites one
         fresh = folder / "new.xlsx"
