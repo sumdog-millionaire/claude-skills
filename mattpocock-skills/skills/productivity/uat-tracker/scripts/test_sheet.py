@@ -17,7 +17,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 SCRIPT = Path(__file__).with_name("sheet.py")
 RELEASE_NOTES = {
     "tab": "Change log",
-    "columns": {"released": "Released", "level": "Major or minor", "change": "Change", "uids": "Feedback UID"},
+    "columns": {"released": "Released", "level": "Major or minor", "change": "Change", "requester": "Requested by", "uids": "Feedback UID"},
 }
 CONFIG = {
     "workbook": "test",
@@ -27,7 +27,7 @@ CONFIG = {
         "tab": "Feedback Log",
         "columns": {
             "id": "ID", "feedback": "Feedback", "status": "Status", "response": "Response",
-            "priority": "Priority", "owner": "Assigned to", "issue": "Tracker issue",
+            "priority": "Priority", "owner": "Assigned to", "issue": "Tracker issue", "tester": "Tester",
         },
     },
     "release_notes": RELEASE_NOTES,
@@ -57,11 +57,11 @@ def build(folder: Path) -> Path:
     sheet.title = "Feedback Log"
     book.create_sheet("Names")
     sheet.append(["UAT feedback"])
-    sheet.append(["Feedback", "ID", "Status", "Response", "Priority", "Assigned to", "Tracker issue"])
-    sheet.append(["Price wrong", "ID_4", "Open", "Earlier note", 1, "B", None])
-    sheet.append(["Map missing", None, None, None, 2, "B", "https://tracker/ENG-1"])
-    sheet.append([None, None, None, None, None, None, None])
-    sheet.append(["Logo blurry", None, "Open", None, 3, None, None])
+    sheet.append(["Feedback", "ID", "Status", "Response", "Priority", "Assigned to", "Tracker issue", "Tester"])
+    sheet.append(["Price wrong", "ID_4", "Open", "Earlier note", 1, "B", None, "Eli Example"])
+    sheet.append(["Map missing", None, None, None, 2, "B", "https://tracker/ENG-1", "Ella Example"])
+    sheet.append([None, None, None, None, None, None, None, None])
+    sheet.append(["Logo blurry", None, "Open", None, 3, None, None, "Eli Example"])
     dropdown = DataValidation(type="list", formula1='"Open,In progress,Closed"')
     sheet.add_data_validation(dropdown)
     dropdown.add("C3:C100")
@@ -178,17 +178,18 @@ def main() -> None:
         result = run(folder, "release", *base, "--released", "2026-11-21T18:30", "--notes", first)
         assert result.returncode == 0, result.stderr
         released = datetime(2026, 11, 21, 18, 30)
-        rows = [[cell(workbook, f"{column}{row}", "Change log") for column in "ABCD"] for row in (1, 2, 3)]
+        # Each change names who asked for it, from the Tester cell of each row it answers, once each
+        rows = [[cell(workbook, f"{column}{row}", "Change log") for column in "ABCDE"] for row in (1, 2, 3)]
         assert rows == [
-            ["Released", "Major or minor", "Change", "Feedback UID"],
-            [released, "Major", "Prices add up", "ID_4, ID_5"],
-            [released, "Minor", "Drafts finish faster", None],
+            ["Released", "Major or minor", "Change", "Requested by", "Feedback UID"],
+            [released, "Major", "Prices add up", "Eli Example, Ella Example", "ID_4, ID_5"],
+            [released, "Minor", "Drafts finish faster", None, None],
         ], rows
 
         # The tab is an Excel table that opens filtered to Major, with the change wrapping and a readable date
         log = openpyxl.load_workbook(workbook)["Change log"]
         table = next(iter(log.tables.values()))
-        assert table.ref == "A1:D3", table.ref
+        assert table.ref == "A1:E3", table.ref
         assert [(column.colId, column.filters.filter) for column in table.autoFilter.filterColumn] == [(1, ["Major"])]
         # Excel stores the date format with its spaces and comma escaped by backslashes
         assert log["C2"].alignment.wrap_text and log["A2"].number_format.replace("\\", "") == "d mmm yyyy, hh:mm", log["A2"].number_format
@@ -196,8 +197,8 @@ def main() -> None:
         # A later release goes below the last one, and the table grows to hold it
         second = notes(folder, "second.json", [{"change": "Map shows both airports", "uids": ["ID_6"], "level": "Major"}])
         assert run(folder, "release", *base, "--released", "2026-11-28T09:05", "--notes", second).returncode == 0
-        assert [cell(workbook, f"{column}4", "Change log") for column in "BCD"] == ["Major", "Map shows both airports", "ID_6"]
-        assert next(iter(openpyxl.load_workbook(workbook)["Change log"].tables.values())).ref == "A1:D4"
+        assert [cell(workbook, f"{column}4", "Change log") for column in "BCDE"] == ["Major", "Map shows both airports", "Eli Example", "ID_6"]
+        assert next(iter(openpyxl.load_workbook(workbook)["Change log"].tables.values())).ref == "A1:E4"
 
         # new builds a sheet the other commands read, with the UID column locked, leaves the change log tab to release, and never overwrites one
         fresh = folder / "new.xlsx"

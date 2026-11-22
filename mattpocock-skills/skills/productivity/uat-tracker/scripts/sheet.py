@@ -247,6 +247,8 @@ def release_changes(
     notes = json.loads(args.notes.read_text(encoding="utf-8"))
     _columns, rows = read_rows(feedback, config)
     known = {str(row["id"]) for row in rows}
+    # Each UID's tester, who is named as asking for any change that answers that row
+    tester_of = {str(row["id"]): row["tester"] for row in rows}
     for note in notes:
         if note["level"] not in LEVELS:
             raise SystemExit(f"Level {note['level']!r} is not one of {LEVELS}. Nothing saved.")
@@ -258,7 +260,12 @@ def release_changes(
     number = max(filled, default=header_row) + 1
     changes = []
     for note in notes:
-        values = {"released": args.released, "level": note["level"], "change": note["change"], "uids": ", ".join(note["uids"])}
+        # dict.fromkeys keeps the first mention of each tester in UID order and drops repeats and rows with no tester
+        requesters = dict.fromkeys(tester_of[uid] for uid in note["uids"] if tester_of[uid])
+        values = {
+            "released": args.released, "level": note["level"], "change": note["change"],
+            "requester": ", ".join(requesters), "uids": ", ".join(note["uids"]),
+        }
         # A change with no UID leaves its cell empty, since Excel reads an empty string back as nothing
         changes += [(number, columns[key], value) for key, value in values.items() if value != ""]
         number += 1
@@ -290,7 +297,7 @@ def style_change_log(sheet: CDispatch, config: dict) -> None:
     else:
         table = sheet.ListObjects(1)
         table.Resize(whole)
-    for key, width in {"released": 20, "level": 16, "change": 100, "uids": 24}.items():
+    for key, width in {"released": 20, "level": 16, "change": 100, "requester": 24, "uids": 24}.items():
         sheet.Columns(keys.index(key) + 1).ColumnWidth = width
     # -4160 is Excel's xlTop, so a short cell lines up with the first line of a long change beside it
     whole.VerticalAlignment = -4160
