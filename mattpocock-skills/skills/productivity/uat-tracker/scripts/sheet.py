@@ -2,7 +2,8 @@
 
 Run from the project root, on Windows with Excel desktop open:
   new   <config> <workbook>   build an empty feedback sheet from the config, refusing if the file exists
-  rows  <config> <workbook> [--open]   print every row with feedback as one JSON line; --open leaves out closed rows
+  rows  <config> <workbook> --owner CODE|all|none [--open]   print every row with feedback as one JSON line; --open leaves out closed rows;
+        --owner CODE keeps rows whose owner cell names CODE, alone or beside others such as "AS, BS"; all keeps every row; none keeps rows with no owner
   ids   <config> <workbook> [--dry-run]   give each row with feedback and no UID the prefix and the next number
   add   <config> <workbook> --tester NAME --type TYPE --status S --priority P --owner CODE[,CODE] [--legacy ANSWER] --feedback TEXT [--feedback TEXT ...]
         [--reference REF] [--links TEXT] [--response TEXT --by INITIALS] [--issue URL] [--dry-run]   add complete rows after the last one, dated today, and give them UIDs
@@ -460,6 +461,7 @@ def main() -> None:
             continue
         if name == "rows":
             command.add_argument("--open", action="store_true", help="leave out rows whose status is the closed word")
+            command.add_argument("--owner", required=True, help="an owner code, keeping rows whose owner cell names it alone or beside others; all keeps every row; none keeps rows with no owner")
         else:
             command.add_argument("--dry-run", action="store_true", help="print the cells this would set and set none")
     for name in ("add", "write"):
@@ -496,9 +498,17 @@ def main() -> None:
         table = read_table(sheet)
         if args.command == "rows":
             _columns, rows = read_rows(table, config)
+            # all and none are taken as given; any other value must be one of the config's codes
+            owner = args.owner if args.owner in ("all", "none") else owner_codes(args.owner, config)
             for row in rows:
                 # A blank status counts as open, so only the closed word is left out
                 if args.open and row["status"] == config["statuses"]["closed"]:
+                    continue
+                # A joint cell such as "AS, BS" names each of its codes; a blank cell names none
+                codes = [code.strip() for code in str(row["owner"] or "").split(",") if code.strip()]
+                if owner == "none" and codes:
+                    continue
+                if owner not in ("all", "none") and owner not in codes:
                     continue
                 print(json.dumps(row, default=str, ensure_ascii=False))
             return

@@ -33,7 +33,7 @@ CONFIG = {
     "release_notes": RELEASE_NOTES,
     "statuses": {"open": "Open", "in_progress": "In progress", "closed": "Closed"},
     "priorities": {"1": "Wrong or broken", "2": "Seriously harms the experience", "3": "A minor imperfection"},
-    "owners": {"B": {"name": "Sam Example", "initials": "SE", "layer": "back end"}},
+    "owners": {"B": {"name": "Sam Example", "initials": "SE", "layer": "back end"}, "F": {"name": "Fay Example", "initials": "FE", "layer": "front end"}},
     "tracker": {"project": "Example", "queue_label": "uat-queue"},
 }
 # new builds every column the script knows, so its config names them all
@@ -139,8 +139,23 @@ def main() -> None:
 
         # rows --open leaves out the closed row and keeps the in-progress and open rows
         assert run(folder, "write", *base, "--id", "ID_5", "--status", "Closed").returncode == 0
-        open_rows = [json.loads(line)["feedback"] for line in run(folder, "rows", *base, "--open").stdout.splitlines()]
+        open_rows = [json.loads(line)["feedback"] for line in run(folder, "rows", *base, "--open", "--owner", "all").stdout.splitlines()]
         assert open_rows == ["Price wrong", "Logo blurry"], open_rows
+
+        # rows --owner keeps every row whose owner cell names the code, alone or beside others; all keeps every row; an unknown code or none is refused
+        assert run(folder, "write", *base, "--id", "ID_4", "--owner", "F,B").returncode == 0
+        assert run(folder, "write", *base, "--id", "ID_6", "--owner", "F").returncode == 0
+        owned = lambda code: [json.loads(line)["feedback"] for line in run(folder, "rows", *base, "--open", "--owner", code).stdout.splitlines()]
+        assert owned("B") == ["Price wrong"], owned("B")
+        assert owned("F") == ["Price wrong", "Logo blurry"], owned("F")
+        assert owned("all") == ["Price wrong", "Logo blurry"], owned("all")
+        # none keeps only rows with a blank owner cell
+        book = openpyxl.load_workbook(workbook)
+        book["Feedback Log"]["F6"] = None
+        book.save(workbook)
+        assert owned("none") == ["Logo blurry"], owned("none")
+        assert "Owner 'Z' is not one of" in run(folder, "rows", *base, "--owner", "Z").stderr
+        assert "the following arguments are required: --owner" in run(folder, "rows", *base).stderr
 
         # A different workbook of the same name open in Excel, such as a downloaded copy, stops every command
         (folder / "other").mkdir()
